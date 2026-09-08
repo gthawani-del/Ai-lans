@@ -120,7 +120,6 @@ export default function Register(){
   });
 
   const values=watch();
-  const currentRole=watch('career_role');
   const currentTools=watch('ai_tools')||[];
   const currentMvp=watch('mvp_preferences')||[];
   const flag=COUNTRY_FLAGS[values.country]||'🌐';
@@ -194,10 +193,6 @@ export default function Register(){
     window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  function selectRole(role){
-    setValue('career_role',role,{shouldDirty:true,shouldTouch:true,shouldValidate:true});
-  }
-
   function toggleTool(tool){
     const next=currentTools.includes(tool)
       ? currentTools.filter(item=>item!==tool)
@@ -260,8 +255,6 @@ export default function Register(){
       </div>
     </main>;
   }
-
-  const roleIconNames=['executive','founder','professional','entrepreneur','consultant','other'];
 
   return <main className="regShell">
     <div className="regFrame">
@@ -348,17 +341,15 @@ export default function Register(){
               </div>
             </div>
 
-            <fieldset>
-              <legend>Your Current Role *</legend>
-              <div className="roleGrid">
-                {roles.map((role,index)=><button type="button" className={currentRole===role?'on':''} aria-pressed={currentRole===role} onClick={()=>selectRole(role)} key={role}>
-                  <UiIcon name={roleIconNames[index]} size={15}/>{role}
-                </button>)}
+            <div className="profileRow profileRowPrimary">
+              <div className="field">
+                <label htmlFor="career_role">Current Role *</label>
+                <select id="career_role" {...register('career_role')}>
+                  <option value="">Select role</option>
+                  {roles.map(role=><option key={role} value={role}>{role}</option>)}
+                </select>
+                <FieldError message={errors.career_role?.message}/>
               </div>
-              <FieldError message={errors.career_role?.message}/>
-            </fieldset>
-
-            <div className="two">
               <div className="field">
                 <label htmlFor="company">Company / Organisation *</label>
                 <div className="inputWrap"><span className="fieldIcon"><UiIcon name="building" size={17}/></span><input id="company" autoComplete="organization" placeholder="Enter company name" {...register('company_organisation')}/></div>
@@ -374,9 +365,9 @@ export default function Register(){
               </div>
             </div>
 
-            <div className="two">
+            <div className="profileRow profileRowSecondary">
               <div className="field">
-                <label htmlFor="experience">Years of Professional Experience *</label>
+                <label htmlFor="experience">Experience *</label>
                 <select id="experience" {...register('years_experience')}>
                   <option value="">Select range</option>
                   {experienceRanges.map(item=><option key={item}>{item}</option>)}
@@ -384,7 +375,7 @@ export default function Register(){
                 <FieldError message={errors.years_experience?.message}/>
               </div>
               <div className="field">
-                <label htmlFor="function">Primary Functional Area *</label>
+                <label htmlFor="function">Primary Function *</label>
                 <select id="function" {...register('functional_area')}>
                   <option value="">Select function</option>
                   {functionalAreas.map(item=><option key={item}>{item}</option>)}
