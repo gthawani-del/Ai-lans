@@ -1,5 +1,5 @@
-import OnePageRegister from './OnePageRegister';
+import RegistrationCheckout from './RegistrationCheckout';
 
 export default function RegisterPage(){
-  return <OnePageRegister/>;
+  return <RegistrationCheckout/>;
 }
