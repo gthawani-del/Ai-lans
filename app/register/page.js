@@ -228,8 +228,8 @@ export default function Register(){
   }
 
   function updateCountry(event){
-    const dial=dialByCountry[event.target.value];
-    if(dial)setValue('phone_country_code',dial,{shouldDirty:true,shouldValidate:true});
+    const dial=dialByCountry[event.target.value]||'';
+    setValue('phone_country_code',dial,{shouldDirty:true,shouldValidate:true});
   }
 
   async function submitRegistration(data){
@@ -329,14 +329,15 @@ export default function Register(){
                 <label htmlFor="phone">Phone / WhatsApp *</label>
                 <div className="phoneControls">
                   <div className="countryPicker">
-                    <span className="countryVisual"><span>{flag}</span><b>{values.phone_country_code}</b><span>⌄</span></span>
-                    <select id="country" aria-label="Country" autoComplete="country-name" {...register('country',{onChange:updateCountry})}>
+                    <span className="countryFlag" aria-hidden="true">{flag}</span>
+                    <input className="dialEditor" aria-label="Phone country code" inputMode="tel" {...register('phone_country_code')}/>
+                    <select className="countrySelect" id="country" aria-label="Country" autoComplete="country-name" {...register('country',{onChange:updateCountry})}>
                       {countries.map(country=><option key={country} value={country}>{country}</option>)}
                     </select>
+                    <span className="countryChevron" aria-hidden="true">⌄</span>
                   </div>
                   <div className="inputWrap phoneNumber"><span className="fieldIcon"><UiIcon name="phone" size={17}/></span><input id="phone" type="tel" autoComplete="tel" inputMode="tel" placeholder="98765 43210" {...register('phone')}/></div>
                 </div>
-                <input type="hidden" {...register('phone_country_code')}/>
                 <FieldError message={errors.country?.message||errors.phone_country_code?.message||errors.phone?.message}/>
               </div>
 
