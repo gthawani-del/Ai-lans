@@ -8,7 +8,11 @@
 .regRail blockquote:before{left:8px;top:-4px;font-size:40px}
 .regRail blockquote small{margin-top:6px;font-size:9px}
 .step1Card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:13px}
-.step1Card>.formHead,.step1Card>.phoneCityRow,.step1Card>fieldset,.step1Card>.two,.step1Card>.regActions,.step1Card>.trust,.step1Card>.regError{grid-column:1/-1}
-@media(max-width:620px){.step1Card{grid-template-columns:1fr}.step1Card>.field.full{grid-column:1/-1}}
+.step1Card>.formHead,.step1Card>.phoneCityRow,.step1Card>.profileRow,.step1Card>.regActions,.step1Card>.trust,.step1Card>.regError{grid-column:1/-1}
+.profileRow{display:grid;gap:13px;min-width:0}
+.profileRowPrimary{grid-template-columns:1fr 1.5fr 1fr}
+.profileRowSecondary{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:900px){.profileRowPrimary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.step1Card{grid-template-columns:1fr}.step1Card>.field.full{grid-column:1/-1}.profileRowPrimary,.profileRowSecondary{grid-template-columns:1fr}}
 .countryFlag{font-size:0!important}
 .countryFlag::before{content:var(--country-flag,"🌐");font-size:15px}
