@@ -1,3 +1,8 @@
+@import './register-flags-1.css';
+@import './register-flags-2.css';
+@import './register-flags-3.css';
+@import './register-flags-4.css';
+
 .regFrame{grid-template-columns:261px minmax(0,1fr)}
 .regRail blockquote{position:absolute;z-index:3;left:14px;right:14px;bottom:100px;margin:0;padding:13px 14px 12px 27px;border:1px solid #ffffff20;border-radius:11px;background:#111145a8;backdrop-filter:blur(4px);font-size:10.5px;line-height:1.42}
 .regRail blockquote:before{left:8px;top:-4px;font-size:40px}
@@ -5,3 +10,5 @@
 .step1Card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:13px}
 .step1Card>.formHead,.step1Card>.phoneCityRow,.step1Card>fieldset,.step1Card>.two,.step1Card>.regActions,.step1Card>.trust,.step1Card>.regError{grid-column:1/-1}
 @media(max-width:620px){.step1Card{grid-template-columns:1fr}.step1Card>.field.full{grid-column:1/-1}}
+.countryFlag{font-size:0!important}
+.countryFlag::before{content:var(--country-flag,"🌐");font-size:15px}
