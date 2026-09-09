@@ -7,6 +7,7 @@ import './register/registration-flow-v2.css';
 import './register/field-integrity.css';
 import './register/rail-branding-v2.css';
 import './backoffice/backoffice.css';
+import './backoffice/backoffice-controls.css';
 import RegisterLink from './RegisterLink';
 export const metadata={title:'AI Lab | ELIV8 LYF',description:'A hands-on AI business workshop for founders, CXOs and business owners. Mumbai — coming soon.',robots:{index:true,follow:true},openGraph:{title:'AI Lab | ELIV8 LYF',description:'Stop learning about AI. Start building with it.',type:'website',locale:'en_IN'}};
 export const viewport={width:'device-width',initialScale:1};
