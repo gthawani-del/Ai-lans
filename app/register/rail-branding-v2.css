@@ -1,0 +1,77 @@
+/* Registration rail only: official brand lockup, coming-soon event state, workshop image */
+.registrationCheckout .regRail .regBrand{
+  display:block;
+  width:100%;
+  min-height:58px;
+  margin:0;
+}
+.registrationCheckout .regRail .regBrand>.aiMark,
+.registrationCheckout .regRail .regBrand>span{
+  display:none!important;
+}
+.registrationCheckout .regRail .regBrand::before{
+  content:"";
+  display:block;
+  width:184px;
+  height:58px;
+  background:url('https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png') left center/contain no-repeat;
+}
+
+.registrationCheckout .regRail .event>span{
+  font-size:0;
+  line-height:1;
+}
+.registrationCheckout .regRail .event>span::before{
+  content:"Coming Soon";
+  display:block;
+  font-size:13px;
+  line-height:1.25;
+  font-weight:750;
+  color:#fff;
+  letter-spacing:.01em;
+}
+.registrationCheckout .regRail .event small{
+  display:none!important;
+}
+
+.registrationCheckout .regRail blockquote{
+  display:none!important;
+}
+
+.registrationCheckout .regRail{
+  padding-bottom:292px;
+}
+.registrationCheckout .regRail .railArt{
+  height:276px;
+  background:none;
+}
+.registrationCheckout .regRail .railArt::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:0;
+  right:0;
+  top:0;
+  height:190px;
+  background:
+    linear-gradient(180deg,rgba(8,11,59,0) 58%,rgba(8,11,59,.92) 100%),
+    url('https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/step1-workshop-collaboration.jpg') center 42%/cover no-repeat;
+}
+.registrationCheckout .regRail .railArt::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:150px 0 0;
+  background:linear-gradient(180deg,rgba(8,11,59,0),rgba(8,11,59,.34) 34%,rgba(8,11,59,.8) 100%);
+  pointer-events:none;
+}
+.registrationCheckout .regRail .railArt strong{
+  z-index:2;
+}
+
+@media(max-width:900px){
+  .registrationCheckout .regRail{padding-bottom:16px}
+  .registrationCheckout .regRail .railArt{display:none}
+  .registrationCheckout .regRail .regBrand{min-height:44px}
+  .registrationCheckout .regRail .regBrand::before{width:152px;height:44px}
+}
