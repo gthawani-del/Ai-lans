@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import {useEffect,useRef,useState} from 'react';
-const AI_LAB_LOGO='https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png';
+const AI_LAB_LOGO='https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_dark_web.webp';
 const WORKSHOP_POSTER='https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/step1-workshop-collaboration.jpg';
 const experts=[['tech','TECH & AI EXPERT','AI strategy, tools & architecture'],['legal','LEGAL EXPERT','AI governance, IP & compliance'],['finance','FINANCE EXPERT','AI investment, ROI & scaling'],['global','GLOBAL EXPANSION EXPERT','Go-to-market & global growth']];
 function ExpertIcon({type}){const paths={tech:<><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 9h6v6H9zM9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3"/></>,legal:<><path d="M12 3v18M7 6h10M5 9l-3 6h6L5 9Zm14 0-3 6h6l-3-6ZM8 21h8"/></>,finance:<><path d="M4 19V9m6 10V5m6 14v-7m4 7V3"/><path d="m3 7 6-4 6 5 6-6"/></>,global:<><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4 6 4 9s-1 6-4 9c-3-3-4-6-4-9s1-6 4-9Z"/></>};return <svg className="expertIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">{paths[type]}</svg>}
