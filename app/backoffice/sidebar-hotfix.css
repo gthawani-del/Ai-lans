@@ -1,0 +1,11 @@
+/* Backoffice shell hotfix: isolate sidebar from global nav styles. */
+@media (min-width:781px){
+  .boV2{grid-template-columns:248px minmax(0,1fr)!important}
+  .boSidebar nav{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:0!important;width:100%!important;min-width:0!important;overflow-x:hidden!important;overflow-y:auto!important}
+  .boSidebar .boNavGroup{display:block!important;width:100%!important;min-width:0!important;flex:0 0 auto!important;margin:0 0 14px!important}
+  .boSidebar .boNavItem{display:grid!important;grid-template-columns:16px minmax(0,1fr) auto!important;align-items:center!important;width:100%!important;min-width:0!important;gap:9px!important;margin:2px 0!important}
+  .boSidebar .boNavItem>span{display:block!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .boSidebar .boNavItem>small{margin-left:0!important;white-space:nowrap!important;justify-self:end!important}
+}
+.boBrand{cursor:default!important}
+@media (max-width:780px){.boSidebar nav{display:none!important}}
