@@ -8,7 +8,9 @@ import './register/field-integrity.css';
 import './register/rail-branding-v2.css';
 import './backoffice/backoffice.css';
 import './backoffice/backoffice-controls.css';
+import './backoffice/sidebar-hotfix.css';
 import RegisterLink from './RegisterLink';
+import BackofficeShellBehavior from './BackofficeShellBehavior';
 export const metadata={title:'AI Lab | ELIV8 LYF',description:'A hands-on AI business workshop for founders, CXOs and business owners. Mumbai — coming soon.',robots:{index:true,follow:true},openGraph:{title:'AI Lab | ELIV8 LYF',description:'Stop learning about AI. Start building with it.',type:'website',locale:'en_IN'}};
 export const viewport={width:'device-width',initialScale:1};
-export default function RootLayout({children}){return <html lang="en"><body>{children}<RegisterLink/></body></html>}
+export default function RootLayout({children}){return <html lang="en"><body>{children}<RegisterLink/><BackofficeShellBehavior/></body></html>}
