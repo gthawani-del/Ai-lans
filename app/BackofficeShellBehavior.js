@@ -54,16 +54,13 @@ export default function BackofficeShellBehavior(){
       const now=Date.now();
       const started=Number(localStorage.getItem(SESSION_START_KEY)||0);
       const last=Number(localStorage.getItem(LAST_ACTIVITY_KEY)||0);
-      if(!started||!last)return false;
+      if(!started||!last)return true;
       return now-last>=INACTIVITY_MS||now-started>=ABSOLUTE_SESSION_MS;
     };
 
-    const initialiseSessionClock=async()=>{
+    const validateSessionClock=async()=>{
       const {data}=await supabase.auth.getSession();
       if(!data.session)return;
-      const now=Date.now();
-      if(!localStorage.getItem(SESSION_START_KEY))localStorage.setItem(SESSION_START_KEY,String(now));
-      if(!localStorage.getItem(LAST_ACTIVITY_KEY))localStorage.setItem(LAST_ACTIVITY_KEY,String(now));
       if(sessionExpired())expireSession();
     };
 
@@ -100,7 +97,7 @@ export default function BackofficeShellBehavior(){
       });
     };
 
-    initialiseSessionClock();
+    validateSessionClock();
     enhance();
 
     const observer=new MutationObserver(enhance);
