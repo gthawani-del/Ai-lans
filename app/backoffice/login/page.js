@@ -5,6 +5,27 @@ import {useRouter} from 'next/navigation';
 import {LockKeyhole,Mail,ShieldCheck} from 'lucide-react';
 import {getSupabaseBrowserClient} from '../../../lib/supabase-browser';
 
+const SESSION_START_KEY='ai_lab_bo_session_start';
+const LAST_ACTIVITY_KEY='ai_lab_bo_last_activity';
+const INACTIVITY_MS=30*60*1000;
+const ABSOLUTE_SESSION_MS=8*60*60*1000;
+
+function sessionClockValid(){
+  const now=Date.now();
+  const started=Number(localStorage.getItem(SESSION_START_KEY)||0);
+  const last=Number(localStorage.getItem(LAST_ACTIVITY_KEY)||0);
+  return !!started&&!!last&&now-last<INACTIVITY_MS&&now-started<ABSOLUTE_SESSION_MS;
+}
+function startSessionClock(){
+  const now=String(Date.now());
+  localStorage.setItem(SESSION_START_KEY,now);
+  localStorage.setItem(LAST_ACTIVITY_KEY,now);
+}
+function clearSessionClock(){
+  localStorage.removeItem(SESSION_START_KEY);
+  localStorage.removeItem(LAST_ACTIVITY_KEY);
+}
+
 export default function BackofficeLogin(){
   const router=useRouter();
   const supabase=getSupabaseBrowserClient();
@@ -18,6 +39,11 @@ export default function BackofficeLogin(){
     supabase.auth.getSession().then(async({data})=>{
       const session=data.session;
       if(!mounted||!session)return;
+      if(!sessionClockValid()){
+        clearSessionClock();
+        await supabase.auth.signOut();
+        return;
+      }
       const {data:profile}=await supabase.from('backoffice_users').select('role,is_active').eq('user_id',session.user.id).maybeSingle();
       if(profile?.is_active)router.replace('/backoffice');
     });
@@ -32,11 +58,12 @@ export default function BackofficeLogin(){
       const {data,error:signInError}=await supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password});
       if(signInError)throw new Error('Invalid email or password.');
       const {data:profile,error:profileError}=await supabase.from('backoffice_users').select('role,is_active').eq('user_id',data.user.id).maybeSingle();
-      if(profileError||!profile?.is_active){await supabase.auth.signOut();throw new Error('This account does not have back-office access.');}
+      if(profileError||!profile?.is_active){await supabase.auth.signOut();clearSessionClock();throw new Error('This account does not have back-office access.');}
+      startSessionClock();
       router.replace('/backoffice');
     }catch(err){setError(err instanceof Error?err.message:'Could not sign in.');}
     finally{setBusy(false)}
   }
 
-  return <main className="boLoginPage"><section className="boLoginCard"><div className="boLoginBrand"><img src="https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png" alt="AI Lab"/><span>Organiser Back Office</span></div><div className="boLoginIntro"><span className="boLoginIcon"><ShieldCheck size={22}/></span><div><h1>Super Admin</h1><p>Sign in to manage attendees, analysis, allocations and workshop operations.</p></div></div><form onSubmit={submit}><label htmlFor="admin-email">Email</label><div className="boLoginField"><Mail size={17}/><input id="admin-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} required/></div><label htmlFor="admin-password">Password</label><div className="boLoginField"><LockKeyhole size={17}/><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></div>{error&&<p className="boLoginError" role="alert">{error}</p>}<button type="submit" disabled={busy}>{busy?'Signing in…':'Sign in'}</button></form><small>Access is restricted to authorised AI Lab administrators.</small></section></main>;
+  return <main className="boLoginPage"><section className="boLoginCard"><div className="boLoginBrand"><img src="https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png" alt="AI Lab"/><span>Organiser Back Office</span></div><div className="boLoginIntro"><span className="boLoginIcon"><ShieldCheck size={22}/></span><div><h1>Super Admin</h1><p>Sign in to manage attendees, analysis, allocations and workshop operations.</p></div></div><form onSubmit={submit}><label htmlFor="admin-email">Email</label><div className="boLoginField"><Mail size={17}/><input id="admin-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} required/></div><label htmlFor="admin-password">Password</label><div className="boLoginField"><LockKeyhole size={17}/><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></div>{error&&<p className="boLoginError" role="alert">{error}</p>}<button type="submit" disabled={busy}>{busy?'Signing in…':'Sign in'}</button></form><small>For security, sessions expire after 30 minutes of inactivity or 8 hours maximum.</small></section></main>;
 }
