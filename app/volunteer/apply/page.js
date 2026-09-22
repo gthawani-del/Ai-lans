@@ -22,9 +22,14 @@ const contextCards=[
 ];
 const defaultTools=[['claude','Claude / Claude Code','/images/volunteer/stack-claude.webp'],['codex','OpenAI Codex','/images/volunteer/stack-openai.webp'],['github','GitHub','/images/volunteer/stack-github.webp'],['vercel','Vercel','/images/volunteer/stack-vercel.webp'],['supabase','Supabase','/images/volunteer/stack-supabase.webp']];
 const levels=['New to it','Used it','Comfortable','Built with it'];
+const backgrounds=['Student / recent graduate','Business / operations','Engineering / technology','Product / management','Design / creative','Data / AI','Other'];
+const interests=['AI tools & workflows','Coding & APIs','Automation / no-code','Product & business','Design & UX','Data & analytics','Research & problem solving'];
+const volunteerRoles=['Table facilitator','Technical support','Product / business support','Design / UX support','General workshop support'];
+const builtTypes=['Web app / website','Mobile app','Automation / workflow','AI assistant / agent','Data / analytics project','Prototype / proof of concept','Other'];
+const contributions=['Product thinking','Prompting / AI workflows','Frontend','Backend / APIs','Database','Deployment / DevOps','Design / UX','Testing / debugging','Research / documentation'];
 const exp=['Worked with a GitHub repository','Deployed an application','Created or used a database','Implemented authentication','Worked with APIs','Configured environment variables','Debugged a broken application'];
 const commitments=['I am available for both workshop days','I am available for the full workshop hours','I will bring my own laptop and charger','I am comfortable troubleshooting with participants','I am comfortable supporting a group rather than only observing','I understand this is an active volunteer role'];
-const initial={name:'',email:'',phone:'',city:'',organisation:'',role:'',linkedin:'',github:'',background:'',interest:'',preferredRole:'',why:'',useful:'',stack:{},experience:[],strongest:'',contribution:'',projectUrl:'',repoUrl:'',otherUrl:'',commitment:[],accurate:false,consent:false,photoApproved:false};
+const initial={name:'',email:'',phone:'',city:'',organisation:'',role:'',linkedin:'',github:'',background:'',interest:'',preferredRole:'',why:'',useful:'',stack:{},experience:[],projectType:'',contributionAreas:[],strongest:'',contribution:'',projectUrl:'',repoUrl:'',otherUrl:'',commitment:[],accurate:false,consent:false,photoApproved:false};
 
 function Field({label,children,hint}){return <label className="field"><span>{label}</span>{children}{hint&&<small>{hint}</small>}</label>}
 function CheckRow({checked,onCheckedChange,label}){return <label className="checkRow"><Checkbox.Root className="checkRoot" checked={checked} onCheckedChange={onCheckedChange}><Checkbox.Indicator><Check/></Checkbox.Indicator></Checkbox.Root><span>{label}</span></label>}
