@@ -162,6 +162,7 @@ export default function Backoffice(){
           ]],
           ['Volunteers',[
             ['Applications','/backoffice/volunteers',UserRoundCheck],
+            ['Analysis','/backoffice/volunteer-analysis',BarChart3],
             ['Shortlisted','/backoffice/volunteers?status=shortlisted',UserRoundCheck],
             ['Selected','/backoffice/volunteers?status=selected',UserRoundCheck],
             ['Standby','/backoffice/volunteers?status=standby',UserRoundCheck],
