@@ -5,6 +5,8 @@ import { useEffect, useRef } from 'react';
 import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles, X } from 'lucide-react';
 import './volunteer.css';
 
+const AI_LAB_LOGO='https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_dark_web.webp';
+
 const benefits=[
  {n:'01',title:'Direct Access',image:'/images/volunteer/volunteer-direct-access.webp',alt:'People representing direct access',copy:'Work alongside founders, CXOs, investors and business leaders rather than simply attending their sessions.',featured:true},
  {n:'02',title:'Get Seen',image:'/images/volunteer/volunteer-get-seen.webp',alt:'Eye representing visibility',copy:'Show how you think, solve and execute in front of people who regularly look for strong talent, collaborators and future leaders.',featured:true},
@@ -21,7 +23,7 @@ export default function VolunteerPage(){
   <div className="volunteerBackdrop" aria-hidden="true"/>
   <section className="volunteerModal" role="dialog" aria-modal="true" aria-labelledby="volunteer-title" aria-describedby="volunteer-description">
    <Link className="volunteerClose" href="/" aria-label="Close volunteer information" ref={closeRef}><X aria-hidden="true"/></Link>
-   <header className="volunteerIntro">
+   <header className="volunteerIntro"><img className="volunteerLogo" src={AI_LAB_LOGO} alt="AI LAB"/>
     <span className="volunteerEyebrow"><Sparkles aria-hidden="true"/> WHY VOLUNTEER AT AI LAB?</span>
     <h1 id="volunteer-title">This is not event volunteering.<br/><strong>This is where volunteering becomes <span>opportunity.</span></strong></h1>
     <p id="volunteer-description">You’ll spend two days inside a live build environment, working alongside<br className="desktopBreak"/> founders, CXOs, investors and business leaders as they turn ideas into working AI MVPs.</p>
