@@ -34,7 +34,7 @@ export async function GET(request){
   const appOrigin=productionHost?('https://'+productionHost.replace(/^https?:\/\//,'')):requestOrigin;
   const owner=process.env.VERCEL_GIT_REPO_OWNER||'';
   const repo=process.env.VERCEL_GIT_REPO_SLUG||'';
-  const ref=process.env.VERCEL_GIT_COMMIT_REF||'main';
+  const ref=process.env.VERCEL_GIT_COMMIT_REF||'';
   const deployedSha=process.env.VERCEL_GIT_COMMIT_SHA||'';
   const githubToken=process.env.GITHUB_TOKEN||'';
   const ghHeaders={Accept:'application/vnd.github+json','User-Agent':'ai-lab-system-health'};
@@ -66,7 +66,7 @@ export async function GET(request){
     }
   );
 
-  const github=owner&&repo
+  const github=owner&&repo&&ref
     ? await checked(
         'github-main',
         'Infrastructure',
@@ -90,7 +90,7 @@ export async function GET(request){
           };
         }
       )
-    : observed('github-main','Infrastructure','GitHub','Vercel Git repository environment','warning','Repository owner or slug is not available from the deployment environment.',{owner:owner||null,repo:repo||null,branch:ref||null});
+    : observed('github-main','Infrastructure','GitHub','Vercel Git repository environment','warning','Repository owner, slug, or commit ref is not available from the deployment environment.',{owner:owner||null,repo:repo||null,branch:ref||null});
 
   const publicSite=await checked(
     'public-site',
