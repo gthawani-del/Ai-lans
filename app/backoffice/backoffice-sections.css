@@ -26,17 +26,8 @@
 .boSectionSkeleton{padding:4px 0;min-height:320px}.boSkLine,.boSkRow i,.boSkCards i{display:block;background:linear-gradient(90deg,#f1f3f7 25%,#f8f9fb 37%,#f1f3f7 63%);background-size:400% 100%;animation:boSk 1.15s ease infinite;border-radius:7px}.boSkLine{height:14px;margin:5px 0 10px}.boSkLine.wide{width:230px}.boSkLine.short{width:150px;height:10px;margin-bottom:22px}.boSkTable{border:1px solid #e5e8ef;border-radius:10px;overflow:hidden;background:#fff}.boSkRow{display:grid;grid-template-columns:1.5fr 1.2fr 1fr 1fr 1fr .8fr;gap:20px;align-items:center;min-height:54px;padding:0 16px;border-bottom:1px solid #eef0f4}.boSkRow:last-child{border-bottom:0}.boSkRow i{height:11px}.boSkRow.head{min-height:42px;background:#fafbfc}.boSkRow.head i{height:9px}.boSkCards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.boSkCards i{height:105px;border:1px solid #e5e8ef}@keyframes boSk{0%{background-position:100% 0}100%{background-position:0 0}}[data-theme="dark"] .boSkLine,[data-theme="dark"] .boSkRow i,[data-theme="dark"] .boSkCards i{background:linear-gradient(90deg,#202538 25%,#282e43 37%,#202538 63%);background-size:400% 100%}[data-theme="dark"] .boSkTable{background:#181d2d;border-color:#30364a}[data-theme="dark"] .boSkRow{border-color:#30364a}[data-theme="dark"] .boSkRow.head{background:#1d2233}
 .boNavChildren{overflow:hidden;animation:boNavReveal .17s ease-out both;transform-origin:top}@keyframes boNavReveal{from{opacity:.7;transform:scaleY(.94)}to{opacity:1;transform:scaleY(1)}}
 
-/* Sidebar active item: one deliberate accent, never an open two-sided border */
-.boSectionApp .boNavChildren .boNavItem.active{
- border-top:0!important;border-right:0!important;border-bottom:0!important;
- border-left:3px solid #8b5cf6!important;
- border-radius:8px;
- box-shadow:none!important;
- background:#ffffff12;
-}
-
 /* Canonical submenu selected state: borderless box + isolated left accent */
-.boSectionApp .boNavChildren .boNavItem{position:relative;border:0!important;outline:0;text-decoration:none!important;box-shadow:none!important}
+.boSectionApp .boNavChildren .boNavItem,.boSectionApp .boNavChildren .boNavItem:link,.boSectionApp .boNavChildren .boNavItem:visited,.boSectionApp .boNavChildren .boNavItem:hover,.boSectionApp .boNavChildren .boNavItem:focus,.boSectionApp .boNavChildren .boNavItem:active{position:relative;border:0!important;outline:0;text-decoration:none!important;box-shadow:none!important}
 .boSectionApp .boNavChildren .boNavItem.active{
  border:0!important;outline:0!important;box-shadow:none!important;
  background:#ffffff12!important;color:#fff!important;border-radius:8px!important;
@@ -44,7 +35,7 @@
 }
 .boSectionApp .boNavChildren .boNavItem.active::before{
  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
- background:#8b5cf6;border-radius:8px 0 0 8px;pointer-events:none;
+ background:#8b5cf6;border-radius:0;pointer-events:none;
 }
 .boSectionApp .boNavChildren .boNavItem:not(.active)::before{content:none!important}
 .boSectionApp .boNavChildren .boNavItem:hover:not(.active){background:#ffffff0b!important;color:#fff}
