@@ -4,7 +4,7 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {
   AlertCircle,ArrowUpRight,Bell,CalendarDays,ChevronDown,ChevronRight,CircleDollarSign,
-  ClipboardList,Database,Download,FileClock,Gauge,LayoutDashboard,LogOut,Minus,Moon,
+  ClipboardList,Database,Download,FileClock,FileText,Gauge,Home,LayoutDashboard,LogOut,Minus,Moon,
   Plus,RefreshCw,Search,Settings2,Sun,Table2,Users,UserRoundCheck,WalletCards,X
 } from 'lucide-react';
 import {
@@ -179,12 +179,12 @@ export default function Backoffice(){
     <aside className="boSidebar">
       <a className="boBrand" href="/"><img src="https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png" alt="AI Lab"/><span>Back Office</span></a>
       <nav>
-        <div className="boNavGroup"><b>Overview</b><SidebarItem icon={LayoutDashboard} label="Dashboard" active/><SidebarItem icon={AlertCircle} label="Attention Queue" disabled/></div>
-        <div className="boNavGroup"><b>Cohort</b><SidebarItem icon={Gauge} label="Analysis" disabled/><SidebarItem icon={Users} label="Attendees" disabled/></div>
-        <div className="boNavGroup"><b>Planning</b><SidebarItem icon={ClipboardList} label="MVP Demand" disabled/><SidebarItem icon={Table2} label="Table Allocation" disabled/></div>
-        <div className="boNavGroup"><b>Operations</b><SidebarItem icon={UserRoundCheck} label="Volunteers" disabled/><SidebarItem icon={WalletCards} label="Payments" disabled/></div>
-        <div className="boNavGroup"><b>Configuration</b><SidebarItem icon={Settings2} label="MVP Options" disabled/><SidebarItem icon={Settings2} label="Settings" disabled/></div>
-        <div className="boNavGroup"><b>System</b><SidebarItem icon={Database} label="Data Quality" disabled/><SidebarItem icon={FileClock} label="Audit Log" disabled/></div>
+        <div className="boNavGroup"><b>Overview</b><SidebarItem icon={LayoutDashboard} label="Dashboard" active/><a className="boNavItem" href="/backoffice/attention"><AlertCircle size={16}/><span>Attention Queue</span></a></div>
+        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>Attendees</span></summary><a className="boNavItem" href="/backoffice/attendees"><Users size={16}/><span>Attendee List</span></a><a className="boNavItem" href="/backoffice/analysis"><Gauge size={16}/><span>Analysis</span></a><a className="boNavItem" href="/backoffice/mvp-demand"><ClipboardList size={16}/><span>MVP Demand</span></a><a className="boNavItem" href="/backoffice/table-allocation"><Table2 size={16}/><span>Table Allocation</span></a><a className="boNavItem" href="/backoffice/payments"><WalletCards size={16}/><span>Payments</span></a></details>
+        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>Volunteers</span></summary><a className="boNavItem" href="/backoffice/volunteers"><UserRoundCheck size={16}/><span>Volunteer Applications</span></a></details>
+        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>Pages</span></summary><a className="boNavItem" href="/backoffice/page-home"><Home size={16}/><span>Home Page</span></a><a className="boNavItem" href="/backoffice/page-attendee-form"><FileText size={16}/><span>Attendee Form</span></a><a className="boNavItem" href="/backoffice/page-volunteer-form"><FileText size={16}/><span>Volunteer Form</span></a></details>
+        <div className="boNavGroup"><b>Configuration</b><a className="boNavItem" href="/backoffice/mvp-options"><Settings2 size={16}/><span>MVP Options</span></a><a className="boNavItem" href="/backoffice/settings"><Settings2 size={16}/><span>Settings</span></a></div>
+        <div className="boNavGroup"><b>System</b><a className="boNavItem" href="/backoffice/data-quality"><Database size={16}/><span>Data Quality</span></a><a className="boNavItem" href="/backoffice/audit-log"><FileClock size={16}/><span>Audit Log</span></a></div>
       </nav>
       <div className="boAdmin"><span>{profile?.email}</span><small>{(profile?.role||'super_admin').replaceAll('_',' ')}</small><button type="button" onClick={signOut}><LogOut size={14}/> Sign out</button></div>
     </aside>
