@@ -4,7 +4,7 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {
-  AlertCircle,ArrowUpRight,Bell,CalendarDays,ChevronDown,ChevronRight,CircleDollarSign,
+  AlertCircle,ArrowUpRight,BarChart3,Bell,CalendarDays,ChevronDown,ChevronRight,CircleDollarSign,
   ClipboardList,Database,Download,FileClock,FileText,Gauge,Home,LayoutDashboard,LogOut,Minus,Moon,
   Plus,RefreshCw,Search,Settings2,Sun,Table2,Users,UserRoundCheck,WalletCards,X
 } from 'lucide-react';
@@ -58,6 +58,8 @@ export default function Backoffice(){
   const [searching,setSearching]=useState(false);
   const [searchOpen,setSearchOpen]=useState(false);
   const [selectedPerson,setSelectedPerson]=useState(null);
+  const [openNavGroup,setOpenNavGroup]=useState(()=>{try{const saved=sessionStorage.getItem('ai-lab-admin-nav');return ['Attendees','Volunteers','Workshop','Pages','Configuration','System'].includes(saved)?saved:null}catch{return null}});
+  function toggleNav(group){setOpenNavGroup(current=>{const next=current===group?null:group;try{if(next)sessionStorage.setItem('ai-lab-admin-nav',next);else sessionStorage.removeItem('ai-lab-admin-nav')}catch{}return next})}
 
   useEffect(()=>{if(!ready){setLoadingAuth(true);return}if(!session){setLoadingAuth(false);return}let mounted=true;(async()=>{const {data:prefs}=await supabase.from('backoffice_user_preferences').select('theme,text_scale,density,selected_workshop_key,default_date_range,date_basis').eq('user_id',session.user.id).maybeSingle();if(!mounted)return;if(prefs){setTheme(prefs.theme||'light');setTextScale(clampScale(Number(prefs.text_scale)||100));setDensity(prefs.density||'compact');setSelectedWorkshop(prefs.selected_workshop_key||'ai-lab-mumbai-2026');setRange(prefs.default_date_range==='event'?'30d':(prefs.default_date_range||'30d'));setDateBasis(prefs.date_basis||'registration')}setLoadingAuth(false)})();return()=>{mounted=false}},[ready,session,supabase]);
 
@@ -150,11 +152,40 @@ export default function Backoffice(){
       <a className="boBrand" href="/"><img src="https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png" alt="AI Lab"/><span>Back Office</span></a>
       <nav>
         <div className="boNavGroup"><b>Overview</b><SidebarItem icon={LayoutDashboard} label="Dashboard" active/><a className="boNavItem" href="/backoffice/attention"><AlertCircle size={16}/><span>Attention Queue</span></a></div>
-        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>Attendees</span></summary><a className="boNavItem" href="/backoffice/attendees"><Users size={16}/><span>Attendee List</span></a><a className="boNavItem" href="/backoffice/analysis"><Gauge size={16}/><span>Analysis</span></a><a className="boNavItem" href="/backoffice/mvp-demand"><ClipboardList size={16}/><span>MVP Demand</span></a><a className="boNavItem" href="/backoffice/table-allocation"><Table2 size={16}/><span>Table Allocation</span></a><a className="boNavItem" href="/backoffice/payments"><WalletCards size={16}/><span>Payments</span></a></details>
-        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>Volunteers</span></summary><a className="boNavItem" href="/backoffice/volunteers"><UserRoundCheck size={16}/><span>Volunteer Applications</span></a></details>
-        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>Pages</span></summary><a className="boNavItem" href="/backoffice/page-home"><Home size={16}/><span>Home Page</span></a><a className="boNavItem" href="/backoffice/page-attendee-form"><FileText size={16}/><span>Attendee Form</span></a><a className="boNavItem" href="/backoffice/page-volunteer-form"><FileText size={16}/><span>Volunteer Form</span></a></details>
-        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>Configuration</span></summary><a className="boNavItem" href="/backoffice/mvp-options"><Settings2 size={16}/><span>MVP Options</span></a><a className="boNavItem" href="/backoffice/settings"><Settings2 size={16}/><span>Settings</span></a></details>
-        <details className="boNavGroup"><summary className="boNavItem"><ChevronDown size={16}/><span>System</span></summary><a className="boNavItem" href="/backoffice/data-quality"><Database size={16}/><span>Data Quality</span></a><a className="boNavItem" href="/backoffice/audit-log"><FileClock size={16}/><span>Audit Log</span></a></details>
+        {[
+          ['Attendees',[
+            ['Attendee List','/backoffice/attendees',Users],
+            ['Analysis','/backoffice/analysis',Gauge],
+            ['MVP Demand','/backoffice/mvp-demand',ClipboardList],
+            ['Table Allocation','/backoffice/table-allocation',Table2],
+            ['Payments','/backoffice/payments',WalletCards]
+          ]],
+          ['Volunteers',[
+            ['Applications','/backoffice/volunteers',UserRoundCheck],
+            ['Shortlisted','/backoffice/volunteers?status=shortlisted',UserRoundCheck],
+            ['Selected','/backoffice/volunteers?status=selected',UserRoundCheck],
+            ['Standby','/backoffice/volunteers?status=standby',UserRoundCheck],
+            ['Rejected','/backoffice/volunteers?status=rejected',UserRoundCheck]
+          ]],
+          ['Workshop',[
+            ['Table Assignment','/backoffice/workshop-table-assignment',Table2],
+            ['Volunteers','/backoffice/workshop-volunteers',Users],
+            ['Reports','/backoffice/workshop-reports',BarChart3]
+          ]],
+          ['Pages',[
+            ['Home Page','/backoffice/page-home',Home],
+            ['Attendee Form','/backoffice/page-attendee-form',FileText],
+            ['Volunteer Form','/backoffice/page-volunteer-form',FileText]
+          ]],
+          ['Configuration',[
+            ['MVP Options','/backoffice/mvp-options',Settings2],
+            ['Settings','/backoffice/settings',Settings2]
+          ]],
+          ['System',[
+            ['Data Quality','/backoffice/data-quality',Database],
+            ['Audit Log','/backoffice/audit-log',FileClock]
+          ]]
+        ].map(([group,items])=><div className="boNavGroup boCollapsible" key={group}><button type="button" className="boNavItem boNavParent" onClick={()=>toggleNav(group)} aria-expanded={openNavGroup===group}><ChevronDown className={openNavGroup===group?'open':''} size={16}/><span>{group}</span></button>{openNavGroup===group&&<div className="boNavChildren">{items.map(([label,href,Icon])=><Link className="boNavItem" href={href} prefetch key={label}><Icon size={16}/><span>{label}</span></Link>)}</div>}</div>)}
       </nav>
     </aside>
 
