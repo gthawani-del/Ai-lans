@@ -156,7 +156,6 @@ export default function Backoffice(){
         <div className="boNavGroup"><b>Configuration</b><a className="boNavItem" href="/backoffice/mvp-options"><Settings2 size={16}/><span>MVP Options</span></a><a className="boNavItem" href="/backoffice/settings"><Settings2 size={16}/><span>Settings</span></a></div>
         <div className="boNavGroup"><b>System</b><a className="boNavItem" href="/backoffice/data-quality"><Database size={16}/><span>Data Quality</span></a><a className="boNavItem" href="/backoffice/audit-log"><FileClock size={16}/><span>Audit Log</span></a></div>
       </nav>
-      <div className="boAdmin"><span>{profile?.email}</span><small>{(profile?.role||'super_admin').replaceAll('_',' ')}</small><button type="button" onClick={signOut}><LogOut size={14}/> Sign out</button></div>
     </aside>
 
     <section className="boCanvas">
