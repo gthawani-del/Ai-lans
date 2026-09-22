@@ -33,9 +33,4 @@
  background:#ffffff12!important;color:#fff!important;border-radius:8px!important;
  font-weight:700;
 }
-.boSectionApp .boNavChildren .boNavItem.active::before{
- content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
- background:#8b5cf6;border-radius:0;pointer-events:none;
-}
-.boSectionApp .boNavChildren .boNavItem:not(.active)::before{content:none!important}
 .boSectionApp .boNavChildren .boNavItem:hover:not(.active){background:#ffffff0b!important;color:#fff}
