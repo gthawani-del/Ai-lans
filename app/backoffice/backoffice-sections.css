@@ -74,3 +74,5 @@
 .boHealthCopy small{font-size:9px;line-height:1.35;color:#9aa1af}
 
 .volConsistencyFlags{margin-top:10px;border:1px solid #f1d7b8;border-radius:8px;background:#fff9f2;padding:10px 11px}.volConsistencyFlags>b{display:block;margin-bottom:5px;font-size:11px;color:#85511e}.volConsistencyFlags>p{margin:3px 0!important;font-size:10px;line-height:1.4;color:#8a5b2d}
+
+.volAddressRow>span{display:inline;line-height:1.45}
