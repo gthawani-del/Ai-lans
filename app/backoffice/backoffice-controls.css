@@ -9,4 +9,4 @@
 @media(prefers-reduced-motion:reduce){.boIconControl.spinning svg{animation:none}}
 
 /* Universal admin control refinement */
-.boUniversalBar{grid-template-columns:minmax(150px,190px) minmax(220px,520px) auto;justify-content:space-between}.boCohortControl select{max-width:125px}.boGlobalSearch{max-width:520px}.boUniversalRight{justify-content:flex-end}.boTextScaleInline>span{font-size:10px;min-width:36px}.boIconControl{flex:0 0 36px}
+.boUniversalBar{grid-template-columns:minmax(190px,230px) minmax(180px,1fr) max-content;justify-content:stretch}.boCohortControl select{max-width:125px}.boGlobalSearch{max-width:none;min-width:0}.boUniversalRight{justify-content:flex-end;min-width:max-content;white-space:nowrap}.boBasisControl,.boDateFilter,.boTextScaleInline,.boUniversalRight>.boIconControl,.boUniversalRight>.boPopoverWrap{flex:0 0 auto}.boTextScaleInline>span{font-size:10px;min-width:36px}.boIconControl{flex:0 0 36px}
