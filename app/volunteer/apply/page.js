@@ -5,7 +5,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import * as RadioGroup from '@radix-ui/react-radio-group';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Progress from '@radix-ui/react-progress';
-import {ArrowLeft,ArrowRight,Check,CheckCircle2,Cloud,Eye,Network,Sparkles,Users,Upload,UserRound} from 'lucide-react';
+import {ArrowLeft,ArrowRight,Check,CheckCircle2,Cloud,Eye,Network,Plus,Sparkles,Users,Upload,UserRound} from 'lucide-react';
 import {getSupabaseBrowserClient} from '../../../lib/supabase-browser';
 import {isValidPhoneNumber} from 'react-phone-number-input';
 import './apply.css';
