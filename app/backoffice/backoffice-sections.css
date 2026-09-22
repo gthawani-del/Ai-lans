@@ -34,3 +34,17 @@
  box-shadow:none!important;
  background:#ffffff12;
 }
+
+/* Canonical submenu selected state: borderless box + isolated left accent */
+.boSectionApp .boNavChildren .boNavItem{position:relative;border:0!important;outline:0;text-decoration:none!important;box-shadow:none!important}
+.boSectionApp .boNavChildren .boNavItem.active{
+ border:0!important;outline:0!important;box-shadow:none!important;
+ background:#ffffff12!important;color:#fff!important;border-radius:8px!important;
+ font-weight:700;
+}
+.boSectionApp .boNavChildren .boNavItem.active::before{
+ content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+ background:#8b5cf6;border-radius:8px 0 0 8px;pointer-events:none;
+}
+.boSectionApp .boNavChildren .boNavItem:not(.active)::before{content:none!important}
+.boSectionApp .boNavChildren .boNavItem:hover:not(.active){background:#ffffff0b!important;color:#fff}
