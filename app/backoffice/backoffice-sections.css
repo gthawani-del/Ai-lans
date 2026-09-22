@@ -127,3 +127,20 @@
 .volDrawer .volTabs{scroll-snap-type:x proximity}
 .volDrawer .volTabs button{scroll-snap-align:start}
 @media(max-width:1100px){.volDrawer{width:min(460px,100vw)!important}}
+
+/* Volunteer scoring model settings */
+.boScoringModelSection{border:1px solid #ddd7fb;border-radius:12px;background:#fbfaff;padding:18px}
+.boScoringModelGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.boScoreRuleCard{border:1px solid #e2e5ec;border-radius:10px;background:#fff;padding:13px}
+.boScoreRuleCard header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.boScoreRuleCard header>div{display:grid;gap:3px}.boScoreRuleCard header b{font-size:11px;color:#2b3142}.boScoreRuleCard header span{font-size:10px;color:#7c8497}
+.boScoreRuleCard label{display:flex;align-items:center;gap:5px}.boScoreRuleCard label input{width:62px;height:34px;border:1px solid #d9dee8;border-radius:8px;padding:0 9px;font:inherit;font-size:11px}.boScoreRuleCard label em{font-style:normal;font-size:10px;color:#8a91a2}
+.boScoreRuleCard ul{margin:11px 0 0;padding-left:17px;display:grid;gap:5px}.boScoreRuleCard li{font-size:10px;line-height:1.4;color:#666f82}
+.boDecisionGuidance{margin-top:16px;padding-top:16px;border-top:1px solid #e5e0f7}
+.boDecisionBands{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px}
+.boDecisionBands article{border:1px solid #e0e4ec;border-radius:9px;background:#fff;padding:11px;display:grid;grid-template-columns:auto 1fr;gap:9px}
+.boDecisionBands article>strong{font-size:11px;color:#6738df;white-space:nowrap}.boDecisionBands article>div{display:grid;gap:3px}
+.boDecisionBands b{font-size:10.5px;color:#2c3243}.boDecisionBands span{font-size:9.5px;font-weight:700;color:#60697d}.boDecisionBands small{font-size:9px;line-height:1.35;color:#858da0}
+.boScoringNote{margin:10px 0 0;font-size:9.5px;line-height:1.45;color:#6f778b}
+@media(max-width:1200px){.boDecisionBands{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){.boScoringModelGrid,.boDecisionBands{grid-template-columns:1fr}}
