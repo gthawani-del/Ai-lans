@@ -85,6 +85,72 @@ function renderSection(section,c){const {attendees,paid,demand,data,loading,fmt,
  if(section==='audit-log')return <AuditLogWorkspace rows={data?.audit||[]} range={c.range||'30d'} fmt={fmt}/>;
  if(section==='system-health')return <SystemHealthWorkspace supabase={c.supabase}/>;
  return <div className="boPanel">Unknown section.</div>}
+
+function DataQualityWorkspace({attendees=[]}){
+ const [filter,setFilter]=useState('all');
+ const issues=[];
+ attendees.forEach(a=>{
+  const person={id:a.id,name:a.full_name||'Unnamed attendee',email:a.email||'',type:'Attendee'};
+  if(!a.company_organisation)issues.push({...person,key:'missing_company',issue:'Missing company',severity:'Needs review',action:'Add company / organisation'});
+  if(!a.functional_area)issues.push({...person,key:'missing_function',issue:'Missing function',severity:'Needs review',action:'Add functional area'});
+  if(a.payment_status!=='paid')issues.push({...person,key:'unpaid',issue:'Payment not confirmed',severity:'Attention',action:'Review payment status'});
+  if(a.payment_status==='paid'&&!a.table)issues.push({...person,key:'unallocated',issue:'Paid but unallocated',severity:'Planning',action:'Assign to a table'});
+ });
+ const counts={missing_company:issues.filter(x=>x.key==='missing_company').length,missing_function:issues.filter(x=>x.key==='missing_function').length,unpaid:issues.filter(x=>x.key==='unpaid').length,unallocated:issues.filter(x=>x.key==='unallocated').length};
+ const visible=filter==='all'?issues:issues.filter(x=>x.key===filter);
+ const cards=[['missing_company','Missing company',counts.missing_company],['missing_function','Missing function',counts.missing_function],['unpaid','Unpaid / pending',counts.unpaid],['unallocated','Paid unallocated',counts.unallocated]];
+ return <div className="boDQWorkspace">
+  <div className="boDQSummary">{cards.map(([key,label,value])=><button type="button" className={filter===key?'on':''} onClick={()=>setFilter(filter===key?'all':key)} key={key}><span>{label}</span><strong>{value}</strong><small>{value?'Click to inspect records':'No issues'}</small></button>)}</div>
+  <div className="boPanel boDQPanel">
+   <div className="boPanelHead"><div><h2>Records needing attention</h2><p>{visible.length?visible.length+' issue'+(visible.length===1?'':'s')+' in the current workshop data.':'No records match this issue.'}</p></div>{filter!=='all'&&<button className="boSecondaryBtn" onClick={()=>setFilter('all')}>Show all issues</button>}</div>
+   {visible.length?<div className="boTableWrap"><table className="boDataTable boDQTable"><thead><tr><th>Issue</th><th>Person</th><th>Type</th><th>Severity</th><th>Suggested action</th><th></th></tr></thead><tbody>{visible.map((x,i)=><tr key={x.id+'-'+x.key+'-'+i}><td><b>{x.issue}</b></td><td><span>{x.name}</span><small>{x.email||'No email'}</small></td><td>{x.type}</td><td><span className={'boIssueBadge '+(x.key==='unpaid'?'warn':x.key==='unallocated'?'plan':'review')}>{x.severity}</span></td><td>{x.action}</td><td><Link className="boInlineAction" href={'/backoffice/attendees?q='+encodeURIComponent(x.email||x.name)}>Open record</Link></td></tr>)}</tbody></table></div>:<div className="boSystemEmpty"><CheckCircle2 size={22}/><b>No matching data-quality issues</b><span>This view is clear.</span></div>}
+  </div>
+ </div>
+}
+
+function AuditLogWorkspace({rows=[],range='30d',fmt}){
+ const [search,setSearch]=useState(''),[actor,setActor]=useState('all'),[action,setAction]=useState('all'),[entity,setEntity]=useState('all');
+ const cutoff=range==='all'?0:Date.now()-(range==='7d'?7:30)*86400000;
+ const ranged=rows.filter(x=>!cutoff||new Date(x.created_at||0).getTime()>=cutoff);
+ const actors=[...new Set(ranged.map(x=>x.actor_email).filter(Boolean))];
+ const actions=[...new Set(ranged.map(x=>x.action).filter(Boolean))];
+ const entities=[...new Set(ranged.map(x=>x.entity_type).filter(Boolean))];
+ const q=search.trim().toLowerCase();
+ const visible=ranged.filter(x=>(actor==='all'||x.actor_email===actor)&&(action==='all'||x.action===action)&&(entity==='all'||x.entity_type===entity)&&(!q||[x.actor_email,x.action,x.entity_type,JSON.stringify(x.details||{})].some(v=>String(v||'').toLowerCase().includes(q))));
+ const human=v=>String(v||'').replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase());
+ return <div className="boPanel boAuditPanel">
+  <div className="boAuditTools">
+   <div className="boListSearch"><Search size={14}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search audit events…"/></div>
+   <select value={actor} onChange={e=>setActor(e.target.value)}><option value="all">All admins</option>{actors.map(v=><option value={v} key={v}>{v}</option>)}</select>
+   <select value={action} onChange={e=>setAction(e.target.value)}><option value="all">All actions</option>{actions.map(v=><option value={v} key={v}>{human(v)}</option>)}</select>
+   <select value={entity} onChange={e=>setEntity(e.target.value)}><option value="all">All entities</option>{entities.map(v=><option value={v} key={v}>{human(v)}</option>)}</select>
+  </div>
+  {visible.length?<div className="boTableWrap"><table className="boDataTable boAuditTable"><thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead><tbody>{visible.map(x=><tr key={x.id}><td><b>{fmt(x.created_at)}</b><small>{x.created_at?new Date(x.created_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):''}</small></td><td><span>{x.actor_email||'System'}</span><small>{human(x.actor_role||'')}</small></td><td>{human(x.action)}</td><td>{human(x.entity_type)}</td><td><details className="boAuditDetails"><summary>View details</summary><pre>{JSON.stringify(x.details||{},null,2)}</pre></details></td></tr>)}</tbody></table></div>:<div className="boSystemEmpty"><FileClock size={22}/><b>No administrative changes recorded in this period</b><span>Adjust the date range or filters to see more events.</span></div>}
+ </div>
+}
+
+function SystemHealthWorkspace({supabase}){
+ const [health,setHealth]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
+ const [browser,setBrowser]=useState({status:'not_checked',detail:'Run the browser check to verify the photo-moderation models on this device.',latency_ms:null});
+ const [browserBusy,setBrowserBusy]=useState(false);
+ async function loadHealth(){setLoading(true);setError('');try{const ses=(await supabase.auth.getSession()).data.session;if(!ses)throw new Error('Admin session unavailable');const r=await fetch(SYSTEM_HEALTH_API,{headers:{Authorization:'Bearer '+ses.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});const out=await r.json();if(!r.ok)throw new Error(out.error||'Could not load system health');setHealth(out)}catch(e){setError(e.message)}finally{setLoading(false)}}
+ useEffect(()=>{loadHealth()},[]);
+ async function runBrowser(){setBrowserBusy(true);const started=performance.now();try{const [tf,blaze,nsfw]=await Promise.all([import('@tensorflow/tfjs'),import('@tensorflow-models/blazeface'),import('nsfwjs')]);tf.enableProdMode();await tf.ready();await Promise.all([blaze.load(),nsfw.load('MobileNetV2')]);setBrowser({status:'healthy',detail:'TensorFlow.js, BlazeFace and NSFWJS model assets loaded successfully on this browser.',latency_ms:Math.round(performance.now()-started)})}catch(e){setBrowser({status:'down',detail:e?.message||'Browser model load failed.',latency_ms:Math.round(performance.now()-started)})}finally{setBrowserBusy(false)}}
+ const items=[...(health?.results||[]),{group:'Browser Services',service:'Photo moderation models',...browser}];
+ const groups=['Infrastructure','Backend','Payments','Application Flows','Browser Services'];
+ const healthy=items.filter(x=>x.status==='healthy').length,warnings=items.filter(x=>x.status==='warning'||x.status==='not_checked').length,down=items.filter(x=>x.status==='down').length;
+ const icon=status=>status==='healthy'?<CheckCircle2 size={15}/>:status==='down'?<XCircle size={15}/>:<TriangleAlert size={15}/>;
+ return <div className="boHealthWorkspace">
+  <div className="boHealthSummary">
+   <div><span>Healthy</span><strong>{healthy}</strong></div><div><span>Warnings</span><strong>{warnings}</strong></div><div><span>Down</span><strong>{down}</strong></div>
+   <div className="boHealthActions"><button className="boSecondaryBtn" onClick={loadHealth} disabled={loading}><RefreshCw size={14}/>{loading?'Checking…':'Refresh checks'}</button><button className="boSecondaryBtn" onClick={runBrowser} disabled={browserBusy}>{browserBusy?'Loading models…':'Run browser check'}</button></div>
+  </div>
+  {error&&<div className="boError">{error}<button onClick={loadHealth}>Retry</button></div>}
+  {groups.map(group=>{const rows=items.filter(x=>x.group===group);if(!rows.length)return null;return <section className="boPanel boHealthGroup" key={group}><div className="boPanelHead"><div><h2>{group}</h2><p>{group==='Browser Services'?'Runs on this browser only; no applicant photo is used during this check.':'Live deterministic checks against the actual service or application endpoint.'}</p></div></div><div className="boHealthRows">{rows.map((x,i)=><article key={x.service+'-'+i}><div className={'boHealthState '+x.status}>{icon(x.status)}</div><div className="boHealthCopy"><b>{x.service}</b><span>{x.detail}</span></div><div className="boHealthMeta">{x.latency_ms!=null&&<span>{x.latency_ms} ms</span>}{x.meta&&<details><summary>Details</summary><pre>{JSON.stringify(x.meta,null,2)}</pre></details>}</div></article>)}</div></section>})}
+  <p className="boHealthChecked">{health?.checked_at?'Server checks last run '+new Date(health.checked_at).toLocaleString('en-IN'):loading?'Running live checks…':'Server checks not available.'}</p>
+ </div>
+}
+
 function DataTable({rows,cols}){return <div className="boPanel boTableWrap"><table className="boDataTable"><thead><tr>{cols.map(c=><th key={c[0]}>{c[1]}</th>)}</tr></thead><tbody>{rows.map(r=><tr key={r.id}>{cols.map(([k])=><td key={k}>{k==='table'?(r.table?`Table ${r.table.table_number}`:'Unassigned'):k==='paid_at'?fmt(r[k]):String(r[k]??'—')}</td>)}</tr>)}</tbody></table>{!rows.length&&<p>No records match the current filters.</p>}</div>}
 function Breakdown({title,rows,total}){return <article className="boPanel"><h2>{title}</h2><div className="boBreakdown">{rows.slice(0,8).map(([label,count])=><div key={label}><span>{label}<b>{count}</b></span><i><em style={{width:`${total?Math.round(count/total*100):0}%`}}/></i></div>)}</div></article>}
 function Setting({label,value}){return <article className="boPanel boSetting"><span>{label}</span><strong>{String(value??'—')}</strong></article>}
