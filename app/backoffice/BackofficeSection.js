@@ -82,7 +82,7 @@ function renderSection(section,c){const {attendees,paid,demand,data,loading,fmt,
  if(section==='volunteer-reports'){const counts=['draft','submitted','review','shortlisted','selected','standby','rejected'].map(status=>[status,volunteers.filter(v=>v.status===status).length]);const cities=new Map();volunteers.forEach(v=>{const city=v.city||'Not specified';cities.set(city,(cities.get(city)||0)+1)});const roles=new Map();volunteers.forEach(v=>{const role=v.answers?.preferredRole||v.applicant_role||'Not specified';roles.set(role,(roles.get(role)||0)+1)});return <><div className="boStats boStats4"><Card title="Applications" value={volunteers.length} meta="all volunteer records"/><Card title="Submitted / Review" value={volunteers.filter(v=>['submitted','review'].includes(v.status)).length} meta="requires review"/><Card title="Shortlisted" value={volunteers.filter(v=>v.status==='shortlisted').length} meta="in progress"/><Card title="Selected" value={volunteers.filter(v=>v.status==='selected').length} meta="final list"/></div><div className="boAnalysisGrid"><Breakdown title="Application status" rows={counts.map(([s,n])=>[humanStatus(s),n])} total={volunteers.length}/><Breakdown title="City" rows={[...cities.entries()].sort((a,b)=>b[1]-a[1])} total={volunteers.length}/><Breakdown title="Volunteer role" rows={[...roles.entries()].sort((a,b)=>b[1]-a[1])} total={volunteers.length}/></div></>}
  if(section==='payments')return <DataTable rows={attendees} cols={[['full_name','Attendee'],['email','Email'],['payment_status','Status'],['payment_reference','Reference'],['paid_at','Paid on']]}/>;
  if(section==='mvp-options')return <MvpOptionsManager options={data?.mvp_options||[]} supabase={c.supabase} workshop="ai-lab-mumbai-2026" onChange={options=>c.setData(d=>({...d,mvp_options:options}))}/>;
- if(section==='settings'){const s=data?.settings||{},vs=c.volunteerSettings;return <><TableAssignmentSettings settings={s} supabase={c.supabase} workshop="ai-lab-mumbai-2026" onSaved={next=>c.setData(d=>({...d,settings:next}))}/>{vs&&<VolunteerSettings settings={vs} supabase={c.supabase} onPublished={c.setVolunteerSettings}/>}</>}
+ if(section==='settings'){const s=data?.settings||{},vs=c.volunteerSettings;return <>{vs&&<VolunteerSettings settings={vs} supabase={c.supabase} onPublished={c.setVolunteerSettings}/>}<TableAssignmentSettings settings={s} supabase={c.supabase} workshop="ai-lab-mumbai-2026" onSaved={next=>c.setData(d=>({...d,settings:next}))}/></>}
  if(section==='data-quality')return <DataQualityWorkspace attendees={data?.attendees||[]}/>;
  if(section==='audit-log')return <AuditLogWorkspace rows={data?.audit||[]} range={c.range||'30d'} fmt={fmt}/>;
  if(section==='system-health')return <SystemHealthWorkspace supabase={c.supabase}/>;
@@ -249,7 +249,91 @@ function MvpOptionsManager({options,supabase,workshop,onChange}){const [rows,set
 function TableAssignmentSettings({settings,supabase,workshop,onSaved}){const defaults={mvp_preference:50,ai_readiness:20,functional_diversity:15,experience_diversity:15};const [form,setForm]=useState(()=>({...settings,assignment_weights:{...defaults,...(settings.assignment_weights||{})}}));const [busy,setBusy]=useState(false);const set=(k,v)=>setForm(x=>({...x,[k]:v}));const setWeight=(k,v)=>setForm(x=>({...x,assignment_weights:{...x.assignment_weights,[k]:Number(v)}}));const total=Object.values(form.assignment_weights||{}).reduce((a,b)=>a+Number(b||0),0);async function save(){if(total!==100){alert('Assignment weights must total 100%.');return}setBusy(true);const payload={max_attendees_per_table:Number(form.max_attendees_per_table||0),volunteers_per_table:Number(form.volunteers_per_table||0),assignment_weights:form.assignment_weights};const r=await fetch(API+'?workshop_key='+encodeURIComponent(workshop),{method:'PATCH',headers:{Authorization:'Bearer '+(await supabase.auth.getSession()).data.session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});const out=await r.json();setBusy(false);if(!r.ok){alert(out.error||'Could not save assignment rules');return}onSaved(out.settings)}const factors=[['mvp_preference','MVP preference match','Prioritise an attendee’s selected MVP when choosing a table.'],['ai_readiness','AI readiness balance','Balance different levels of AI familiarity across tables.'],['functional_diversity','Job-function mix','Mix attendees from different professional functions.'],['experience_diversity','Experience-level mix','Mix attendees with different levels of professional experience.']];return <details className="boPanel boSettingsPanel boSettingsAccordion" open><summary className="boSettingsAccordionHead"><div><h2>Table Assignment Rules</h2><p>Set table capacity and how the system should decide which attendee sits at which table.</p></div><ChevronDown size={18}/></summary><div className="boSettingsAccordionBody"><div className="boSettingsHead"><div className="boSettingsSaveSpacer"></div><button className="boPrimaryBtn" disabled={busy||total!==100} onClick={save}>{busy?'Saving…':'Save rules'}</button></div><div className="boCapacityBar"><label><span>Attendees / table</span><input type="number" min="1" value={form.max_attendees_per_table??''} onChange={e=>set('max_attendees_per_table',e.target.value)}/></label><label><span>Volunteers / table</span><input type="number" min="0" value={form.volunteers_per_table??''} onChange={e=>set('volunteers_per_table',e.target.value)}/></label></div><div className="boSettingsSection"><div className="boSectionTitleRow"><div><h3>Attendee Assignment Weighting</h3><p>These factors decide which attendee is placed at which table. Adjust the percentages; together they must equal 100%.</p></div><strong className={total===100?'boWeightTotal ok':'boWeightTotal bad'}>{total}% / 100%</strong></div><div className="boAssignmentWeights">{factors.map(([key,title,text])=><label key={key}><span><b>{title}</b><small>{text}</small></span><div><input type="number" min="0" max="100" value={form.assignment_weights?.[key]??0} onChange={e=>setWeight(key,e.target.value)}/><em>%</em></div></label>)}</div></div></div></details>}
 function RuleToggle({title,text,checked,onChange}){return <label className="boRuleToggle"><span><b>{title}</b><small>{text}</small></span><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/><i aria-hidden="true"/></label>}
 
-function VolunteerSettings({settings,supabase,onPublished}){const base=settings.form||{},score=settings.score||{};const [title,setTitle]=useState(base.title||'AI Lab Volunteer Application');const [opens,setOpens]=useState(base.opens_at?.slice(0,16)||'');const [closes,setCloses]=useState(base.closes_at?.slice(0,16)||'');const [tools,setTools]=useState(base.form_config?.stack_tools||[]);const [weights,setWeights]=useState(score.weights||{});const [busy,setBusy]=useState(false);const total=Object.values(weights).reduce((a,b)=>a+Number(b||0),0);async function publish(){if(total!==100){alert('Scoring weights must total 100.');return}setBusy(true);const{data,error}=await supabase.rpc('admin_publish_volunteer_settings',{p_title:title,p_intro:base.intro_config||{},p_form:{...(base.form_config||{}),stack_tools:tools},p_weights:weights,p_opens_at:opens||null,p_closes_at:closes||null});setBusy(false);if(error){alert(error.message);return}alert('Volunteer settings published as version '+data.form_version+'.');onPublished(v=>({...v,form:{...base,title,opens_at:opens||null,closes_at:closes||null,form_config:{...(base.form_config||{}),stack_tools:tools},version:data.form_version},score:{...score,weights,version:data.scoring_version}}))}function changeWeight(k,v){setWeights(w=>({...w,[k]:Number(v)}))}return <details className="boPanel boSettingsPanel boVolunteerSettings boSettingsAccordion"><summary className="boSettingsAccordionHead"><div><h2>Volunteer Application Settings</h2><p>Published form v{base.version||'—'} · scoring v{score.version||'—'}. Publishing creates a new version; existing applications keep the version they started with.</p></div><ChevronDown size={18}/></summary><div className="boSettingsAccordionBody"><div className="boSettingsSection"><h3>Application</h3><div className="boRuleFields boRuleFields3"><label><span>Application title</span><input value={title} onChange={e=>setTitle(e.target.value)}/></label><label><span>Opens at</span><input type="datetime-local" value={opens} onChange={e=>setOpens(e.target.value)}/></label><label><span>Closes at</span><input type="datetime-local" value={closes} onChange={e=>setCloses(e.target.value)}/></label></div></div><div className="boSettingsSection"><div className="boSectionTitleRow"><div><h3>Stack tools</h3><p>Tools applicants can select when describing their current stack.</p></div><button className="boSecondaryBtn" onClick={()=>setTools(t=>[...t,'New tool'])}>Add tool</button></div><div className="boToolList">{tools.map((x,i)=><div className="boToolRow" key={i}><input value={x} onChange={e=>setTools(t=>t.map((v,n)=>n===i?e.target.value:v))}/><button onClick={()=>setTools(t=>t.filter((_,n)=>n!==i))}>Remove</button></div>)}</div></div><div className="boSettingsSection"><div className="boSectionTitleRow"><div><h3>Scoring weights</h3><p>Set the contribution of each scoring category. The total must equal 100.</p></div><strong className={total===100?'boWeightTotal ok':'boWeightTotal bad'}>{total}/100</strong></div><div className="boWeightGrid">{Object.entries(weights).map(([k,v])=><label key={k}><span>{k.replaceAll('_',' ')}</span><div><input type="number" min="0" max="100" value={v} onChange={e=>changeWeight(k,e.target.value)}/><em>%</em></div></label>)}</div></div><div className="boPublishRow"><div><b>Publish configuration</b><small>Creates immutable form and scoring versions for new applications.</small></div>{settings.can_publish?<button className="boPrimaryBtn" disabled={busy||total!==100} onClick={publish}>{busy?'Publishing…':'Publish new volunteer version'}</button>:<span>Only Super Admin can publish volunteer settings.</span>}</div></div></details>}
+function VolunteerSettings({settings,supabase,onPublished}){
+ const base=settings.form||{},score=settings.score||{},rules=score.rules||{};
+ const [title,setTitle]=useState(base.title||'AI Lab Volunteer Application');
+ const [opens,setOpens]=useState(base.opens_at?.slice(0,16)||'');
+ const [closes,setCloses]=useState(base.closes_at?.slice(0,16)||'');
+ const [tools,setTools]=useState(base.form_config?.stack_tools||[]);
+ const [weights,setWeights]=useState(score.weights||{});
+ const [busy,setBusy]=useState(false);
+ const total=Object.values(weights).reduce((a,b)=>a+Number(b||0),0);
+ const labels={
+  technical_readiness:'Technical Readiness',
+  practical_experience:'Practical Experience',
+  relevant_work:'Relevant Work',
+  motivation_communication:'Motivation & Communication',
+  commitment:'Commitment'
+ };
+ const scoringRules={
+  technical_readiness:[
+   'New to it = 20% of that tool contribution',
+   'Used it = 50%',
+   'Comfortable = 80%',
+   'Built with it = 100%',
+   rules.technical_consistency?.unverified_built_score_cap!=null?'Unsupported “Built with it” claims can be capped when required evidence is missing.':'Evidence consistency checks apply to strong proficiency claims.'
+  ],
+  practical_experience:[
+   'Based on the number of practical activities selected.',
+   'Normalised across the 7 practical-experience activities.'
+  ],
+  relevant_work:[
+   `Evidence links: ${rules.relevant_work?.evidence_links??6} points`,
+   `Depth of involvement: ${rules.relevant_work?.depth_of_involvement??5} points`,
+   `Breadth of contribution: ${rules.relevant_work?.breadth_of_contribution??2} points`,
+   `Claim/evidence consistency: ${rules.relevant_work?.claim_evidence_consistency??2} points`
+  ],
+  motivation_communication:[
+   `Motivation response: up to ${rules.motivation_communication?.motivation_answer_points??12} points`,
+   `Structured participant-help capabilities: up to ${rules.motivation_communication?.capability_selection_points??8} points`
+  ],
+  commitment:[
+   'Score is proportional to commitments selected.',
+   'All 6 commitments = full commitment score.',
+   'Minimum form requirement is separate from the score and does not guarantee a high commitment score.'
+  ]
+ };
+ const order=['technical_readiness','practical_experience','relevant_work','motivation_communication','commitment'];
+ const decisionBands=[
+  ['90–100','Excellent','Strong shortlist signal','Review evidence, role fit and operational requirements before deciding.'],
+  ['80–89','Strong','Shortlist signal','Competitive score; verify evidence and role coverage.'],
+  ['70–79','Good','Review / shortlist consideration','Inspect component weaknesses and evidence before progressing.'],
+  ['60–69','Developing','Manual review','Meaningful gaps are present; use component scores and evidence for context.'],
+  ['Below 60','Needs review','Deeper review required','Do not reject automatically; inspect evidence, role fit and any exceptional strengths.']
+ ];
+ async function publish(){
+  if(total!==100){alert('Scoring weights must total 100.');return}
+  setBusy(true);
+  const{data,error}=await supabase.rpc('admin_publish_volunteer_settings',{
+   p_title:title,
+   p_intro:base.intro_config||{},
+   p_form:{...(base.form_config||{}),stack_tools:tools},
+   p_weights:weights,
+   p_opens_at:opens||null,
+   p_closes_at:closes||null
+  });
+  setBusy(false);
+  if(error){alert(error.message);return}
+  alert('Volunteer settings published as version '+data.form_version+'.');
+  onPublished(v=>({...v,form:{...base,title,opens_at:opens||null,closes_at:closes||null,form_config:{...(base.form_config||{}),stack_tools:tools},version:data.form_version},score:{...score,weights,version:data.scoring_version}}))
+ }
+ function changeWeight(k,v){setWeights(w=>({...w,[k]:Number(v)}))}
+ return <details className="boPanel boSettingsPanel boVolunteerSettings boSettingsAccordion" open>
+  <summary className="boSettingsAccordionHead"><div><h2>Volunteer Application Settings</h2><p>Published form v{base.version||'—'} · scoring v{score.version||'—'}. Publishing creates a new version; existing applications keep the version they started with.</p></div><ChevronDown size={18}/></summary>
+  <div className="boSettingsAccordionBody">
+   <div className="boSettingsSection boScoringModelSection">
+    <div className="boSectionTitleRow"><div><h3>Volunteer Scoring Model</h3><p>Controls how the 100-point volunteer score is calculated. Weight changes apply only after publishing a new scoring version.</p></div><strong className={total===100?'boWeightTotal ok':'boWeightTotal bad'}>{total}/100</strong></div>
+    <div className="boScoringModelGrid">{order.map(k=><article key={k} className="boScoreRuleCard"><header><div><b>{labels[k]}</b><span>{Number(weights[k]||0)} points</span></div><label><input aria-label={labels[k]+' weight'} type="number" min="0" max="100" value={weights[k]??0} onChange={e=>changeWeight(k,e.target.value)}/><em>%</em></label></header><ul>{scoringRules[k].map((x,i)=><li key={i}>{x}</li>)}</ul></article>)}</div>
+    <div className="boDecisionGuidance"><div className="boSectionTitleRow"><div><h3>Score-based review guidance</h3><p>These bands explain how scores should enter the review workflow. Scores never automatically select, reject or change an applicant’s status.</p></div></div><div className="boDecisionBands">{decisionBands.map(([range,label,action,text])=><article key={range}><strong>{range}</strong><div><b>{label}</b><span>{action}</span><small>{text}</small></div></article>)}</div><p className="boScoringNote">Final decisions remain manual and should consider evidence quality, role coverage, commitment, workshop requirements and reviewer judgement alongside the total score.</p></div>
+   </div>
+
+   <div className="boSettingsSection"><h3>Application</h3><div className="boRuleFields boRuleFields3"><label><span>Application title</span><input value={title} onChange={e=>setTitle(e.target.value)}/></label><label><span>Opens at</span><input type="datetime-local" value={opens} onChange={e=>setOpens(e.target.value)}/></label><label><span>Closes at</span><input type="datetime-local" value={closes} onChange={e=>setCloses(e.target.value)}/></label></div></div>
+   <div className="boSettingsSection"><div className="boSectionTitleRow"><div><h3>Stack tools</h3><p>Tools applicants can select when describing their current stack.</p></div><button className="boSecondaryBtn" onClick={()=>setTools(t=>[...t,'New tool'])}>Add tool</button></div><div className="boToolList">{tools.map((x,i)=><div className="boToolRow" key={i}><input value={x} onChange={e=>setTools(t=>t.map((v,n)=>n===i?e.target.value:v))}/><button onClick={()=>setTools(t=>t.filter((_,n)=>n!==i))}>Remove</button></div>)}</div></div>
+   <div className="boPublishRow"><div><b>Publish configuration</b><small>Creates immutable form and scoring versions for new applications.</small></div>{settings.can_publish?<button className="boPrimaryBtn" disabled={busy||total!==100} onClick={publish}>{busy?'Publishing…':'Publish new volunteer version'}</button>:<span>Only Super Admin can publish volunteer settings.</span>}</div>
+  </div>
+ </details>
+}
+
 function PageContentSettings({section}){const meta={
  'page-home':['Home Page','/','Homepage content and section configuration.'],
  'page-attendee-form':['Attendee Form','/register','Registration form content, labels and field configuration.'],
