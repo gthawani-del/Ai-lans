@@ -1,20 +1,31 @@
 export const dynamic='force-dynamic';
 
-async function timed(group,service,fn){
-  const started=Date.now();
+function resultBase(id,group,service,source){
+  return {id,group,service,source,checked_at:new Date().toISOString()};
+}
+
+async function checked(id,group,service,source,fn){
+  const started=performance.now();
   try{
-    const out=await fn();
-    return {group,service,latency_ms:Date.now()-started,...out};
+    const payload=await fn();
+    return {...resultBase(id,group,service,source),...payload,latency_ms:Number((performance.now()-started).toFixed(1))};
   }catch(error){
-    return {group,service,status:'down',detail:error?.message||'Health check failed',latency_ms:Date.now()-started};
+    return {...resultBase(id,group,service,source),status:'down',detail:error?.message||'Health check failed',latency_ms:Number((performance.now()-started).toFixed(1))};
   }
+}
+
+function observed(id,group,service,source,status,detail,meta={}){
+  return {...resultBase(id,group,service,source),status,detail,meta,latency_ms:null};
 }
 
 async function fetchWithTimeout(url,init={},timeout=8000){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeout);
-  try{return await fetch(url,{...init,signal:controller.signal,cache:'no-store',redirect:'follow'});}
-  finally{clearTimeout(timer);}
+  try{
+    return await fetch(url,{...init,signal:controller.signal,cache:'no-store',redirect:'follow'});
+  }finally{
+    clearTimeout(timer);
+  }
 }
 
 export async function GET(request){
@@ -30,68 +41,113 @@ export async function GET(request){
   if(githubToken)ghHeaders.Authorization='Bearer '+githubToken;
 
   let homeHtml='';
-  const vercel=await timed('Infrastructure','Vercel',async()=>({
-    status:process.env.VERCEL==='1'?'healthy':'warning',
-    detail:process.env.VERCEL==='1'?'Current Vercel deployment is serving this health request':'Vercel runtime variables are not present in this environment',
-    meta:{
-      environment:process.env.VERCEL_ENV||null,
-      region:process.env.VERCEL_REGION||null,
-      deployment_url:process.env.VERCEL_URL||null,
-      production_url:process.env.VERCEL_PROJECT_PRODUCTION_URL||null,
-      commit_sha:deployedSha||null,
-      commit_ref:ref||null
+
+  const vercel=await checked(
+    'vercel-runtime',
+    'Infrastructure',
+    'Vercel',
+    'HTTPS GET '+appOrigin+'/',
+    async()=>{
+      const response=await fetchWithTimeout(appOrigin+'/',{},8000);
+      if(!response.ok)throw new Error('Production origin HTTP '+response.status);
+      const vercelId=response.headers.get('x-vercel-id');
+      if(!vercelId){
+        return {
+          status:'warning',
+          detail:'Production origin responded, but no x-vercel-id header was present.',
+          meta:{http_status:response.status,environment:process.env.VERCEL_ENV||null,region:process.env.VERCEL_REGION||null,deployment_url:process.env.VERCEL_URL||null,production_url:process.env.VERCEL_PROJECT_PRODUCTION_URL||null,commit_sha:deployedSha||null,commit_ref:ref||null}
+        };
+      }
+      return {
+        status:'healthy',
+        detail:'Production request was served by Vercel.',
+        meta:{http_status:response.status,vercel_id:vercelId,environment:process.env.VERCEL_ENV||null,region:process.env.VERCEL_REGION||null,deployment_url:process.env.VERCEL_URL||null,production_url:process.env.VERCEL_PROJECT_PRODUCTION_URL||null,commit_sha:deployedSha||null,commit_ref:ref||null}
+      };
     }
-  }));
+  );
 
-  const github=await timed('Infrastructure','GitHub',async()=>{
-    if(!owner||!repo)return {status:'warning',detail:'GitHub repository metadata is not available from the deployment environment',meta:{owner:owner||null,repo:repo||null}};
-    const r=await fetchWithTimeout('https://api.github.com/repos/'+owner+'/'+repo+'/commits/'+encodeURIComponent(ref),{headers:ghHeaders});
-    if(!r.ok){
-      if(!githubToken&&[401,403,404].includes(r.status))return {status:'warning',detail:'GitHub repository metadata is configured, but a live API read could not be authenticated from this deployment.',meta:{repository:owner+'/'+repo,branch:ref,http_status:r.status,token_configured:false}};
-      throw new Error('GitHub API HTTP '+r.status);
+  const github=owner&&repo
+    ? await checked(
+        'github-main',
+        'Infrastructure',
+        'GitHub',
+        'GitHub REST commits API',
+        async()=>{
+          const response=await fetchWithTimeout('https://api.github.com/repos/'+owner+'/'+repo+'/commits/'+encodeURIComponent(ref),{headers:ghHeaders});
+          if(!response.ok){
+            if(!githubToken&&[401,403,404].includes(response.status)){
+              return {status:'warning',detail:'Repository metadata is configured, but the GitHub API could not be read anonymously from this deployment.',meta:{repository:owner+'/'+repo,branch:ref,http_status:response.status,token_configured:false}};
+            }
+            throw new Error('GitHub API HTTP '+response.status);
+          }
+          const body=await response.json();
+          const headSha=String(body.sha||'');
+          const matches=deployedSha&&headSha?deployedSha===headSha:null;
+          return {
+            status:matches===false?'warning':'healthy',
+            detail:matches===false?'Deployed commit differs from the current '+ref+' head.':'Repository branch read succeeded'+(headSha?' · '+headSha.slice(0,7):''),
+            meta:{repository:owner+'/'+repo,branch:ref,head_sha:headSha||null,deployed_sha:deployedSha||null,commit_message:String(body.commit?.message||'').split('\n')[0]||null,committed_at:body.commit?.committer?.date||null,url:body.html_url||null,token_configured:!!githubToken}
+          };
+        }
+      )
+    : observed('github-main','Infrastructure','GitHub','Vercel Git repository environment','warning','Repository owner or slug is not available from the deployment environment.',{owner:owner||null,repo:repo||null,branch:ref||null});
+
+  const publicSite=await checked(
+    'public-site',
+    'Application Flows',
+    'Public website',
+    'HTTPS GET '+appOrigin+'/',
+    async()=>{
+      const response=await fetchWithTimeout(appOrigin+'/',{},8000);
+      if(!response.ok)throw new Error('HTTP '+response.status);
+      homeHtml=await response.text();
+      return {status:'healthy',detail:'Production homepage responded successfully.',meta:{url:appOrigin+'/',http_status:response.status,vercel_id:response.headers.get('x-vercel-id'),html_bytes:homeHtml.length}};
     }
-    const j=await r.json();
-    const headSha=String(j.sha||'');
-    const matches=!deployedSha||!headSha?null:deployedSha===headSha;
-    return {
-      status:matches===false?'warning':'healthy',
-      detail:matches===false?'Production deployment is not on the latest '+ref+' commit':'Repository reachable'+(headSha?' · '+headSha.slice(0,7):''),
-      meta:{repository:owner+'/'+repo,branch:ref,head_sha:headSha||null,deployed_sha:deployedSha||null,commit_message:String(j.commit?.message||'').split('\n')[0]||null,committed_at:j.commit?.committer?.date||null,url:j.html_url||null}
-    };
-  });
+  );
 
-  const publicSite=await timed('Application Flows','Public website',async()=>{
-    const r=await fetchWithTimeout(appOrigin+'/');
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    homeHtml=await r.text();
-    return {status:'healthy',detail:'Production homepage responding',meta:{url:appOrigin+'/',http_status:r.status,vercel_id:r.headers.get('x-vercel-id')}};
-  });
-
-  const admin=timed('Application Flows','Admin / Backoffice',async()=>{
-    const r=await fetchWithTimeout(appOrigin+'/backoffice/login');
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    return {status:'healthy',detail:'Backoffice login route responding',meta:{url:appOrigin+'/backoffice/login',http_status:r.status,vercel_id:r.headers.get('x-vercel-id')}};
-  });
-
-  const volunteer=timed('Application Flows','Volunteer application',async()=>{
-    const r=await fetchWithTimeout(appOrigin+'/volunteer/apply');
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    return {status:'healthy',detail:'Volunteer application route responding',meta:{url:appOrigin+'/volunteer/apply',http_status:r.status}};
-  });
-
-  const nextRuntime=timed('Application Flows','Next.js runtime',async()=>{
-    if(!homeHtml){
-      const r=await fetchWithTimeout(appOrigin+'/');
-      if(!r.ok)throw new Error('Homepage HTTP '+r.status);
-      homeHtml=await r.text();
+  const admin=checked(
+    'backoffice-login',
+    'Application Flows',
+    'Admin / Backoffice',
+    'HTTPS GET '+appOrigin+'/backoffice/login',
+    async()=>{
+      const response=await fetchWithTimeout(appOrigin+'/backoffice/login',{},8000);
+      if(!response.ok)throw new Error('HTTP '+response.status);
+      return {status:'healthy',detail:'Backoffice login route responded successfully.',meta:{url:appOrigin+'/backoffice/login',http_status:response.status,vercel_id:response.headers.get('x-vercel-id')}};
     }
-    const asset=homeHtml.match(/\/_next\/static\/[^"' ]+\.js/)?.[0];
-    if(!asset)return {status:'warning',detail:'App responds, but no Next.js JavaScript asset was discovered in the rendered HTML'};
-    const r=await fetchWithTimeout(appOrigin+asset);
-    if(!r.ok)throw new Error('Next.js asset HTTP '+r.status);
-    return {status:'healthy',detail:'Next.js page and static runtime asset responding',meta:{asset,http_status:r.status}};
-  });
+  );
+
+  const volunteer=checked(
+    'volunteer-application',
+    'Application Flows',
+    'Volunteer application',
+    'HTTPS GET '+appOrigin+'/volunteer/apply',
+    async()=>{
+      const response=await fetchWithTimeout(appOrigin+'/volunteer/apply',{},8000);
+      if(!response.ok)throw new Error('HTTP '+response.status);
+      return {status:'healthy',detail:'Volunteer application route responded successfully.',meta:{url:appOrigin+'/volunteer/apply',http_status:response.status,vercel_id:response.headers.get('x-vercel-id')}};
+    }
+  );
+
+  const nextRuntime=checked(
+    'next-runtime',
+    'Application Flows',
+    'Next.js runtime',
+    'Discovered /_next/static JavaScript asset',
+    async()=>{
+      if(!homeHtml){
+        const response=await fetchWithTimeout(appOrigin+'/',{},8000);
+        if(!response.ok)throw new Error('Homepage HTTP '+response.status);
+        homeHtml=await response.text();
+      }
+      const asset=homeHtml.match(/\/_next\/static\/[^"' ]+\.js/)?.[0];
+      if(!asset)return {status:'warning',detail:'Homepage responded, but no Next.js JavaScript asset could be discovered in its HTML.',meta:{origin:appOrigin}};
+      const response=await fetchWithTimeout(appOrigin+asset,{},8000);
+      if(!response.ok)throw new Error('Next.js asset HTTP '+response.status);
+      return {status:'healthy',detail:'A live Next.js static runtime asset responded successfully.',meta:{asset,url:appOrigin+asset,http_status:response.status}};
+    }
+  );
 
   const results=await Promise.all([Promise.resolve(vercel),Promise.resolve(github),Promise.resolve(publicSite),admin,volunteer,nextRuntime]);
-  return Response.json({checked_at:new Date().toISOString(),origin:appOrigin,results},{headers:{'Cache-Control':'no-store'}});
+  return Response.json({checked_at:new Date().toISOString(),contract_version:2,origin:appOrigin,results},{headers:{'Cache-Control':'no-store'}});
 }
