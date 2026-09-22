@@ -63,3 +63,14 @@
 .evidenceBlock .groupLabel{margin-bottom:3px}
 .evidenceExperience textarea[name="projectSummary"]{min-height:78px}
 @media(max-width:760px){.involvementGrid{grid-template-columns:1fr}}
+
+/* Profile & Skills structured model */
+.groupTitleRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.groupTitleRow>div{display:grid;gap:3px}.groupTitleRow .groupLabel{margin:0}.groupTitleRow small{font-size:10px;color:#8a91a6}
+.singleChoice .choice,.multiChoice .choice{display:inline-flex;align-items:center;gap:6px}.singleChoice .choice svg,.multiChoice .choice svg{width:13px;height:13px}
+.stackSection{display:grid;gap:12px}.stackCluster{display:grid;gap:6px}.stackCluster.supporting{margin-top:4px}.stackClusterLabel{font-size:9px;font-weight:800;letter-spacing:.09em;color:#7a8098}
+.customTools{display:grid;gap:8px}.customToolRow{display:grid;grid-template-columns:minmax(180px,1fr) 190px 38px;gap:8px;align-items:center}
+.customToolRow input,.customToolRow select{height:40px;border:1px solid #dce0eb;border-radius:8px;background:#fff;padding:0 10px;font:inherit;font-size:11px;color:#252a47;outline:none}
+.customToolRow input:focus,.customToolRow select:focus{border-color:#6c3df2;box-shadow:0 0 0 3px #eee9ff}
+.customToolRow button{height:38px;border:1px solid #e0e4ed;border-radius:8px;background:#fff;color:#707791;font-size:18px;cursor:pointer}
+.addTool{justify-self:start;display:inline-flex;align-items:center;gap:7px;border:1px solid #dce0eb;border-radius:8px;background:#fff;color:#5d31df;padding:9px 12px;font-size:11px;font-weight:700;cursor:pointer}.addTool svg{width:14px;height:14px}
+@media(max-width:760px){.customToolRow{grid-template-columns:1fr}.customToolRow button{width:42px}.stackClusterLabel{margin-top:4px}}
