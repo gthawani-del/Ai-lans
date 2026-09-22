@@ -46,7 +46,10 @@ export async function GET(request){
   const github=await timed('Infrastructure','GitHub',async()=>{
     if(!owner||!repo)return {status:'warning',detail:'GitHub repository metadata is not available from the deployment environment',meta:{owner:owner||null,repo:repo||null}};
     const r=await fetchWithTimeout('https://api.github.com/repos/'+owner+'/'+repo+'/commits/'+encodeURIComponent(ref),{headers:ghHeaders});
-    if(!r.ok)throw new Error('GitHub API HTTP '+r.status);
+    if(!r.ok){
+      if(!githubToken&&[401,403,404].includes(r.status))return {status:'warning',detail:'GitHub repository metadata is configured, but a live API read could not be authenticated from this deployment.',meta:{repository:owner+'/'+repo,branch:ref,http_status:r.status,token_configured:false}};
+      throw new Error('GitHub API HTTP '+r.status);
+    }
     const j=await r.json();
     const headSha=String(j.sha||'');
     const matches=!deployedSha||!headSha?null:deployedSha===headSha;
