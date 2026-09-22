@@ -4,7 +4,7 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {
-  AlertCircle,ArrowUpRight,BarChart3,Bell,CalendarDays,ChevronDown,ChevronRight,CircleDollarSign,
+  Activity,AlertCircle,ArrowUpRight,BarChart3,Bell,CalendarDays,ChevronDown,ChevronRight,CircleDollarSign,
   ClipboardList,Database,Download,FileClock,FileText,Gauge,Home,LayoutDashboard,LogOut,Minus,Moon,
   Plus,RefreshCw,Search,Settings2,Sun,Table2,Users,UserRoundCheck,WalletCards,X
 } from 'lucide-react';
@@ -183,7 +183,8 @@ export default function Backoffice(){
           ]],
           ['System',[
             ['Data Quality','/backoffice/data-quality',Database],
-            ['Audit Log','/backoffice/audit-log',FileClock]
+            ['Audit Log','/backoffice/audit-log',FileClock],
+            ['System Health','/backoffice/system-health',Activity]
           ]]
         ].map(([group,items])=><div className="boNavGroup boCollapsible" key={group}><button type="button" className="boNavItem boNavParent" onClick={()=>toggleNav(group)} aria-expanded={openNavGroup===group}><ChevronDown className={openNavGroup===group?'open':''} size={16}/><span>{group}</span></button>{openNavGroup===group&&<div className="boNavChildren">{items.map(([label,href,Icon])=><Link className="boNavItem" href={href} prefetch key={label}><Icon size={16}/><span>{label}</span></Link>)}</div>}</div>)}
       </nav>
