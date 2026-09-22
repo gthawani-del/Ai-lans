@@ -85,3 +85,13 @@
 .selectAllCommitments svg{width:14px;height:14px}
 .commitmentToolbar>span{font-size:10px;color:#7f8799}
 @media(max-width:640px){.commitmentToolbar{align-items:stretch;flex-direction:column}.selectAllCommitments{justify-content:center;width:100%}}
+
+/* Step 1 address autocomplete */
+.addressAutocomplete{position:relative}
+.addressAutocomplete>input{width:100%}
+.addressLookupState{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px;color:#8b91a3;pointer-events:none}
+.addressSuggestions{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;max-height:260px;overflow:auto;border:1px solid #dfe3ec;border-radius:10px;background:#fff;box-shadow:0 14px 34px #20243b1c;padding:5px}
+.addressSuggestions button{display:grid;gap:3px;width:100%;border:0;border-radius:7px;background:#fff;padding:9px 10px;text-align:left;cursor:pointer}
+.addressSuggestions button:hover,.addressSuggestions button:focus{background:#f7f5ff;outline:none}
+.addressSuggestions b{font-size:11px;color:#20263c}
+.addressSuggestions span{font-size:10px;line-height:1.35;color:#7e8598}
