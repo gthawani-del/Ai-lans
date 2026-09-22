@@ -2,6 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {useRouter} from 'next/navigation';
+import Link from 'next/link';
 import {
   AlertCircle,ArrowUpRight,Bell,CalendarDays,ChevronDown,ChevronRight,CircleDollarSign,
   ClipboardList,Database,Download,FileClock,FileText,Gauge,Home,LayoutDashboard,LogOut,Minus,Moon,
@@ -11,7 +12,8 @@ import {
   Bar,BarChart,CartesianGrid,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis
 } from 'recharts';
 import {format,subDays} from 'date-fns';
-import {getSupabaseBrowserClient,SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL} from '../../lib/supabase-browser';
+import {SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL} from '../../lib/supabase-browser';
+import {useAdminSession} from './AdminSessionContext';
 
 const API=`${SUPABASE_URL}/functions/v1/attendee-dashboard-stats`;
 const SEARCH_API=`${SUPABASE_URL}/functions/v1/backoffice-global-search`;
@@ -34,11 +36,9 @@ function EmptyChart({children}){return <div className="boChartEmpty">{children}<
 
 export default function Backoffice(){
   const router=useRouter();
-  const supabase=getSupabaseBrowserClient();
+  const {session,profile,ready,supabase}=useAdminSession();
   const searchRef=useRef(null);
-  const [session,setSession]=useState(null);
-  const [profile,setProfile]=useState(null);
-  const [loadingAuth,setLoadingAuth]=useState(true);
+  const [loadingAuth,setLoadingAuth]=useState(!ready);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
   const [data,setData]=useState(null);
@@ -59,37 +59,7 @@ export default function Backoffice(){
   const [searchOpen,setSearchOpen]=useState(false);
   const [selectedPerson,setSelectedPerson]=useState(null);
 
-  useEffect(()=>{
-    let mounted=true;
-    async function boot(){
-      const {data:sessionData}=await supabase.auth.getSession();
-      if(!mounted)return;
-      if(!sessionData.session){router.replace('/backoffice/login');return;}
-      const userId=sessionData.session.user.id;
-      const [{data:admin},{data:prefs}]=await Promise.all([
-        supabase.from('backoffice_users').select('email,role,is_active').eq('user_id',userId).maybeSingle(),
-        supabase.from('backoffice_user_preferences').select('theme,text_scale,density,selected_workshop_key,default_date_range,date_basis').eq('user_id',userId).maybeSingle()
-      ]);
-      if(!admin?.is_active){await supabase.auth.signOut();router.replace('/backoffice/login');return;}
-      if(prefs){
-        setTheme(prefs.theme||'light');
-        setTextScale(clampScale(Number(prefs.text_scale)||100));
-        setDensity(prefs.density||'compact');
-        setSelectedWorkshop(prefs.selected_workshop_key||'ai-lab-mumbai-2026');
-        setRange(prefs.default_date_range==='event'?'30d':(prefs.default_date_range||'30d'));
-        setDateBasis(prefs.date_basis||'registration');
-      }
-      setProfile(admin);
-      setSession(sessionData.session);
-      setLoadingAuth(false);
-    }
-    boot();
-    const {data:listener}=supabase.auth.onAuthStateChange((_event,next)=>{
-      if(!next)router.replace('/backoffice/login');
-      else setSession(next);
-    });
-    return()=>{mounted=false;listener.subscription.unsubscribe()};
-  },[router,supabase]);
+  useEffect(()=>{if(!ready){setLoadingAuth(true);return}if(!session){setLoadingAuth(false);return}let mounted=true;(async()=>{const {data:prefs}=await supabase.from('backoffice_user_preferences').select('theme,text_scale,density,selected_workshop_key,default_date_range,date_basis').eq('user_id',session.user.id).maybeSingle();if(!mounted)return;if(prefs){setTheme(prefs.theme||'light');setTextScale(clampScale(Number(prefs.text_scale)||100));setDensity(prefs.density||'compact');setSelectedWorkshop(prefs.selected_workshop_key||'ai-lab-mumbai-2026');setRange(prefs.default_date_range==='event'?'30d':(prefs.default_date_range||'30d'));setDateBasis(prefs.date_basis||'registration')}setLoadingAuth(false)})();return()=>{mounted=false}},[ready,session,supabase]);
 
   useEffect(()=>{
     function onKey(event){

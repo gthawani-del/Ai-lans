@@ -4,7 +4,8 @@ import {useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {AlertCircle,BarChart3,ChevronDown,ClipboardList,Database,FileClock,FileText,Home,LayoutDashboard,LogOut,Minus,Moon,Plus,RefreshCw,Search,Settings2,Sun,Table2,Users,UserRoundCheck,WalletCards} from 'lucide-react';
-import {getSupabaseBrowserClient,SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL} from '../../lib/supabase-browser';
+import {SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL} from '../../lib/supabase-browser';
+import {useAdminSession} from './AdminSessionContext';
 
 const API=`${SUPABASE_URL}/functions/v1/backoffice-section-data`;
 const VOLUNTEER_API=`${SUPABASE_URL}/functions/v1/volunteer-admin-data`;
@@ -25,14 +26,13 @@ function money(paise){return paise?new Intl.NumberFormat('en-IN',{style:'currenc
 
 export default function BackofficeSection({section}){
  const router=useRouter();
- const supabase=getSupabaseBrowserClient();
- const [session,setSession]=useState(null);const [profile,setProfile]=useState(null);const [data,setData]=useState(null);const [loading,setLoading]=useState(true);const [error,setError]=useState('');
+ const {session,profile,ready,supabase}=useAdminSession();
+ const [data,setData]=useState(null);const [loading,setLoading]=useState(true);const [error,setError]=useState('');
  const [theme,setTheme]=useState('light');const [scale,setScale]=useState(100);const [range,setRange]=useState('30d');const [lastRefresh,setLastRefresh]=useState(null);const [navOpen,setNavOpen]=useState({Attendees:true,Volunteers:true,Pages:true});const [query,setQuery]=useState('');const [volunteers,setVolunteers]=useState([]);const [selectedVolunteer,setSelectedVolunteer]=useState(null);const [volunteerStatus,setVolunteerStatus]=useState('all');const [volunteerSettings,setVolunteerSettings]=useState(null);
  const workshop='ai-lab-mumbai-2026';
  useEffect(()=>{try{const saved=sessionStorage.getItem('ai-lab-admin-nav');if(saved)setNavOpen(JSON.parse(saved));const t=localStorage.getItem('ai-lab-admin-theme');if(t)setTheme(t);const s=Number(localStorage.getItem('ai-lab-admin-scale'));if(s>=100&&s<=200)setScale(s)}catch{}},[]);
  useEffect(()=>{try{localStorage.setItem('ai-lab-admin-theme',theme);localStorage.setItem('ai-lab-admin-scale',String(scale))}catch{}},[theme,scale]);
  function toggleNav(group){setNavOpen(x=>{const next={...x,[group]:!x[group]};try{sessionStorage.setItem('ai-lab-admin-nav',JSON.stringify(next))}catch{}return next})}
- useEffect(()=>{let live=true;(async()=>{const {data:s}=await supabase.auth.getSession();if(!live)return;if(!s.session){router.replace('/backoffice/login');return}const {data:a}=await supabase.from('backoffice_users').select('email,role,is_active').eq('user_id',s.session.user.id).maybeSingle();if(!a?.is_active){await supabase.auth.signOut();router.replace('/backoffice/login');return}setSession(s.session);setProfile(a)})();return()=>{live=false}},[router,supabase]);
  async function load(){if(!session)return;setLoading(true);setError('');try{const r=await fetch(`${API}?workshop_key=${encodeURIComponent(workshop)}`,{headers:{Authorization:`Bearer ${session.access_token}`,apikey:SUPABASE_PUBLISHABLE_KEY}});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not load data');setData(j);setLastRefresh(new Date())}catch(e){setError(e.message)}finally{setLoading(false)}}
  useEffect(()=>{load()},[session]);
  useEffect(()=>{if(!session||section!=='volunteers')return;(async()=>{try{const r=await fetch(VOLUNTEER_API,{headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});const j=await r.json();if(r.ok)setVolunteers(j.applications||[])}catch{}})();const s=new URLSearchParams(window.location.search).get('status');if(s)setVolunteerStatus(s)},[session,section]);
@@ -42,7 +42,7 @@ export default function BackofficeSection({section}){
  const paid=attendees.filter(x=>x.payment_status==='paid');
  const demand=useMemo(()=>{const w1=Number(data?.settings?.mvp_first_choice_weight||2),w2=Number(data?.settings?.mvp_second_choice_weight||1);const m=new Map();attendees.forEach(a=>(a.mvp_preferences||[]).forEach(p=>{const x=m.get(p.title)||{title:p.title,first:0,second:0};p.rank===1?x.first++:x.second++;m.set(p.title,x)}));return [...m.values()].map(x=>({...x,score:x.first*w1+x.second*w2})).sort((a,b)=>b.score-a.score)},[attendees,data]);
  async function signOut(){await supabase.auth.signOut();router.replace('/backoffice/login')}
- if(!session)return <main className="boBoot">Checking administrator access…</main>;
+ if(!ready||!session)return <main className="boBoot">Checking administrator access…</main>;
  return <main className={`boV2 boSectionApp ${section==='volunteers'?'volSection':''}`} data-theme={theme} style={{'--bo-scale':scale/100}}>
   <aside className="boSidebar"><div className="boBrand"><img src="https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png" alt="AI Lab"/><span>Back Office</span></div><nav>{NAV.map(([group,items])=>['Attendees','Volunteers','Pages'].includes(group)?<div className={'boNavGroup boCollapsible '+(items.some(([,href])=>href.split('?')[0].endsWith(section))?'current':'')} key={group}><button type="button" className="boNavItem boNavParent" onClick={()=>toggleNav(group)} aria-expanded={!!navOpen[group]}><ChevronDown className={navOpen[group]?'open':''} size={16}/><span>{group}</span></button>{navOpen[group]&&<div className="boNavChildren">{items.map(([label,href,Icon])=><Link className={'boNavItem '+(href.split('?')[0].endsWith(section)&&(!href.includes('?')||typeof window!=='undefined'&&window.location.search===href.slice(href.indexOf('?')))?'active':'')} href={href} prefetch key={label}><Icon size={16}/><span>{label}</span>{group==='Volunteers'&&<small className="boNavCount">{label==='Applications'?volunteers.length:volunteers.filter(v=>v.status===label.toLowerCase()).length}</small>}</Link>)}</div>}</div>:<div className="boNavGroup" key={group}><b>{group}</b>{items.map(([label,href,Icon])=><Link className={'boNavItem '+(href.endsWith(section)?'active':'')} href={href} prefetch key={label}><Icon size={16}/><span>{label}</span></Link>)}</div>)}</nav>{section==='volunteers'&&<div className="volSidebarProgress"><b>{volunteers.filter(v=>v.status==='selected').length} selected</b><span>{(data?.tables||[]).length?((data.tables.length*Number(data?.settings?.volunteers_per_table||1))+' volunteer slots planned'):'Selection target not set'}</span><i><em style={{width:(data?.tables||[]).length?Math.min(100,Math.round(volunteers.filter(v=>v.status==='selected').length/(data.tables.length*Number(data?.settings?.volunteers_per_table||1))*100))+'%':'0%'}}/></i></div>}<div className="boAdmin"><span>{profile?.email}</span><small>{(profile?.role||'super_admin').replaceAll('_',' ')}</small><button onClick={signOut}><LogOut size={14}/> Sign out</button></div></aside>
   <section className="boCanvas">

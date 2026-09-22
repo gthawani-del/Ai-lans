@@ -1,6 +1,8 @@
+import {AdminSessionProvider} from './AdminSessionContext';
+
 export const dynamic='force-dynamic';
 export const revalidate=0;
 
 export default function BackofficeLayout({children}){
-  return children;
+ return <AdminSessionProvider>{children}</AdminSessionProvider>;
 }
