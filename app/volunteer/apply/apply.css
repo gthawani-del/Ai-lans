@@ -49,3 +49,17 @@
 .choice:focus-visible,.back:focus-visible,.next:focus-visible,.stepper button:focus-visible,.uploadButton:focus-within{outline:2px solid #6335ef;outline-offset:2px}
 @media(max-width:1280px) and (min-width:901px){.formPane{padding:28px 26px 0}.applyTop,.visualLayout,.visualLayout+.formActions{max-width:none}.visualLayout{grid-template-columns:minmax(540px,1fr) 220px}.saveBar{margin-left:-26px;margin-right:-26px;padding-left:26px;padding-right:26px}}
 @media(max-width:900px){.formPane{padding:18px 16px 0}.applyTop{gap:8px;margin-bottom:14px}.formHead{margin:6px 2px 12px}.formHead h1{font-size:27px}.stepper{grid-template-columns:repeat(5,minmax(66px,1fr))}.visualLayout{display:block}.stackVisual{display:none}.formActions,.visualLayout+.formActions{grid-template-columns:88px 1fr;position:sticky;bottom:0;background:#fff;border-top:1px solid #eceef5;margin:12px -16px 0;padding:12px 16px;z-index:5}.saveInline{display:none}.formActions .next{min-width:0}.saveBar{display:none}}
+
+/* Experience & Work evidence model */
+.groupHint{margin:-5px 0 12px;font-size:11px;line-height:1.45;color:#7a8098}
+.involvementGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.involvementItem{border:1px solid #e0e4ed;border-radius:10px;background:#fff;overflow:hidden}
+.involvementItem.selected{border-color:#9f88ef;background:#fbfaff}
+.involvementItem>button{width:100%;min-height:46px;border:0;background:transparent;padding:11px 12px;display:flex;align-items:center;gap:9px;text-align:left;color:#414965;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.involvementItem>button svg{width:16px;height:16px;color:#6734ef;flex:none}
+.involvementItem>select{width:calc(100% - 20px);height:38px;margin:0 10px 10px;border:1px solid #dce0eb;border-radius:8px;background:#fff;color:#252a47;padding:0 10px;font:inherit;font-size:11px;outline:none}
+.involvementItem>select:focus{border-color:#6c3df2;box-shadow:0 0 0 3px #eee9ff}
+.evidenceBlock{display:grid;gap:14px;border:1px solid #e1e5ee;border-radius:12px;background:#fbfbfe;padding:16px}
+.evidenceBlock .groupLabel{margin-bottom:3px}
+.evidenceExperience textarea[name="projectSummary"]{min-height:78px}
+@media(max-width:760px){.involvementGrid{grid-template-columns:1fr}}
