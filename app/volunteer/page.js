@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles, X } from 'lucide-react';
 import './volunteer.css';
 
@@ -17,13 +17,21 @@ const benefits=[
 ];
 
 export default function VolunteerPage(){
- const closeRef=useRef(null);
- useEffect(()=>{closeRef.current?.focus()},[]);
+ const[aboutOpen,setAboutOpen]=useState(false);const dialogRef=useRef(null);
+ useEffect(()=>{try{if(!sessionStorage.getItem('ai-lab-volunteer-intro-seen'))setAboutOpen(true)}catch{setAboutOpen(true)}},[]);
+ useEffect(()=>{if(aboutOpen)dialogRef.current?.focus()},[aboutOpen]);
+ const closeAbout=()=>{try{sessionStorage.setItem('ai-lab-volunteer-intro-seen','1')}catch{}setAboutOpen(false)};
  return <main className="volunteerPage">
-  <div className="volunteerBackdrop" aria-hidden="true"/>
-  <section className="volunteerModal" role="dialog" aria-modal="true" aria-labelledby="volunteer-title" aria-describedby="volunteer-description">
-   <Link className="volunteerClose" href="/" aria-label="Close volunteer information" ref={closeRef}><X aria-hidden="true"/></Link>
-   <header className="volunteerIntro"><img className="volunteerLogo" src={AI_LAB_LOGO} alt="AI LAB"/>
+  <header className="volunteerNav"><Link href="/" aria-label="AI Lab home"><img src={AI_LAB_LOGO} alt="AI LAB"/></Link><button type="button" onClick={()=>setAboutOpen(true)}>WHAT IS AI LAB?</button><Link className="navApply" href="/volunteer/apply">START APPLICATION <ArrowRight/></Link></header>
+  <section className="volunteerHero">
+   <span className="volunteerEyebrow"><Sparkles aria-hidden="true"/> VOLUNTEER AT AI LAB</span>
+   <h1>Don’t just attend.<br/><strong>Help build what happens.</strong></h1>
+   <p>Work alongside founders, CXOs, investors and business leaders as they turn real business problems into working AI MVPs — and prove what you can do in the process.</p>
+   <div className="heroVolunteerActions"><Link className="applyButton" href="/volunteer/apply"><span>BECOME AN AI LAB VOLUNTEER</span><ArrowRight/></Link><button type="button" onClick={()=>setAboutOpen(true)}>See what AI Lab is</button></div>
+   <div className="volunteerMeta"><span><b>2 DAYS</b> · Mumbai</span><span><b>HANDS-ON</b> · Active build role</span><span><b>REAL MVPs</b> · Real teams</span></div>
+  </section>
+  <section className="benefitsSection"><div className="sectionLead"><span>WHY VOLUNTEER?</span><h2>This is where volunteering becomes opportunity.</h2><p>You help participants build. You grow while doing it.</p></div>
+   <div className="benefitGrid">
     <span className="volunteerEyebrow"><Sparkles aria-hidden="true"/> WHY VOLUNTEER AT AI LAB?</span>
     <h1 id="volunteer-title">This is not event volunteering.<br/><strong>This is where volunteering becomes <span>opportunity.</span></strong></h1>
     <p id="volunteer-description">You’ll spend two days inside a live build environment, working alongside<br className="desktopBreak"/> founders, CXOs, investors and business leaders as they turn ideas into working AI MVPs.</p>
@@ -34,12 +42,15 @@ export default function VolunteerPage(){
       <div className="benefitImage"><Image src={b.image} alt={b.alt} width={230} height={135} sizes={b.featured?'(max-width: 720px) 72px, 190px':'(max-width: 720px) 56px, 88px'}/></div>
       <div className="benefitCopy"><h2>{b.title}</h2><span className="titleRule" aria-hidden="true"/><p>{b.copy}</p></div>
     </article>)}
-   </div>
+   </div></section>
+   <section className="volunteerRole"><div><span>THE ROLE</span><h2>Come ready to contribute.</h2></div><div className="rolePoints"><p><b>Build with participants.</b><br/>Help teams move from idea to a working MVP.</p><p><b>Troubleshoot in real time.</b><br/>Work through tools, repositories, deployments and blockers.</p><p><b>Be present for both days.</b><br/>This is an active workshop role, not event observation.</p></div></section>
+   <section className="volunteerFinal"><span>READY TO BUILD WITH US?</span><h2>Turn two workshop days into proof of what you can do.</h2><Link className="applyButton" href="/volunteer/apply"><span>START YOUR APPLICATION</span><ArrowRight/></Link><small>Secure application · Takes about 5 minutes</small></section>
    <footer className="volunteerFooter">
     <div className="growthNote"><ShieldCheck aria-hidden="true"/><p>You help participants build.<strong>You grow while doing it.</strong></p></div>
-    <Link className="applyButton" href="/volunteer/apply"><Sparkles aria-hidden="true"/> <span>APPLY TO VOLUNTEER</span> <ArrowRight aria-hidden="true"/></Link>
+    <Link className="applyButton" href="/volunteer/apply"><Sparkles aria-hidden="true"/> <span>START YOUR APPLICATION</span> <ArrowRight aria-hidden="true"/></Link>
     <div className="secureNote"><LockKeyhole aria-hidden="true"/><p>Secure application.<span>Takes ~5 minutes.</span></p></div>
    </footer>
-  </section>
+  </footer>
+  {aboutOpen&&<div className="aboutOverlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closeAbout()}}><section className="aboutDialog" role="dialog" aria-modal="true" aria-labelledby="about-title" tabIndex={-1} ref={dialogRef} onKeyDown={e=>e.key==='Escape'&&closeAbout()}><button className="aboutClose" type="button" onClick={closeAbout} aria-label="Close"><X/></button><img src={AI_LAB_LOGO} alt="AI LAB"/><span>BEFORE YOU VOLUNTEER</span><h2 id="about-title">See what AI Lab actually is.</h2><p>AI Lab is a hands-on business workshop where founders and business leaders bring real problems and leave with working AI solutions. Volunteers work inside that build environment — not around it.</p><div className="aboutVideo"><div><Sparkles/><b>AI LAB IN ACTION</b><small>Workshop video</small></div></div><button className="aboutContinue" type="button" onClick={closeAbout}>EXPLORE VOLUNTEER ROLES <ArrowRight/></button></section></div>}
  </main>
 }
