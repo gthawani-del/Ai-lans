@@ -15,10 +15,9 @@ const benefits=[
  {n:'06',title:'Sharpen Your Stack',image:'/images/volunteer/volunteer-sharpen-stack.webp',copy:'Improve your skills with Claude/Codex, GitHub, Vercel, Supabase and the complete AI build stack.'}
 ];
 export default function VolunteerPage(){
- const[aboutOpen,setAboutOpen]=useState(false);const dialogRef=useRef(null);
- useEffect(()=>{try{if(!sessionStorage.getItem('ai-lab-volunteer-intro-seen'))setAboutOpen(true)}catch{setAboutOpen(true)}},[]);
+ const[aboutOpen,setAboutOpen]=useState(true);const dialogRef=useRef(null);
  useEffect(()=>{if(aboutOpen)dialogRef.current?.focus()},[aboutOpen]);
- const closeAbout=()=>{try{sessionStorage.setItem('ai-lab-volunteer-intro-seen','1')}catch{}setAboutOpen(false)};
+ const closeAbout=()=>setAboutOpen(false);
  return <main className="volunteerPage">
   <header className="volunteerNav"><Link href="/" aria-label="AI Lab home"><img src={AI_LAB_LOGO} alt="AI LAB"/></Link><button type="button" onClick={()=>setAboutOpen(true)}>WHAT IS AI LAB?</button><Link className="navApply" href="/volunteer/apply">START APPLICATION <ArrowRight/></Link></header>
   <section className="originalVolunteerLanding">
