@@ -8,3 +8,6 @@
 @media(max-width:780px){.boUniversalBar{display:flex;flex-wrap:wrap;margin:-6px 0 16px;padding:7px 0}.boCohortControl{flex:1 1 180px}.boGlobalSearch{order:3;flex:1 0 100%;width:100%}.boUniversalRight{order:4;width:100%;overflow:auto;justify-content:flex-start;padding-bottom:2px}.boBasisControl{margin-right:0;flex:0 0 auto}.boTextScaleInline input{width:58px}.boPageActions{width:100%}.boPageActions button,.boPageActions a{flex:1;justify-content:center}.boPersonDrawer{width:100%}}
 @media(max-width:470px){.boTextScaleInline{min-width:150px}.boTextScaleInline input{width:48px}.boCohortControl select{max-width:125px}.boPopover{position:fixed;right:12px;left:12px;top:70px;width:auto}}
 @media(prefers-reduced-motion:reduce){.boIconControl.spinning svg{animation:none}}
+
+/* Universal admin control refinement */
+.boUniversalBar{grid-template-columns:minmax(150px,190px) minmax(220px,520px) auto;justify-content:space-between}.boCohortControl select{max-width:125px}.boGlobalSearch{max-width:520px}.boUniversalRight{justify-content:flex-end}.boTextScaleInline>span{font-size:10px;min-width:36px}.boIconControl{flex:0 0 36px}
