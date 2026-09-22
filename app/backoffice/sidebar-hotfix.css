@@ -1,11 +1,26 @@
-/* Backoffice shell hotfix: isolate sidebar from global nav styles. */
+/* Canonical backoffice sidebar/navigation. Keep sidebar geometry here only. */
 @media (min-width:781px){
   .boV2{grid-template-columns:248px minmax(0,1fr)!important}
   .boSidebar nav{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:0!important;width:100%!important;min-width:0!important;overflow-x:hidden!important;overflow-y:auto!important}
   .boSidebar .boNavGroup{display:block!important;width:100%!important;min-width:0!important;flex:0 0 auto!important;margin:0 0 14px!important}
-  .boSidebar .boNavItem{display:grid!important;grid-template-columns:16px minmax(0,1fr) auto!important;align-items:center!important;width:100%!important;min-width:0!important;gap:9px!important;margin:2px 0!important}
-  .boSidebar .boNavItem>span{display:block!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .boSidebar .boNavGroup>b{display:block;margin:0 10px 7px;padding:0;font-size:11px;line-height:1.2;letter-spacing:.055em}
+  .boSidebar .boNavItem{display:grid!important;grid-template-columns:16px minmax(0,1fr) auto!important;align-items:center!important;width:100%!important;min-width:0!important;height:auto!important;min-height:40px;gap:9px!important;margin:2px 0!important;padding:0 10px!important;border:0!important;border-radius:8px;color:#aeb5d1;text-decoration:none!important;box-shadow:none!important}
+  .boSidebar .boNavItem:hover{background:#ffffff0b;color:#fff}
+  .boSidebar .boNavItem.active{background:#ffffff12!important;color:#fff!important;font-weight:700;border:0!important;box-shadow:none!important}
+  .boSidebar .boNavItem>svg{display:block;width:16px!important;height:16px!important;min-width:16px;justify-self:center!important}
+  .boSidebar .boNavItem>span{display:block!important;min-width:0!important;margin:0!important;padding:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
   .boSidebar .boNavItem>small{margin-left:0!important;white-space:nowrap!important;justify-self:end!important}
+  .boSidebar .boNavParent{font:inherit;text-align:left;cursor:pointer;background:transparent}
+  .boSidebar .boNavParent>svg{transform:rotate(-90deg);transition:transform .16s ease}
+  .boSidebar .boNavParent>svg.open{transform:rotate(0deg)}
+  .boSidebar .boCollapsible.current>.boNavParent{color:#fff;background:#ffffff09}
+  .boSidebar .boNavChildren{display:grid;gap:2px;padding:3px 0!important;overflow:hidden;animation:boNavReveal .17s ease-out both;transform-origin:top}
+  .boSidebar .boNavChildren .boNavItem{min-height:37px}
+  .boSidebar .boNavCount{min-width:22px;text-align:center;padding:2px 6px;border-radius:999px;background:#ffffff12;color:#cdd2e7!important;font-size:10px!important}
+  .boSidebar .boAdmin{padding-bottom:18px}
+  .boSidebar .boAdmin span{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+  .boSidebar .boAdmin small{font-size:11px}
 }
+@keyframes boNavReveal{from{opacity:.7;transform:scaleY(.94)}to{opacity:1;transform:scaleY(1)}}
 .boBrand{cursor:default!important}
 @media (max-width:780px){.boSidebar nav{display:none!important}}
