@@ -288,7 +288,72 @@ function VolunteerWorkspace({volunteers=[],selectedVolunteer,setSelectedVoluntee
 function scoreLabel(v){if(v==null)return 'Not scored';if(v>=90)return 'Excellent';if(v>=80)return 'Strong';if(v>=70)return 'Good';if(v>=60)return 'Developing';return 'Needs review'}
 const PRACTICAL=['Worked with a GitHub repository','Deployed an application','Created or used a database','Implemented authentication','Worked with APIs','Configured environment variables','Debugged a broken application'];
 const COMMITMENTS=['I am available for both workshop days','I am available for the full workshop hours','I will bring my own laptop and charger','I am comfortable troubleshooting with participants','I am comfortable supporting a group rather than only observing','I understand this is an active volunteer role'];
-function VolunteerReviewDrawer({v,supabase,setVolunteers,setSelectedVolunteer,close,status,moderate,canManage}){const a=v.answers||{},scores=v.component_scores||{},stack=Object.entries(a.stack||{}),exp=a.experience||[],commit=a.commitment||[],reviews=v.reviews||[];const [tab,setTab]=useState('overview'),[note,setNote]=useState(''),[saving,setSaving]=useState(false);
+function VolunteerReviewDrawer({v,supabase,setVolunteers,setSelectedVolunteer,close,status,moderate,canManage}){
+ const a=v.answers||{},scores=v.component_scores||{},stack=Object.entries(a.stack||{}),exp=a.experience||[],commit=a.commitment||[],reviews=v.reviews||[];
+ const [tab,setTab]=useState('overview'),[note,setNote]=useState(''),[saving,setSaving]=useState(false);
+ const scoreRows=[
+  ['Technical Readiness',scores.technical_readiness,25],
+  ['Practical Experience',scores.practical_experience,20],
+  ['Relevant Work',scores.relevant_work,15],
+  ['Motivation & Communication',scores.motivation_communication,20],
+  ['Commitment',scores.commitment,20]
+ ];
+ const links=[['LinkedIn',a.linkedin],['GitHub',a.github],['Project / Demo',a.projectUrl],['Repository evidence',a.repoUrl],['Other evidence',a.otherUrl]].filter(([,url])=>url);
+ const helpSkills=(a.usefulSkills||[]).length?[...(a.usefulSkills||[]).filter(x=>x!=='Other'),...(a.usefulSkills||[]).includes('Other')&&a.usefulOther?[a.usefulOther]:[]].flat():a.useful?[a.useful]:[];
+ async function addNote(){const clean=note.trim();if(!clean)return;setSaving(true);const{data:{user}}=await supabase.auth.getUser();const{data,error}=await supabase.from('volunteer_reviews').insert({application_id:v.id,reviewer_id:user.id,note:clean}).select('id,application_id,reviewer_id,note,decision,created_at').single();setSaving(false);if(error){alert(error.message);return}const patch={reviews:[data,...reviews]};setVolunteers(rows=>rows.map(x=>x.id===v.id?{...x,...patch}:x));setSelectedVolunteer(x=>({...x,...patch}));setNote('')}
+ return <aside className="volDrawer">
+  <div className="volDrawerFixed">
+   <div className="volDrawerTop"><span>Application Decision</span><button onClick={close} aria-label="Close">×</button></div>
+   <div className="volIdentity">{v.photo_url&&!v.photo_admin_hidden?<img src={v.photo_url} alt={v.full_name||'Volunteer'}/>:<span>{(v.full_name||'?')[0]}</span>}<div><h2>{v.full_name||'Draft applicant'}</h2><p>{v.applicant_role||a.role||'—'} · {v.city||'—'}</p><small className="volPreferred">Volunteer role: {a.preferredRole||'Not selected'}</small></div><div className="volScore"><strong>{v.total_score??'—'}<small>/100</small></strong><em>{scoreLabel(v.total_score)}</em></div></div>
+   {canManage&&v.status!=='draft'?<div className="volDecisions"><button onClick={()=>status('selected')}>✓ Select</button><button onClick={()=>status('standby')}>Standby</button><button className="danger" onClick={()=>status('rejected')}>Reject</button><select aria-label="More actions" onChange={e=>e.target.value&&status(e.target.value)} defaultValue=""><option value="" disabled>More</option><option value="shortlisted">Shortlist</option><option value="review">Move to review</option></select></div>:<div className="volDecisionState">{v.status==='draft'?'Draft applications cannot be reviewed until submitted.':'Read-only access — decisions are disabled.'}</div>}
+   <nav className="volTabs" aria-label="Volunteer review sections">{[
+    ['overview','Overview'],['score','Score'],['profile','Profile'],['experience','Experience'],['commitment','Commitment'],['evidence','Evidence'],['notes','Notes ('+reviews.length+')'],['activity','Activity']
+   ].map(([k,l])=><button className={tab===k?'on':''} onClick={()=>setTab(k)} key={k}>{l}</button>)}</nav>
+  </div>
+  <div className="volDrawerBody">
+   {tab==='overview'&&<section><h3>Applicant Snapshot</h3><div className="volSnapshotCompact">
+    <p><b>Organisation</b><span>{v.organisation||a.organisation||'—'}</span></p>
+    <p><b>Profile</b><span>{v.applicant_role||a.role||'—'}</span></p>
+    <p><b>Volunteer role</b><span>{a.preferredRole||'—'}</span></p>
+    <p><b>Decision</b><span>{humanStatus(v.status)}</span></p>
+    <p><b>Email</b><span>{v.email||'—'}</span></p>
+    <p><b>Phone</b><span>{v.phone||'—'}</span></p>
+    <p><b>Gender</b><span>{v.gender||a.gender||'Not provided'}</span></p>
+    <p><b>City & PIN</b><span>{v.address_city_postcode||a.addressCityPostcode||v.city||'Not provided'}</span></p>
+    <p className="wide"><b>Address</b><span>{v.address_building||v.address_street_area?[v.address_building,v.address_street_area,v.address_city_postcode].filter(Boolean).join(', '):'Not provided'}</span></p>
+   </div></section>}
+
+   {tab==='score'&&<section className="volScorePanel"><div className="volScoreHero"><div><span>Total score</span><strong>{v.total_score??'—'}<small>/100</small></strong></div><em>{scoreLabel(v.total_score)}</em></div>
+    <div className="volScoreBreakdown">{scoreRows.map(([label,value,max])=>{const n=Number(value??0);const pct=Math.max(0,Math.min(100,max?Math.round(n/max*100):0));return <div className="volScoreRow" key={label}><div><b>{label}</b><span>{value??'—'} / {max}</span></div><div className="volScoreTrack"><i style={{width:pct+'%'}}/></div></div>})}</div>
+    {Array.isArray(v.consistency_flags)&&v.consistency_flags.length>0&&<div className="volConsistencyFlags"><b>Evidence checks</b>{v.consistency_flags.map((flag,i)=><p key={flag.code||i}>⚠ {flag.message||flag.code}</p>)}</div>}
+   </section>}
+
+   {tab==='profile'&&<section><h3>Profile & Skills</h3><div className="volSnapshotCompact">
+    <p><b>Background</b><span>{a.background||'—'}</span></p><p><b>Primary interest</b><span>{a.interest||'—'}</span></p><p><b>Preferred role</b><span>{a.preferredRole||'—'}</span></p>
+   </div><h4 className="volSubhead">Stack proficiency</h4>{stack.length?stack.map(([k,val])=><div className="volSkill" key={k}><span>{{claude:'Claude / Claude Code',codex:'OpenAI Codex',github:'GitHub',vercel:'Vercel',supabase:'Supabase'}[k]||k}</span><span className="volMeter">{[1,2,3,4,5].map(n=><i className={n<=Math.round(levelValue(val)/4*5)?'on':''} key={n}/>)}</span><small>{val}</small></div>):<p>No stack ratings.</p>}
+    {Array.isArray(a.customTools)&&a.customTools.length>0&&<><h4 className="volSubhead">Other tools</h4><div className="volTags">{a.customTools.map((t,i)=><span className="on" key={i}>{t.name} · {t.level}</span>)}</div></>}
+    <h4 className="volSubhead">Can help participants with</h4><div className="volTags">{helpSkills.length?helpSkills.map(x=><span className="on" key={x}>{x}</span>):<span>Not provided</span>}</div>
+    {a.why&&<div className="volTextAnswer"><b>Why volunteer?</b><p>{a.why}</p></div>}
+   </section>}
+
+   {tab==='experience'&&<section><h3>Experience & Work</h3><div className="volSnapshotCompact"><p><b>Project type</b><span>{a.projectType||'—'}</span></p><p><b>Practical areas</b><span>{exp.length}/7</span></p></div>
+    <h4 className="volSubhead">Practical experience</h4><div className="volTags">{PRACTICAL.map(x=><span className={exp.includes(x)?'on':''} key={x}>{exp.includes(x)?'✓':'○'} {x}</span>)}</div>
+    {Array.isArray(a.contributionAreas)&&a.contributionAreas.length>0&&<><h4 className="volSubhead">Contribution depth</h4><div className="volContributionList">{a.contributionAreas.map(x=><p key={x}><b>{x}</b><span>{a.involvement?.[x]||'—'}</span></p>)}</div></>}
+    {(a.projectSummary||a.strongest)&&<div className="volTextAnswer"><b>Project snapshot</b><p>{a.projectSummary||a.strongest}</p></div>}
+    {a.contribution&&<div className="volTextAnswer"><b>Personal contribution</b><p>{a.contribution}</p></div>}
+   </section>}
+
+   {tab==='commitment'&&<section><div className="volCommitHead"><h3>Commitment</h3><strong>{commit.length}/6 selected</strong></div>{COMMITMENTS.map(x=><p className={commit.includes(x)?'commitOn':'commitOff'} key={x}>{commit.includes(x)?'✓':'○'} {x}</p>)}<div className="volCommitScore"><span>Commitment score</span><b>{scores.commitment??'—'} / 20</b></div></section>}
+
+   {tab==='evidence'&&<><section><h3>Evidence</h3>{links.length?<div className="volEvidenceLinks">{links.map(([label,url])=><a href={url} target="_blank" rel="noreferrer" key={label}>{label}<span>↗</span></a>)}</div>:<p>No evidence links supplied.</p>}{Array.isArray(v.consistency_flags)&&v.consistency_flags.length>0&&<div className="volConsistencyFlags"><b>Consistency checks</b>{v.consistency_flags.map((flag,i)=><p key={flag.code||i}>⚠ {flag.message||flag.code}</p>)}</div>}</section>
+    <section><h3>Photo Review</h3>{v.photo_url&&!v.photo_admin_hidden&&<img className="volReviewPhoto" src={v.photo_url} alt={v.full_name||'Volunteer'}/>}<p><span className={'volBadge s-'+v.photo_status}>{v.photo_admin_hidden?'Hidden':humanStatus(v.photo_status)}</span></p>{canManage&&<div className="volDecisions secondary"><button onClick={()=>moderate('approve')}>Approve</button><button onClick={()=>moderate('hide')}>Hide</button><button className="danger" onClick={()=>moderate('remove')}>Remove</button></div>}</section></>}
+
+   {tab==='notes'&&<section className="volNotes"><h3>Reviewer Notes</h3>{canManage&&<><textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Add a reviewer note…"/><button disabled={saving||!note.trim()} onClick={addNote}>{saving?'Saving…':'Add note'}</button></>}{reviews.map(r=><article key={r.id}><p>{r.note||'Decision recorded'}</p><small>{new Date(r.created_at).toLocaleString('en-IN')}</small></article>)}{!reviews.length&&<p>No reviewer notes yet.</p>}</section>}
+
+   {tab==='activity'&&<section><h3>Activity</h3>{(v.status_history||[]).map((h,i)=><p key={i}><b>{humanStatus(h.from_status)} → {humanStatus(h.to_status)}</b><br/><small>{h.reason||'Status updated'} · {new Date(h.created_at).toLocaleString('en-IN')}</small></p>)}{!(v.status_history||[]).length&&<p>No status activity yet.</p>}</section>}
+  </div>
+ </aside>
+}){const a=v.answers||{},scores=v.component_scores||{},stack=Object.entries(a.stack||{}),exp=a.experience||[],commit=a.commitment||[],reviews=v.reviews||[];const [tab,setTab]=useState('overview'),[note,setNote]=useState(''),[saving,setSaving]=useState(false);
  async function addNote(){const clean=note.trim();if(!clean)return;setSaving(true);const{data:{user}}=await supabase.auth.getUser();const{data,error}=await supabase.from('volunteer_reviews').insert({application_id:v.id,reviewer_id:user.id,note:clean}).select('id,application_id,reviewer_id,note,decision,created_at').single();setSaving(false);if(error){alert(error.message);return}const patch={reviews:[data,...reviews]};setVolunteers(rows=>rows.map(x=>x.id===v.id?{...x,...patch}:x));setSelectedVolunteer(x=>({...x,...patch}));setNote('')}
  return <aside className="volDrawer"><div className="volDrawerTop"><span>Application Decision</span><button onClick={close} aria-label="Close">×</button></div><div className="volIdentity">{v.photo_url&&!v.photo_admin_hidden?<img src={v.photo_url} alt={v.full_name||'Volunteer'}/>:<span>{(v.full_name||'?')[0]}</span>}<div><h2>{v.full_name||'Draft applicant'}</h2><p>{v.applicant_role||a.role||'—'} · {v.city||'—'}</p><small className="volPreferred">Volunteer role: {a.preferredRole||'Not selected'}</small></div><div className="volScore"><strong>{v.total_score??'—'}<small>/100</small></strong><em>{scoreLabel(v.total_score)}</em></div></div>
  {canManage&&v.status!=='draft'?<div className="volDecisions"><button onClick={()=>status('selected')}>✓ Select</button><button onClick={()=>status('standby')}>Standby</button><button className="danger" onClick={()=>status('rejected')}>Reject</button><select aria-label="More actions" onChange={e=>e.target.value&&status(e.target.value)} defaultValue=""><option value="" disabled>More</option><option value="shortlisted">Shortlist</option><option value="review">Move to review</option></select></div>:<div className="volDecisionState">{v.status==='draft'?'Draft applications cannot be reviewed until submitted.':'Read-only access — decisions are disabled.'}</div>}
