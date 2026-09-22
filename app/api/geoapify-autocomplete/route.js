@@ -1,5 +1,10 @@
 export const dynamic='force-dynamic';
 
+function decodeHeader(value){
+  if(!value)return '';
+  try{return decodeURIComponent(value);}catch{return value}
+}
+
 export async function GET(request){
   try{
     const {searchParams}=new URL(request.url);
@@ -9,12 +14,21 @@ export async function GET(request){
     const apiKey=process.env.GEOAPIFY_API_KEY;
     if(!apiKey)return Response.json({error:'Address autocomplete is not configured.'},{status:503,headers:{'Cache-Control':'no-store'}});
 
+    const h=request.headers;
+    const latitude=Number(h.get('x-vercel-ip-latitude'));
+    const longitude=Number(h.get('x-vercel-ip-longitude'));
+    const approximateCity=decodeHeader(h.get('x-vercel-ip-city'));
+    const approximateRegion=decodeHeader(h.get('x-vercel-ip-country-region'));
+
     const url=new URL('https://api.geoapify.com/v1/geocode/autocomplete');
     url.searchParams.set('text',text);
     url.searchParams.set('format','json');
     url.searchParams.set('filter','countrycode:in');
     url.searchParams.set('lang','en');
     url.searchParams.set('limit','6');
+    if(Number.isFinite(latitude)&&Number.isFinite(longitude)){
+      url.searchParams.set('bias',`proximity:${longitude},${latitude}`);
+    }
     url.searchParams.set('apiKey',apiKey);
 
     const response=await fetch(url,{cache:'no-store'});
@@ -23,9 +37,10 @@ export async function GET(request){
     const body=await response.json();
     const results=Array.isArray(body?.results)?body.results:[];
     const suggestions=results.map((p,index)=>{
-      const streetParts=[p.street,p.suburb||p.district].filter(Boolean);
-      const streetArea=[...new Set(streetParts)].join(', ')||p.address_line1||p.name||p.formatted||'';
-      const city=p.city||p.town||p.village||p.district||p.county||'';
+      const locality=p.suburb||p.quarter||p.city_district||p.district||'';
+      const street=p.street||p.name||'';
+      const streetArea=[...new Set([street,locality].filter(Boolean))].join(', ')||p.address_line1||p.formatted||'';
+      const city=p.city||p.town||p.village||p.municipality||p.county||'';
       const postcode=p.postcode||'';
       return {
         id:p.place_id||p.datasource?.raw?.place_id||String(index),
@@ -43,7 +58,14 @@ export async function GET(request){
       };
     }).filter(x=>x.label);
 
-    return Response.json({suggestions},{headers:{'Cache-Control':'no-store'}});
+    return Response.json({
+      suggestions,
+      bias:{
+        applied:Number.isFinite(latitude)&&Number.isFinite(longitude),
+        city:approximateCity||null,
+        region:approximateRegion||null
+      }
+    },{headers:{'Cache-Control':'no-store'}});
   }catch{
     return Response.json({error:'Address lookup failed.'},{status:500,headers:{'Cache-Control':'no-store'}});
   }
