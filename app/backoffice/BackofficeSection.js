@@ -131,40 +131,113 @@ function AuditLogWorkspace({rows=[],range='30d',fmt}){
 
 function SystemHealthWorkspace({supabase}){
  const [health,setHealth]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
- const [browser,setBrowser]=useState({status:'not_checked',detail:'Run the browser check to verify the photo-moderation models on this device.',latency_ms:null});
+ const [browser,setBrowser]=useState({id:'browser-photo-models',group:'Browser Services',service:'Photo moderation models',status:'not_checked',detail:'Not checked on this device yet.',source:'Client-side WebGL + TensorFlow.js execution',checked_at:null,latency_ms:null});
  const [browserBusy,setBrowserBusy]=useState(false);
  async function loadHealth(){
   setLoading(true);setError('');
   try{
    const ses=(await supabase.auth.getSession()).data.session;if(!ses)throw new Error('Admin session unavailable');
    const [backendRes,appRes]=await Promise.all([
-    fetch(SYSTEM_HEALTH_API,{headers:{Authorization:'Bearer '+ses.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}}),
+    fetch(SYSTEM_HEALTH_API,{headers:{Authorization:'Bearer '+ses.access_token,apikey:SUPABASE_PUBLISHABLE_KEY},cache:'no-store'}),
     fetch('/api/system-health',{cache:'no-store'})
    ]);
    const [backend,app]=await Promise.all([backendRes.json(),appRes.json()]);
-   const errors=[];if(!backendRes.ok)errors.push(backend.error||'Supabase health checks failed');if(!appRes.ok)errors.push(app.error||'Application health checks failed');
+   const errors=[];
+   if(!backendRes.ok)errors.push(backend.error||'Supabase health checks failed');
+   if(!appRes.ok)errors.push(app.error||'Application health checks failed');
    if(errors.length&&!(backend?.results||app?.results))throw new Error(errors.join(' · '));
-   setHealth({checked_at:new Date().toISOString(),results:[...(app?.results||[]),...(backend?.results||[])],sources:{application_checked_at:app?.checked_at||null,supabase_checked_at:backend?.checked_at||null}});
+   setHealth({checked_at:new Date().toISOString(),contract_version:2,results:[...(app?.results||[]),...(backend?.results||[])],sources:{application_checked_at:app?.checked_at||null,supabase_checked_at:backend?.checked_at||null}});
    if(errors.length)setError(errors.join(' · '));
   }catch(e){setError(e.message)}finally{setLoading(false)}
  }
  useEffect(()=>{loadHealth()},[]);
- async function runBrowser(){setBrowserBusy(true);const started=performance.now();try{const [tf,blaze,nsfw]=await Promise.all([import('@tensorflow/tfjs'),import('@tensorflow-models/blazeface'),import('nsfwjs')]);tf.enableProdMode();await tf.ready();await Promise.all([blaze.load(),nsfw.load('MobileNetV2')]);setBrowser({status:'healthy',detail:'TensorFlow.js, BlazeFace and NSFWJS model assets loaded successfully on this browser.',latency_ms:Math.round(performance.now()-started),meta:{tensorflow:tf.version?.tfjs||null,blazeface:'loaded',nsfwjs:'MobileNetV2 loaded'}})}catch(e){setBrowser({status:'down',detail:e?.message||'Browser model load failed.',latency_ms:Math.round(performance.now()-started)})}finally{setBrowserBusy(false)}}
- const items=[...(health?.results||[]),{group:'Browser Services',service:'Photo moderation models',...browser}];
+ async function runBrowser(){
+  setBrowserBusy(true);
+  const checkedAt=new Date().toISOString();
+  const totalStart=performance.now();
+  let a,b,out;
+  try{
+   const canvas=document.createElement('canvas');
+   const webgl2=canvas.getContext('webgl2',{failIfMajorPerformanceCaveat:true});
+   const gl=webgl2||canvas.getContext('webgl',{failIfMajorPerformanceCaveat:true});
+   if(!gl)throw new Error('A usable WebGL context could not be created on this device.');
+   const debug=gl.getExtension('WEBGL_debug_renderer_info');
+   const renderer=debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);
+   const vendor=debug?gl.getParameter(debug.UNMASKED_VENDOR_WEBGL):gl.getParameter(gl.VENDOR);
+
+   const moduleStart=performance.now();
+   const [tf,blaze,nsfw]=await Promise.all([import('@tensorflow/tfjs'),import('@tensorflow-models/blazeface'),import('nsfwjs')]);
+   const moduleLoadMs=Number((performance.now()-moduleStart).toFixed(1));
+
+   const backendStart=performance.now();
+   const backendReady=await tf.setBackend('webgl');
+   await tf.ready();
+   const backendInitMs=Number((performance.now()-backendStart).toFixed(1));
+   if(!backendReady||tf.getBackend()!=='webgl')throw new Error('TensorFlow.js could not initialize its WebGL backend.');
+
+   const compileStart=performance.now();
+   a=tf.ones([128,128]);
+   b=tf.ones([128,128]);
+   out=tf.matMul(a,b);
+   const values=await out.data();
+   const compileExecuteMs=Number((performance.now()-compileStart).toFixed(1));
+   if(!Number.isFinite(values[0])||Math.abs(values[0]-128)>.001)throw new Error('TensorFlow.js WebGL execution returned an unexpected result.');
+   tf.dispose([a,b,out]);a=b=out=null;
+
+   const modelStart=performance.now();
+   const [faceModel,nsfwModel]=await Promise.all([blaze.load(),nsfw.load('MobileNetV2')]);
+   const modelLoadMs=Number((performance.now()-modelStart).toFixed(1));
+   if(!faceModel||!nsfwModel)throw new Error('Photo moderation models did not initialize in memory.');
+
+   setBrowser({
+    id:'browser-photo-models',
+    group:'Browser Services',
+    service:'Photo moderation models',
+    status:'healthy',
+    detail:'WebGL, TensorFlow.js execution, BlazeFace and NSFWJS initialized successfully on this device.',
+    source:'Client-side WebGL + TensorFlow.js + model initialization',
+    checked_at:checkedAt,
+    latency_ms:Number((performance.now()-totalStart).toFixed(1)),
+    meta:{
+     webgl_context:webgl2?'webgl2':'webgl1',
+     renderer:String(renderer||'unknown'),
+     vendor:String(vendor||'unknown'),
+     tensorflow_version:tf.version?.tfjs||null,
+     tensorflow_backend:tf.getBackend(),
+     module_load_ms:moduleLoadMs,
+     backend_init_ms:backendInitMs,
+     first_webgl_compile_execute_ms:compileExecuteMs,
+     model_load_ms:modelLoadMs
+    }
+   });
+  }catch(e){
+   try{if(a?.dispose)a.dispose();if(b?.dispose)b.dispose();if(out?.dispose)out.dispose()}catch{}
+   setBrowser({
+    id:'browser-photo-models',
+    group:'Browser Services',
+    service:'Photo moderation models',
+    status:'down',
+    detail:e?.message||'Browser moderation capability check failed.',
+    source:'Client-side WebGL + TensorFlow.js + model initialization',
+    checked_at:checkedAt,
+    latency_ms:Number((performance.now()-totalStart).toFixed(1))
+   });
+  }finally{setBrowserBusy(false)}
+ }
+ const items=[...(health?.results||[]),browser];
  const groups=['Infrastructure','Backend','Payments','Application Flows','Browser Services'];
  const healthy=items.filter(x=>x.status==='healthy').length,warnings=items.filter(x=>x.status==='warning'||x.status==='not_checked').length,down=items.filter(x=>x.status==='down').length;
  const icon=status=>status==='healthy'?<CheckCircle2 size={15}/>:status==='down'?<XCircle size={15}/>:<TriangleAlert size={15}/>;
  return <div className="boHealthWorkspace">
   <div className="boHealthSummary">
    <div><span>Healthy</span><strong>{healthy}</strong></div><div><span>Warnings</span><strong>{warnings}</strong></div><div><span>Down</span><strong>{down}</strong></div>
-   <div className="boHealthActions"><button className="boSecondaryBtn" onClick={loadHealth} disabled={loading}><RefreshCw size={14}/>{loading?'Checking…':'Refresh checks'}</button><button className="boSecondaryBtn" onClick={runBrowser} disabled={browserBusy}>{browserBusy?'Loading models…':'Run browser check'}</button></div>
+   <div className="boHealthActions"><button className="boSecondaryBtn" onClick={loadHealth} disabled={loading}><RefreshCw size={14}/>{loading?'Checking…':'Refresh checks'}</button><button className="boSecondaryBtn" onClick={runBrowser} disabled={browserBusy}>{browserBusy?'Running device test…':'Run browser check'}</button></div>
   </div>
   {error&&<div className="boError">{error}<button onClick={loadHealth}>Retry</button></div>}
-  {groups.map(group=>{const rows=items.filter(x=>x.group===group);if(!rows.length)return null;return <section className="boPanel boHealthGroup" key={group}><div className="boPanelHead"><div><h2>{group}</h2><p>{group==='Browser Services'?'Runs on this browser only; no applicant photo is used during this check.':'Values below are read or tested live; unavailable management data is shown as a warning rather than assumed.'}</p></div></div><div className="boHealthRows">{rows.map((x,i)=><article key={x.service+'-'+i}><div className={'boHealthState '+x.status}>{icon(x.status)}</div><div className="boHealthCopy"><b>{x.service}</b><span>{x.detail}</span></div><div className="boHealthMeta">{x.latency_ms!=null&&<span>{x.latency_ms} ms</span>}{x.meta&&<details><summary>Details</summary><pre>{JSON.stringify(x.meta,null,2)}</pre></details>}</div></article>)}</div></section>})}
+  {groups.map(group=>{const rows=items.filter(x=>x.group===group);if(!rows.length)return null;return <section className="boPanel boHealthGroup" key={group}><div className="boPanelHead"><div><h2>{group}</h2><p>{group==='Browser Services'?'Runs only when requested on this browser; it is never assumed healthy.':'Every status below comes from a live check or an explicitly named live configuration source.'}</p></div></div><div className="boHealthRows">{rows.map((x,i)=><article key={(x.id||x.service)+'-'+i}><div className={'boHealthState '+x.status}>{icon(x.status)}</div><div className="boHealthCopy"><b>{x.service}</b><span>{x.detail}</span><small>Source: {x.source||'unspecified'}{x.checked_at?' · checked '+new Date(x.checked_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</small></div><div className="boHealthMeta">{x.latency_ms!=null&&<span>{x.latency_ms} ms</span>}{x.meta&&<details><summary>Details</summary><pre>{JSON.stringify(x.meta,null,2)}</pre></details>}</div></article>)}</div></section>})}
   <p className="boHealthChecked">{health?.checked_at?'Live checks last run '+new Date(health.checked_at).toLocaleString('en-IN'):loading?'Running live checks…':'Live checks not available.'}</p>
  </div>
 }
-
 function DataTable({rows,cols}){return <div className="boPanel boTableWrap"><table className="boDataTable"><thead><tr>{cols.map(c=><th key={c[0]}>{c[1]}</th>)}</tr></thead><tbody>{rows.map(r=><tr key={r.id}>{cols.map(([k])=><td key={k}>{k==='table'?(r.table?`Table ${r.table.table_number}`:'Unassigned'):k==='paid_at'?fmt(r[k]):String(r[k]??'—')}</td>)}</tr>)}</tbody></table>{!rows.length&&<p>No records match the current filters.</p>}</div>}
 function Breakdown({title,rows,total}){return <article className="boPanel"><h2>{title}</h2><div className="boBreakdown">{rows.slice(0,8).map(([label,count])=><div key={label}><span>{label}<b>{count}</b></span><i><em style={{width:`${total?Math.round(count/total*100):0}%`}}/></i></div>)}</div></article>}
 function Setting({label,value}){return <article className="boPanel boSetting"><span>{label}</span><strong>{String(value??'—')}</strong></article>}
