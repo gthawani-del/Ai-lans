@@ -133,9 +133,23 @@ function SystemHealthWorkspace({supabase}){
  const [health,setHealth]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const [browser,setBrowser]=useState({status:'not_checked',detail:'Run the browser check to verify the photo-moderation models on this device.',latency_ms:null});
  const [browserBusy,setBrowserBusy]=useState(false);
- async function loadHealth(){setLoading(true);setError('');try{const ses=(await supabase.auth.getSession()).data.session;if(!ses)throw new Error('Admin session unavailable');const r=await fetch(SYSTEM_HEALTH_API,{headers:{Authorization:'Bearer '+ses.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});const out=await r.json();if(!r.ok)throw new Error(out.error||'Could not load system health');setHealth(out)}catch(e){setError(e.message)}finally{setLoading(false)}}
+ async function loadHealth(){
+  setLoading(true);setError('');
+  try{
+   const ses=(await supabase.auth.getSession()).data.session;if(!ses)throw new Error('Admin session unavailable');
+   const [backendRes,appRes]=await Promise.all([
+    fetch(SYSTEM_HEALTH_API,{headers:{Authorization:'Bearer '+ses.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}}),
+    fetch('/api/system-health',{cache:'no-store'})
+   ]);
+   const [backend,app]=await Promise.all([backendRes.json(),appRes.json()]);
+   const errors=[];if(!backendRes.ok)errors.push(backend.error||'Supabase health checks failed');if(!appRes.ok)errors.push(app.error||'Application health checks failed');
+   if(errors.length&&!(backend?.results||app?.results))throw new Error(errors.join(' · '));
+   setHealth({checked_at:new Date().toISOString(),results:[...(app?.results||[]),...(backend?.results||[])],sources:{application_checked_at:app?.checked_at||null,supabase_checked_at:backend?.checked_at||null}});
+   if(errors.length)setError(errors.join(' · '));
+  }catch(e){setError(e.message)}finally{setLoading(false)}
+ }
  useEffect(()=>{loadHealth()},[]);
- async function runBrowser(){setBrowserBusy(true);const started=performance.now();try{const [tf,blaze,nsfw]=await Promise.all([import('@tensorflow/tfjs'),import('@tensorflow-models/blazeface'),import('nsfwjs')]);tf.enableProdMode();await tf.ready();await Promise.all([blaze.load(),nsfw.load('MobileNetV2')]);setBrowser({status:'healthy',detail:'TensorFlow.js, BlazeFace and NSFWJS model assets loaded successfully on this browser.',latency_ms:Math.round(performance.now()-started)})}catch(e){setBrowser({status:'down',detail:e?.message||'Browser model load failed.',latency_ms:Math.round(performance.now()-started)})}finally{setBrowserBusy(false)}}
+ async function runBrowser(){setBrowserBusy(true);const started=performance.now();try{const [tf,blaze,nsfw]=await Promise.all([import('@tensorflow/tfjs'),import('@tensorflow-models/blazeface'),import('nsfwjs')]);tf.enableProdMode();await tf.ready();await Promise.all([blaze.load(),nsfw.load('MobileNetV2')]);setBrowser({status:'healthy',detail:'TensorFlow.js, BlazeFace and NSFWJS model assets loaded successfully on this browser.',latency_ms:Math.round(performance.now()-started),meta:{tensorflow:tf.version?.tfjs||null,blazeface:'loaded',nsfwjs:'MobileNetV2 loaded'}})}catch(e){setBrowser({status:'down',detail:e?.message||'Browser model load failed.',latency_ms:Math.round(performance.now()-started)})}finally{setBrowserBusy(false)}}
  const items=[...(health?.results||[]),{group:'Browser Services',service:'Photo moderation models',...browser}];
  const groups=['Infrastructure','Backend','Payments','Application Flows','Browser Services'];
  const healthy=items.filter(x=>x.status==='healthy').length,warnings=items.filter(x=>x.status==='warning'||x.status==='not_checked').length,down=items.filter(x=>x.status==='down').length;
@@ -146,8 +160,8 @@ function SystemHealthWorkspace({supabase}){
    <div className="boHealthActions"><button className="boSecondaryBtn" onClick={loadHealth} disabled={loading}><RefreshCw size={14}/>{loading?'Checking…':'Refresh checks'}</button><button className="boSecondaryBtn" onClick={runBrowser} disabled={browserBusy}>{browserBusy?'Loading models…':'Run browser check'}</button></div>
   </div>
   {error&&<div className="boError">{error}<button onClick={loadHealth}>Retry</button></div>}
-  {groups.map(group=>{const rows=items.filter(x=>x.group===group);if(!rows.length)return null;return <section className="boPanel boHealthGroup" key={group}><div className="boPanelHead"><div><h2>{group}</h2><p>{group==='Browser Services'?'Runs on this browser only; no applicant photo is used during this check.':'Live deterministic checks against the actual service or application endpoint.'}</p></div></div><div className="boHealthRows">{rows.map((x,i)=><article key={x.service+'-'+i}><div className={'boHealthState '+x.status}>{icon(x.status)}</div><div className="boHealthCopy"><b>{x.service}</b><span>{x.detail}</span></div><div className="boHealthMeta">{x.latency_ms!=null&&<span>{x.latency_ms} ms</span>}{x.meta&&<details><summary>Details</summary><pre>{JSON.stringify(x.meta,null,2)}</pre></details>}</div></article>)}</div></section>})}
-  <p className="boHealthChecked">{health?.checked_at?'Server checks last run '+new Date(health.checked_at).toLocaleString('en-IN'):loading?'Running live checks…':'Server checks not available.'}</p>
+  {groups.map(group=>{const rows=items.filter(x=>x.group===group);if(!rows.length)return null;return <section className="boPanel boHealthGroup" key={group}><div className="boPanelHead"><div><h2>{group}</h2><p>{group==='Browser Services'?'Runs on this browser only; no applicant photo is used during this check.':'Values below are read or tested live; unavailable management data is shown as a warning rather than assumed.'}</p></div></div><div className="boHealthRows">{rows.map((x,i)=><article key={x.service+'-'+i}><div className={'boHealthState '+x.status}>{icon(x.status)}</div><div className="boHealthCopy"><b>{x.service}</b><span>{x.detail}</span></div><div className="boHealthMeta">{x.latency_ms!=null&&<span>{x.latency_ms} ms</span>}{x.meta&&<details><summary>Details</summary><pre>{JSON.stringify(x.meta,null,2)}</pre></details>}</div></article>)}</div></section>})}
+  <p className="boHealthChecked">{health?.checked_at?'Live checks last run '+new Date(health.checked_at).toLocaleString('en-IN'):loading?'Running live checks…':'Live checks not available.'}</p>
  </div>
 }
 
