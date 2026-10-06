@@ -1,13 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell, BookOpen, CalendarDays, Download, FolderKanban, Home, Library,
   PlayCircle, Search, ShieldCheck, Sparkles, Trophy, UserRound, UsersRound, Video
 } from "lucide-react";
-import logo from "../public/brand/weareailabs-logo.png";
 
 const nav = [
   ["/lms", "Home", Home],
@@ -26,7 +24,7 @@ function Shell({ children }) {
   const pathname = usePathname();
   return <div className="app-shell">
     <aside className="sidebar">
-      <div className="brand-logo"><Image src={logo} alt="WeAreAiLabs" priority /></div>
+      <div className="brand-logo brand-wordmark" aria-label="WeAreAiLabs">weareailabs</div>
       <nav className="side-nav">
         {nav.map(([href,label,Icon]) => {
           const active = href === "/lms" ? pathname === "/lms" : pathname.startsWith(href);
