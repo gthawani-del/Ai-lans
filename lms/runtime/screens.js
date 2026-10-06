@@ -49,26 +49,94 @@ const agenda = [
 ];
 
 export function DashboardScreen() {
+  const upcoming = [
+    { date:"24", month:"OCT", title:"From AI Pilots to Real Impact", speaker:"Rohan Mehta", mode:"Online", tone:"one" },
+    { date:"08", month:"NOV", title:"Building AI-Ready Teams", speaker:"Anita Kapoor", mode:"Mumbai", tone:"two" },
+    { date:"22", month:"NOV", title:"AI & Regulation", speaker:"Vikram Sinha", mode:"Online", tone:"three" },
+  ];
+
   return <Shell>
-    <section className="dashboard-intro"><div><span className="eyebrow">WELCOME BACK,</span><h1>Gaurav.</h1><p>Keep learning. Build what’s next.</p></div><blockquote>“The most valuable skill today is the ability to learn, unlearn and apply — faster than everyone else.”</blockquote></section>
-    <div className="dashboard-grid">
-      <section className="primary-column">
-        <article className="continue-panel">
-          <div className="continue-copy"><span className="eyebrow light">CONTINUE LEARNING</span><h2>AI Strategy for<br/>Business Leaders</h2><p>Module 3 of 8</p><strong>Identifying High-Value AI Use Cases</strong><div className="progress"><span style={{width:"62%"}}/></div><div className="progress-meta"><span>62%</span></div><div className="action-row"><Link className="button accent" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue learning →</Link><Link className="text-link light-link" href="/lms/learn">View programme →</Link></div></div>
-          <div className="continue-art"><div className="art-copy">Strategy<br/>to real impact.<span/></div></div>
-        </article>
-        <section className="section-block"><div className="section-title"><h2>Today</h2><span>Tuesday, 6 October 2026</span><a>View full calendar →</a></div><div className="agenda-list">
-          {agenda.map(([time,type,title,meta,action],i)=><div className="agenda-row" key={time}><time>{time}</time><div className="agenda-icon">{i===1?<Video size={18}/>:<PlayCircle size={18}/>}</div><div className="agenda-copy"><strong>{title}</strong><span>{type}</span><small>{meta}</small></div><button className={i===1?"button dark small":"button secondary small"}>{action}</button></div>)}
-        </div></section>
-        <section className="section-block"><div className="section-title"><h2>Upcoming workshops</h2><Link href="/lms/workshops">View all →</Link></div><div className="workshop-grid">
-          {["From AI Pilots to Real Impact","Building AI-Ready Teams","AI & Regulation"].map((x,i)=><article className="workshop-card" key={x}><div className={"workshop-image image-"+(i+1)}/><div className="workshop-body"><span className="date-box">{["24 OCT","08 NOV","22 NOV"][i]}</span><h3>{x}</h3><p>Thu, 11:00–12:30</p><Link href="/lms/workshops">Register →</Link></div></article>)}
-        </div></section>
+    <div className="premium-home">
+      <section className="home-intro">
+        <div>
+          <span className="eyebrow">WELCOME BACK</span>
+          <h1>Gaurav.</h1>
+          <p>Keep learning. Build what’s next.</p>
+        </div>
+        <div className="home-date">
+          <span>Tuesday</span>
+          <strong>06 October</strong>
+          <small>2026</small>
+        </div>
       </section>
-      <aside className="right-column">
-        <section className="side-panel"><div className="panel-heading"><h3>Your Cohort</h3><Link href="/lms/community">View cohort →</Link></div><h4>AI Strategy for Business Leaders</h4><p>Mumbai · Oct 2026 · 34 participants</p><div className="avatar-row"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div><div className="metrics"><div><strong>7</strong><span>Discussions</span></div><div><strong>3</strong><span>Peer projects</span></div><div><strong>2</strong><span>Live workshops</span></div></div></section>
-        <section className="side-panel"><div className="panel-heading"><h3>Skills progress</h3><Link href="/lms/skills">View all →</Link></div>{[["AI Strategy",78],["AI Governance",62],["Prompt Engineering",45],["Responsible AI",68]].map(([label,value])=><div className="skill-row" key={label}><span>{label}</span><div className="skill-track"><i style={{width:value+"%"}}/></div><b>{value}%</b></div>)}</section>
-        <section className="side-panel recordings"><div className="panel-heading"><h3>Recent recordings</h3><Link href="/lms/library/recordings">View all →</Link></div><div><span className="recording-thumb">▶</span><p><strong>AI Governance for Leaders</strong><small>48 min · 2 days ago</small></p></div><div><span className="recording-thumb">▶</span><p><strong>From Ideas to Implementation</strong><small>56 min · 1 week ago</small></p></div></section>
-      </aside>
+
+      <div className="home-grid">
+        <section className="home-main">
+          <article className="home-course-hero">
+            <div className="hero-course-copy">
+              <span className="eyebrow light">CONTINUE LEARNING</span>
+              <div className="hero-course-kicker">AI STRATEGY · MODULE 3 OF 8</div>
+              <h2>AI Strategy for<br/>Business Leaders</h2>
+              <p>Identifying High-Value AI Use Cases</p>
+              <div className="hero-progress-row"><div className="progress"><span style={{width:"62%"}}/></div><b>62%</b></div>
+              <div className="action-row">
+                <Link className="button accent premium-cta" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue learning →</Link>
+                <Link className="text-link light-link" href="/lms/learn">View programme →</Link>
+              </div>
+            </div>
+            <div className="home-hero-art">
+              <div className="hero-art-label"><span>STRATEGY</span><strong>Turn possibility<br/>into progress.</strong><i/></div>
+              <div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/>
+            </div>
+          </article>
+
+          <section className="home-section today-section">
+            <div className="home-section-head"><div><span className="eyebrow">TODAY</span><h2>Your agenda</h2></div><a>View calendar →</a></div>
+            <div className="premium-agenda">
+              {agenda.map(([time,type,title,meta,action],i)=><div className="premium-agenda-row" key={time}>
+                <time>{time}</time>
+                <div className={"agenda-marker marker-"+i}>{i===1?<Video size={17}/>:<PlayCircle size={17}/>}</div>
+                <div className="premium-agenda-copy">
+                  <div><strong>{title}</strong>{type==="LIVE"||type==="DUE"?<span className={"status "+type.toLowerCase()}>{type}</span>:<span className="agenda-type">{type}</span>}</div>
+                  <small>{meta}</small>
+                </div>
+                <button className={i===1?"button dark small":"button secondary small"}>{action}</button>
+              </div>)}
+            </div>
+          </section>
+
+          <section className="home-section">
+            <div className="home-section-head"><div><span className="eyebrow">UPCOMING</span><h2>Workshops</h2></div><Link href="/lms/workshops">View all →</Link></div>
+            <div className="premium-workshop-grid">
+              {upcoming.map((w,i)=><article className="premium-workshop-card" key={w.title}>
+                <div className={"premium-workshop-art "+w.tone}><span>{w.mode}</span></div>
+                <div className="premium-workshop-meta"><div className="premium-date"><strong>{w.date}</strong><span>{w.month}</span></div><div><h3>{w.title}</h3><p>{w.speaker}</p></div></div>
+                <div className="premium-workshop-footer"><span>11:00–12:30 IST</span><Link href={i===0?"/lms/workshops/from-ai-pilots-to-real-impact":"/lms/workshops"}>View →</Link></div>
+              </article>)}
+            </div>
+          </section>
+        </section>
+
+        <aside className="home-rail">
+          <section className="premium-side-panel cohort-panel">
+            <div className="panel-heading"><div><span className="eyebrow">YOUR COHORT</span><h3>AI Strategy for Business Leaders</h3></div><Link href="/lms/community">Open →</Link></div>
+            <p>Mumbai · October 2026</p>
+            <div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div>
+            <div className="premium-metrics"><div><strong>7</strong><span>Discussions</span></div><div><strong>3</strong><span>Peer projects</span></div><div><strong>2</strong><span>Live sessions</span></div></div>
+          </section>
+
+          <section className="premium-side-panel">
+            <div className="panel-heading"><div><span className="eyebrow">PROGRESS</span><h3>Skills</h3></div><Link href="/lms/skills">View all →</Link></div>
+            {[["AI Strategy",78],["AI Governance",62],["Prompt Engineering",45],["Responsible AI",68]].map(([label,value])=><div className="premium-skill-row" key={label}><div><span>{label}</span><b>{value}%</b></div><div className="skill-track"><i style={{width:value+"%"}}/></div></div>)}
+          </section>
+
+          <section className="premium-side-panel premium-recordings">
+            <div className="panel-heading"><div><span className="eyebrow">WATCH AGAIN</span><h3>Recent recordings</h3></div><Link href="/lms/library/recordings">View all →</Link></div>
+            <Link className="premium-recording-row" href="/lms/library/recordings/ai-governance-for-leaders"><span className="premium-recording-thumb rec-one">▶</span><p><strong>AI Governance for Leaders</strong><small>48 min · 2 days ago</small></p></Link>
+            <Link className="premium-recording-row" href="/lms/library/recordings"><span className="premium-recording-thumb rec-two">▶</span><p><strong>From Ideas to Implementation</strong><small>56 min · 1 week ago</small></p></Link>
+          </section>
+        </aside>
+      </div>
     </div>
   </Shell>
 }
