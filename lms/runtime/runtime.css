@@ -2598,3 +2598,328 @@
   .lms-root .editorial-section-head a{white-space:nowrap}
   .lms-root .criteria-grid{grid-template-columns:1fr}
 }
+
+
+/* =========================================================
+   MOBILE HOME DENSITY + READABILITY PASS
+   ========================================================= */
+.lms-root .home-progress-summary{
+  gap:5px;
+}
+.lms-root .home-progress-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+.lms-root .home-progress-track{
+  width:100%;
+  height:5px;
+  margin-top:4px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#E3E9E7;
+}
+.lms-root .home-progress-track i{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:var(--lms-success);
+}
+.lms-root .mobile-project-progress{
+  display:none;
+}
+.lms-root .trust-discussion-card{
+  display:block;
+  color:inherit;
+  padding-top:14px;
+}
+.lms-root .trust-discussion-title{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 20px;
+  gap:12px;
+  align-items:start;
+}
+.lms-root .trust-discussion-title strong{
+  font-family:var(--font-lms-serif),Georgia,serif;
+  font-size:1.15rem;
+  line-height:1.25;
+  font-weight:500;
+}
+.lms-root .trust-discussion-card:hover .trust-discussion-title strong{
+  color:var(--lms-learning);
+}
+
+@media(max-width:760px){
+  /* Programme progress: one coherent mobile component */
+  .lms-root .home-progress-summary{
+    display:grid;
+    width:100%;
+    padding:12px 0 0;
+    margin-top:14px;
+    border-top:2px solid var(--lms-action);
+    border-left:0;
+  }
+  .lms-root .home-progress-top{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:12px;
+  }
+  .lms-root .home-progress-top .help-label{
+    font-size:.6875rem;
+    line-height:1.35;
+  }
+  .lms-root .home-progress-top strong{
+    font-size:1.55rem;
+    line-height:1;
+  }
+  .lms-root .home-progress-summary>small{
+    font-size:.8125rem;
+    line-height:1.4;
+    color:#5F7480;
+  }
+  .lms-root .home-progress-track{
+    margin-top:7px;
+    height:6px;
+  }
+
+  /* Next Action: cut decorative height and pull the CTA closer */
+  .lms-root .trust-next-action{
+    margin-bottom:24px;
+  }
+  .lms-root .trust-action-label{
+    padding:16px 16px 12px;
+  }
+  .lms-root .trust-action-label small{
+    font-size:.8125rem;
+    line-height:1.35;
+  }
+  .lms-root .trust-action-copy{
+    padding:18px 16px 16px;
+  }
+  .lms-root .trust-action-copy h2{
+    margin-bottom:8px;
+  }
+  .lms-root .trust-action-copy p{
+    font-size:.8125rem;
+    line-height:1.5;
+    margin-bottom:12px;
+  }
+  .lms-root .trust-action-side{
+    min-height:86px;
+    padding:12px 16px 16px;
+    background:#0A3439;
+  }
+  .lms-root .trust-action-side .signature-motion{
+    width:92px;
+    height:92px;
+    right:6px;
+    top:-12px;
+    opacity:.55;
+  }
+  .lms-root .trust-action-side .button{
+    min-height:48px;
+  }
+
+  /* Schedule: mobile-first rows with legible metadata */
+  .lms-root .trust-two-col{
+    gap:24px;
+    margin-bottom:24px;
+  }
+  .lms-root .trust-schedule-row{
+    grid-template-columns:48px minmax(0,1fr) 20px;
+    gap:4px 10px;
+    min-height:0;
+    padding:14px 0;
+    align-items:start;
+  }
+  .lms-root .trust-date{
+    grid-column:1;
+    grid-row:1/4;
+    padding-top:1px;
+  }
+  .lms-root .trust-date strong{
+    font-size:1.15rem;
+    line-height:1;
+  }
+  .lms-root .trust-date span{
+    margin-top:4px;
+    font-size:.6875rem;
+  }
+  .lms-root .trust-schedule-row>div:nth-child(2){
+    grid-column:2;
+    grid-row:1;
+  }
+  .lms-root .trust-schedule-row>div:nth-child(2)>strong{
+    font-size:.875rem;
+    line-height:1.3;
+  }
+  .lms-root .trust-schedule-row>div:nth-child(2)>small{
+    font-size:.8125rem;
+    line-height:1.45;
+    margin-top:4px;
+  }
+  .lms-root .trust-schedule-row>.status{
+    grid-column:2;
+    grid-row:2;
+    width:max-content;
+    margin-top:6px;
+    padding:4px 7px;
+    font-size:.75rem;
+  }
+  .lms-root .trust-schedule-row>svg{
+    grid-column:3;
+    grid-row:1/3;
+    align-self:center;
+  }
+
+  /* Active project: compact and actionable */
+  .lms-root .trust-project-summary{
+    position:relative;
+    padding-top:12px;
+  }
+  .lms-root .trust-project-summary>p{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    font-size:.8125rem;
+    line-height:1.55;
+    margin-bottom:10px;
+  }
+  .lms-root .mobile-project-progress{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    margin:8px 0 10px;
+  }
+  .lms-root .mobile-project-progress strong{
+    font-family:var(--font-lms-serif),Georgia,serif;
+    font-size:1.4rem;
+    font-weight:500;
+  }
+  .lms-root .mobile-project-progress span{
+    font-size:.8125rem;
+    color:var(--lms-muted);
+  }
+  .lms-root .desktop-milestone-copy{
+    display:none;
+  }
+  .lms-root .trust-project-status{
+    gap:8px 12px;
+    margin:8px 0 8px;
+    font-size:.8125rem;
+  }
+  .lms-root .trust-project-summary>.text-link{
+    min-height:44px;
+    font-size:.8125rem;
+  }
+
+  /* Quick stats: one compact horizontal block, not three long sections */
+  .lms-root .trust-three-col{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    margin:4px 0 24px;
+    border-top:1px solid var(--lms-line);
+    border-bottom:1px solid var(--lms-line);
+  }
+  .lms-root .trust-stat-block,
+  .lms-root .trust-stat-block+ .trust-stat-block{
+    min-width:0;
+    padding:15px 8px;
+    border-right:1px solid var(--lms-line);
+    border-bottom:0;
+    text-align:center;
+  }
+  .lms-root .trust-stat-block:last-child{
+    border-right:0;
+  }
+  .lms-root .trust-stat-block .eyebrow{
+    display:block;
+    min-height:22px;
+    font-size:.5625rem;
+    line-height:1.2;
+    letter-spacing:.08em;
+  }
+  .lms-root .trust-stat-block>strong{
+    margin-top:5px;
+    font-size:1.65rem;
+  }
+  .lms-root .trust-stat-block>p{
+    margin:4px 0 0;
+    font-size:.75rem;
+    line-height:1.25;
+  }
+  .lms-root .trust-stat-block .premium-avatar-stack,
+  .lms-root .trust-stat-block>a{
+    display:none;
+  }
+
+  /* Latest discussion: the whole item is the CTA */
+  .lms-root .editorial-community-pulse .editorial-section-head{
+    padding-bottom:7px;
+  }
+  .lms-root .editorial-community-pulse .editorial-section-head h2{
+    font-size:1rem;
+  }
+  .lms-root .trust-discussion-card{
+    padding:14px 0 0;
+  }
+  .lms-root .trust-discussion-title strong{
+    font-size:1.15rem;
+    line-height:1.2;
+  }
+  .lms-root .trust-discussion-copy{
+    margin:12px 0;
+    font-size:.875rem;
+    line-height:1.55;
+  }
+  .lms-root .trust-discussion-meta{
+    font-size:.8125rem;
+  }
+
+  /* Home should be an action dashboard on phones.
+     Recordings remain available via Library / More. */
+  .lms-root .trust-home .editorial-watch{
+    display:none;
+  }
+  .lms-root .trust-home .editorial-bottom-grid{
+    display:block;
+  }
+
+  /* General meaningful mobile metadata floor */
+  .lms-root :is(
+    .editorial-recording small,
+    .trust-stage-item small,
+    .trust-stage-status,
+    .trust-session-main p,
+    .trust-session-time small,
+    .trust-project-state small,
+    .trust-project-review small,
+    .thread-meta,
+    .programme-meta,
+    .project-status-line small
+  ){
+    font-size:.8125rem!important;
+    line-height:1.4;
+  }
+
+  /* Bottom nav labels: readable, not micro-text */
+  .lms-root .mobile-bottom-nav>a{
+    font-size:.75rem;
+  }
+  .lms-root .mobile-bottom-nav>a span{
+    font-size:.75rem;
+    line-height:1;
+  }
+}
+
+@media(max-width:390px){
+  .lms-root .mobile-bottom-nav>a,
+  .lms-root .mobile-bottom-nav>a span{
+    font-size:.6875rem;
+  }
+  .lms-root .trust-stat-block .eyebrow{
+    font-size:.5rem;
+  }
+}

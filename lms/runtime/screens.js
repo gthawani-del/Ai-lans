@@ -296,7 +296,11 @@ export function DashboardScreen() {
     <div className="editorial-home module-home trust-home">
       <section className="trust-page-head" data-tour="programme">
         <div><span className="eyebrow">AI BUSINESS LAB · MUMBAI</span><h1>Welcome back, {user.firstName}.</h1><p>{programme.datesLabel} · {programme.format} · {programme.location}</p></div>
-        <div className="trust-head-meta"><span className="help-label">PROGRAMME PROGRESS <HelpTooltip label="About programme progress" text="Progress counts completed pre-work and programme learning items. Live attendance and project review are tracked separately."/></span><strong>{programme.progress}%</strong><small>{summary.completedItems} of {summary.totalItems} learning items complete</small></div>
+        <div className="trust-head-meta home-progress-summary">
+  <div className="home-progress-top"><span className="help-label">PROGRAMME PROGRESS <HelpTooltip label="About programme progress" text="Progress counts completed pre-work and programme learning items. Live attendance and project review are tracked separately."/></span><strong>{programme.progress}%</strong></div>
+  <small>{summary.completedItems} of {summary.totalItems} learning items complete</small>
+  <div className="home-progress-track" aria-hidden="true"><i style={{width:programme.progress+"%"}}/></div>
+</div>
       </section>
 
       <section className="trust-next-action" data-tour="next-action">
@@ -322,7 +326,8 @@ export function DashboardScreen() {
           <div className="editorial-section-head"><div><span className="eyebrow">ACTIVE PROJECT</span><h2>{activeProject.title}</h2></div><Link href="/lms/projects">Projects →</Link></div>
           <div className="trust-project-summary">
             <p>{activeProject.description}</p>
-            <div className="trust-project-status"><span className="status in-progress">In progress</span><span>Due {activeProject.dueLabel}</span><span>{activeProject.completedMilestones}/{activeProject.totalMilestones} milestones complete</span></div>
+            <div className="mobile-project-progress"><strong>{activeProject.completedMilestones} / {activeProject.totalMilestones}</strong><span>milestones</span></div>
+            <div className="trust-project-status"><span className="status in-progress">In progress</span><span>Due {activeProject.dueLabel}</span><span className="desktop-milestone-copy">{activeProject.completedMilestones}/{activeProject.totalMilestones} milestones complete</span></div>
             <Link href="/lms/projects" className="text-link">Continue project →</Link>
           </div>
         </div>
@@ -336,9 +341,12 @@ export function DashboardScreen() {
 
       <section className="editorial-bottom-grid">
         <div className="editorial-community-pulse">
-          <div className="editorial-section-head"><div><span className="eyebrow">LATEST DISCUSSION</span><h2>{latestDiscussion.title}</h2></div><Link href="/lms/community/discussion/ai-roi">Open →</Link></div>
-          <p className="trust-discussion-copy">{latestDiscussion.body}</p>
-          <div className="trust-discussion-meta"><span>{latestDiscussion.replies} replies</span><span>{latestDiscussion.saves} saves</span><span>{latestDiscussion.scope}</span></div>
+          <div className="editorial-section-head"><div><span className="eyebrow">LATEST DISCUSSION</span><h2>From your cohort</h2></div></div>
+          <Link className="trust-discussion-card" href="/lms/community/discussion/ai-roi">
+            <div className="trust-discussion-title"><strong>{latestDiscussion.title}</strong><ArrowUpRight size={17}/></div>
+            <p className="trust-discussion-copy">{latestDiscussion.body}</p>
+            <div className="trust-discussion-meta"><span>{latestDiscussion.replies} replies</span><span>{latestDiscussion.saves} saves</span><span>{latestDiscussion.scope}</span></div>
+          </Link>
         </div>
         <div className="editorial-watch">
           <div className="editorial-section-head"><div><span className="eyebrow">WATCH AGAIN</span><h2>Recent recordings</h2></div><Link href="/lms/library/recordings">Library →</Link></div>
