@@ -58,7 +58,7 @@ export function DashboardScreen() {
   ];
 
   return <Shell>
-    <div className="premium-home">
+    <div className="premium-home module-home">
       <section className="home-intro">
         <div>
           <span className="eyebrow">WELCOME BACK</span>
@@ -156,7 +156,7 @@ export function LearnScreen() {
     { title:"AI for Marketing", topic:"FUNCTIONAL AI", length:"9 lessons · 1h 50m", cover:"marketing" },
   ];
   return <Shell>
-    <div className="premium-learn">
+    <div className="premium-learn module-learn">
       <header className="learn-premium-head">
         <div><span className="eyebrow">LEARN</span><h1>Skills for what’s next.</h1><p>Practical learning for real-world decisions, projects and leadership.</p></div>
         <div className="learn-head-note"><span>YOUR FOCUS</span><strong>AI Strategy</strong><small>4 skills in progress</small></div>
@@ -233,7 +233,7 @@ export function WorkshopsScreen() {
     {date:"05",month:"DEC",title:"Scaling AI Across the Enterprise",speaker:"Nisha Rao",role:"Enterprise AI operator",time:"15:00–16:30",format:"Mumbai",cohort:"Leadership Series",state:"OPEN",tone:"four"},
   ];
   return <Shell>
-    <div className="premium-workshops">
+    <div className="premium-workshops module-workshops">
       <header className="workshops-premium-head">
         <div><span className="eyebrow">WORKSHOPS</span><h1>Live learning.<br/>Real decisions.</h1><p>Expert-led sessions built around the work leaders actually need to do.</p></div>
         <div className="workshop-stats"><div><strong>4</strong><span>upcoming</span></div><div><strong>2</strong><span>registered</span></div><div><strong>7.5h</strong><span>attended</span></div></div>
@@ -289,7 +289,7 @@ export function CommunityScreen() {
     {avatar:"AK",name:"Anita Kapoor",role:"Cohort member",time:"1d",tag:"SHOW & TELL",title:"Our first internal AI enablement playbook",body:"We turned our workshop notes into a 6-page internal guide for managers. Posting the structure here in case it helps anyone building something similar.",replies:9,saves:14},
   ];
   return <Shell>
-    <div className="premium-community">
+    <div className="premium-community module-community">
       <header className="community-head">
         <div><span className="eyebrow">COMMUNITY</span><h1>Learn together.<br/>Build in public.</h1><p>Questions, frameworks and practical work from your cohort and the wider WeAreAiLabs network.</p></div>
         <button className="button dark community-new"><Plus size={16}/> Start a discussion</button>
@@ -358,7 +358,7 @@ export function ProjectsScreen() {
     {title:"AI Opportunity Map",type:"STRATEGY EXERCISE",desc:"Map and prioritise opportunities across one business function using evidence and readiness.",due:"15 Nov",status:"NOT STARTED",tone:"map"},
   ];
   return <Shell>
-    <div className="premium-projects">
+    <div className="premium-projects module-projects">
       <header className="projects-head"><div><span className="eyebrow">PROJECTS</span><h1>Build. Share.<br/>Get feedback.</h1><p>Turn learning into evidence by solving practical, real-world briefs.</p></div><div className="projects-score"><span>YOUR PROJECTS</span><strong>1 / 3</strong><small>currently in progress</small></div></header>
 
       <section className="active-project">

@@ -452,3 +452,320 @@
     font-size:clamp(2.35rem,12vw,3.15rem);
   }
 }
+
+
+/* =========================================================
+   LMS SEMANTIC COLOR SYSTEM
+   Color is functional: hierarchy, state, learning context.
+   High-chroma color is deliberately scarce.
+   ========================================================= */
+.lms-root{
+  --lms-canvas:#F7F8F5;
+  --lms-surface:#FFFFFF;
+  --lms-surface-subtle:#F0F4F2;
+  --lms-ink:#0B1720;
+  --lms-muted:#64748B;
+  --lms-line:#D8E1DF;
+
+  --lms-learning:#075B5E;
+  --lms-learning-active:#087F7A;
+  --lms-learning-soft:#E5F2EF;
+
+  --lms-info:#315B7D;
+  --lms-info-soft:#EAF0F5;
+
+  --lms-action:#B8E000;
+  --lms-action-soft:#F1F8CC;
+
+  --lms-success:#2C6E49;
+  --lms-success-soft:#E7F1EB;
+
+  --lms-attention:#A15C00;
+  --lms-attention-soft:#FFF1DA;
+
+  --lms-danger:#B42318;
+  --lms-danger-soft:#FBEAE8;
+
+  /* legacy aliases used by older LMS components */
+  --bg:var(--lms-canvas);
+  --surface:var(--lms-surface);
+  --ink:var(--lms-ink);
+  --muted:var(--lms-muted);
+  --line:var(--lms-line);
+  --teal:var(--lms-learning-active);
+  --deep:var(--lms-learning);
+  --lime:var(--lms-action);
+  --danger:var(--lms-danger);
+
+  background:var(--lms-canvas);
+  color:var(--lms-ink);
+}
+.lms-root .workspace,
+.lms-root .page{
+  background:var(--lms-canvas);
+}
+.lms-root .sidebar,
+.lms-root .topbar,
+.lms-root .premium-side-panel,
+.lms-root .premium-program-card,
+.lms-root .project-card,
+.lms-root .thread-question,
+.lms-root .reply-composer,
+.lms-root .submission-form,
+.lms-root .project-detail-section,
+.lms-root .course-summary,
+.lms-root .curriculum,
+.lms-root .resource-panel{
+  background:var(--lms-surface);
+}
+
+/* 60–30–10 adapted for learning:
+   neutrals dominate, cool learning color supports structure,
+   bright action/attention colors remain scarce. */
+.lms-root .nav-link.active{
+  background:var(--lms-learning-soft);
+  color:var(--lms-learning);
+}
+.lms-root .nav-link.active::before{
+  background:var(--lms-learning-active);
+}
+.lms-root .text-link,
+.lms-root .panel-heading a,
+.lms-root .home-section-head a,
+.lms-root .premium-program-copy>a,
+.lms-root .premium-course-row>a,
+.lms-root .premium-workshop-footer a,
+.lms-root .schedule-link,
+.lms-root .project-card-foot a,
+.lms-root .project-resource,
+.lms-root .lms-card-grid a{
+  color:var(--lms-learning);
+}
+
+/* CTA hierarchy */
+.lms-root .button.dark{
+  background:var(--lms-learning);
+  color:#fff;
+}
+.lms-root .button.dark:hover{
+  background:#054C4F;
+}
+.lms-root .button.accent{
+  background:var(--lms-action);
+  color:var(--lms-ink);
+  box-shadow:none;
+}
+.lms-root .button.accent:hover{
+  background:#A8D100;
+  box-shadow:none;
+}
+.lms-root .button.secondary{
+  color:var(--lms-ink);
+  background:var(--lms-surface);
+  border-color:#9CACA9;
+}
+.lms-root .button.secondary:hover{
+  border-color:var(--lms-learning);
+  color:var(--lms-learning);
+}
+
+/* Progress means achieved/completed: green, never decorative lime gradients */
+.lms-root .progress,
+.lms-root .skill-track{
+  background:#E3E9E7;
+}
+.lms-root .progress span,
+.lms-root .skill-track i,
+.lms-root .programme-progress .skill-track i,
+.lms-root .video-progress i{
+  background:var(--lms-success);
+}
+.lms-root .project-progress span:nth-child(-n+2),
+.lms-root .project-side-progress .done{
+  border-color:var(--lms-success);
+  color:var(--lms-success);
+}
+.lms-root .project-progress .current,
+.lms-root .project-side-progress .current{
+  border-color:var(--lms-action);
+  color:var(--lms-ink);
+}
+
+/* Semantic statuses: not color-only; labels remain visible */
+.lms-root .status.live{
+  background:var(--lms-attention-soft);
+  color:var(--lms-attention);
+}
+.lms-root .status.due{
+  background:var(--lms-attention-soft);
+  color:var(--lms-attention);
+}
+.lms-root .status.in-progress,
+.lms-root .registered-state,
+.lms-root .project-live{
+  background:var(--lms-success-soft);
+  color:var(--lms-success);
+}
+.lms-root .open-state,
+.lms-root .project-muted{
+  background:var(--lms-surface-subtle);
+  color:#536B72;
+}
+
+/* Module accents */
+.lms-root .module-learn .eyebrow,
+.lms-root .module-home .eyebrow{
+  color:var(--lms-learning);
+}
+.lms-root .module-community .eyebrow,
+.lms-root .module-community .post-actions a,
+.lms-root .module-community .post-actions button{
+  color:var(--lms-info);
+}
+.lms-root .module-community .post-tag{
+  background:var(--lms-info-soft);
+  color:var(--lms-info);
+}
+.lms-root .module-workshops .eyebrow{
+  color:var(--lms-learning);
+}
+.lms-root .module-workshops .registered-state{
+  color:var(--lms-success);
+}
+.lms-root .module-projects .eyebrow{
+  color:var(--lms-learning);
+}
+
+/* Lime is a signal, not a text color */
+.lms-root .eyebrow.light{
+  color:#C7DAD6;
+}
+.lms-root [style*="color: var(--lms-action)"],
+.lms-root [style*="color:var(--lms-action)"]{
+  color:var(--lms-ink)!important;
+}
+
+/* Reduce "AI SaaS gradient" behavior: use jewel/cool solids and simple geometry */
+.lms-root .home-course-hero{
+  background:var(--lms-learning);
+}
+.lms-root .home-hero-art{
+  background:#0A3439;
+}
+.lms-root .hero-orbit{
+  background:transparent;
+  border:1px solid rgba(184,224,0,.42);
+  opacity:.8;
+}
+.lms-root .orbit-one{
+  width:164px;
+  height:164px;
+  border-width:22px;
+}
+.lms-root .orbit-two{
+  width:112px;
+  height:112px;
+  border-color:rgba(255,255,255,.16);
+}
+.lms-root .home-hero-art::after{
+  background:#133D43;
+}
+.lms-root .premium-workshop-art.one,
+.lms-root .schedule-one,
+.lms-root .editorial-cover.cover-strategy,
+.lms-root .project-research{
+  background:#17494D;
+}
+.lms-root .premium-workshop-art.two,
+.lms-root .schedule-two,
+.lms-root .editorial-cover.cover-builder,
+.lms-root .project-govern{
+  background:#5E7778;
+}
+.lms-root .premium-workshop-art.three,
+.lms-root .schedule-three,
+.lms-root .editorial-cover.cover-governance,
+.lms-root .project-map{
+  background:#233D4A;
+}
+.lms-root .schedule-four{
+  background:#4B7270;
+}
+.lms-root .premium-recording-thumb.rec-one,
+.lms-root .lms-media.media-1{
+  background:#315B7D;
+}
+.lms-root .premium-recording-thumb.rec-two,
+.lms-root .lms-media.media-2{
+  background:#4D6E73;
+}
+.lms-root .lms-media.media-3{
+  background:#263F4B;
+}
+
+/* Workshop attention cue: amber is reserved for time-sensitive/live */
+.lms-root .module-workshops .feature-date-block strong,
+.lms-root .module-workshops .schedule-date strong{
+  color:var(--lms-attention);
+}
+.lms-root .module-workshops .feature-workshop-meta span:first-child{
+  color:var(--lms-attention);
+}
+.lms-root .module-workshops .feature-workshop-art>i,
+.lms-root .active-project-art>i,
+.lms-root .hero-art-label i{
+  background:var(--lms-action);
+}
+
+/* Community = information/exchange, not the same green as Learn */
+.lms-root .module-community .pinned-discussion{
+  background:#294E69;
+}
+.lms-root .module-community .pinned-discussion .eyebrow{
+  color:#D7E4ED;
+}
+.lms-root .module-community .pinned-discussion p{
+  color:#E5EDF2;
+}
+.lms-root .module-community .post-avatar,
+.lms-root .module-community .thread-author>span,
+.lms-root .module-community .contributor-row>span{
+  background:var(--lms-info-soft);
+  color:var(--lms-info);
+}
+
+/* Projects use neutral ink + learning accents; achievement remains green */
+.lms-root .module-projects .active-project-art,
+.lms-root .project-brief-block,
+.lms-root .peer-showcase{
+  background:#132D36;
+}
+.lms-root .module-projects .project-live{
+  background:var(--lms-success-soft);
+  color:var(--lms-success);
+}
+
+/* Metadata stays neutral; do not color-code every line */
+.lms-root :is(
+  .programme-meta,
+  .premium-course-row p,
+  .schedule-context span,
+  .post-byline span,
+  .project-status-line small,
+  .premium-workshop-footer,
+  .thread-meta,
+  .home-date span,
+  .home-date small
+){
+  color:var(--lms-muted);
+}
+
+/* Explicit semantic utilities for future LMS screens */
+.lms-root .semantic-info{color:var(--lms-info)}
+.lms-root .semantic-success{color:var(--lms-success)}
+.lms-root .semantic-attention{color:var(--lms-attention)}
+.lms-root .semantic-danger{color:var(--lms-danger)}
+.lms-root .surface-info{background:var(--lms-info-soft)}
+.lms-root .surface-success{background:var(--lms-success-soft)}
+.lms-root .surface-attention{background:var(--lms-attention-soft)}
+.lms-root .surface-danger{background:var(--lms-danger-soft)}
