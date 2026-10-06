@@ -24,9 +24,10 @@ const nav = [
 function Shell({ children }) {
   const pathname = usePathname();
   return <div className="app-shell">
-    <aside className="sidebar">
+    <a className="skip-link" href="#lms-main">Skip to content</a>
+    <aside className="sidebar" aria-label="LMS navigation">
       <div className="brand-logo brand-wordmark" aria-label="WeAreAiLabs">weareailabs</div>
-      <nav className="side-nav">
+      <nav className="side-nav" aria-label="Primary LMS">
         {nav.map(([href,label,Icon]) => {
           const active = href === "/lms" ? pathname === "/lms" : pathname.startsWith(href);
           return <Link key={href} href={href} className={active ? "nav-link active" : "nav-link"}><Icon size={19}/><span>{label}</span></Link>
@@ -35,10 +36,10 @@ function Shell({ children }) {
     </aside>
     <section className="workspace">
       <header className="topbar">
-        <label className="searchbox"><Search size={18}/><input placeholder="Search courses, workshops, people, resources..." /></label>
-        <div className="top-actions"><button className="icon-button"><Bell size={19}/></button><div className="profile-chip"><div className="avatar">GT</div><div><strong>Gaurav Thawani</strong><span>Learner</span></div></div></div>
+        <form className="searchbox" role="search" onSubmit={(event)=>event.preventDefault()}><Search size={18} aria-hidden="true"/><input type="search" aria-label="Search courses, workshops, people and resources" placeholder="Search courses, workshops, people, resources..." /></form>
+        <div className="top-actions"><button type="button" className="icon-button" aria-label="Open notifications"><Bell size={19} aria-hidden="true"/></button><div className="profile-chip" aria-label="Signed in as Gaurav Thawani, Learner"><div className="avatar" aria-hidden="true">GT</div><div><strong>Gaurav Thawani</strong><span>Learner</span></div></div></div>
       </header>
-      <main className="page">{children}</main>
+      <main className="page" id="lms-main" tabIndex="-1">{children}</main>
     </section>
   </div>
 }

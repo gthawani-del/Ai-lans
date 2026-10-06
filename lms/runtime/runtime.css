@@ -127,3 +127,328 @@
 /* responsive premium batch */
 @media(max-width:1100px){.premium-catalog-layout{grid-template-columns:1fr}.premium-filter{display:none}.premium-course-row{grid-template-columns:100px 1fr 55px}.course-skill-tags{display:none}.premium-workshop-row{grid-template-columns:55px 90px 1fr 55px}.schedule-context{display:none}.community-layout,.thread-layout,.project-detail-layout,.submission-layout{grid-template-columns:1fr}.community-rail{display:grid;grid-template-columns:repeat(2,1fr)}.project-grid{grid-template-columns:repeat(2,1fr)}.peer-showcase{grid-template-columns:1fr}.premium-workshop-feature{grid-template-columns:100px 1fr}.feature-workshop-art{display:none}}
 @media(max-width:760px){.learn-premium-head,.workshops-premium-head,.community-head,.projects-head{display:block}.learn-premium-head h1,.workshops-premium-head h1,.community-head h1,.projects-head h1{font-size:43px}.learn-head-note,.projects-score,.workshop-stats{margin-top:18px}.learning-resume{grid-template-columns:42px 1fr}.resume-progress,.learning-resume>.button{grid-column:2}.premium-program-grid,.learning-paths,.project-grid{grid-template-columns:1fr}.premium-course-row{grid-template-columns:78px 1fr 46px}.course-skill-tags{display:none}.premium-workshop-feature{grid-template-columns:1fr}.feature-date-block{display:none}.premium-workshop-row{grid-template-columns:50px 1fr 45px}.schedule-art{display:none}.schedule-link{grid-column:3;grid-row:1}.schedule-main{grid-column:2}.community-layout{display:block}.community-rail{display:flex;margin-top:18px}.pinned-discussion h2{font-size:24px}.peer-items{grid-template-columns:1fr}.criteria-grid{grid-template-columns:1fr 1fr}.submission-form{padding:0 14px}}
+
+
+/* =========================================================
+   LMS DESIGN FOUNDATION — scoped, standards-first
+   Prevents root website CSS from leaking into /lms.
+   ========================================================= */
+.lms-root{
+  --lms-bg:#f7f8f7;
+  --lms-surface:#ffffff;
+  --lms-ink:#071c2c;
+  --lms-muted:#627786;
+  --lms-line:#dbe4e5;
+  --lms-teal:#007d79;
+  --lms-deep:#06363b;
+  --lms-lime:#aee600;
+  --lms-success:#16744a;
+  --lms-danger:#b42318;
+  --lms-radius-sm:4px;
+  --lms-radius-md:8px;
+  --lms-radius-lg:12px;
+  --lms-space-1:4px;
+  --lms-space-2:8px;
+  --lms-space-3:12px;
+  --lms-space-4:16px;
+  --lms-space-5:20px;
+  --lms-space-6:24px;
+  --lms-space-8:32px;
+  --lms-space-10:40px;
+  --lms-space-12:48px;
+  --lms-text-xs:.75rem;
+  --lms-text-sm:.875rem;
+  --lms-text-base:1rem;
+  --lms-text-lg:1.125rem;
+  --lms-text-xl:1.5rem;
+  --lms-display-md:clamp(2rem,3vw,3rem);
+  --lms-display-lg:clamp(2.75rem,4.5vw,4.25rem);
+  min-height:100vh;
+  background:var(--lms-bg);
+  color:var(--lms-ink);
+  font-family:var(--font-lms-sans),system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* neutralize root website element selectors */
+.lms-root header,
+.lms-root nav,
+.lms-root main,
+.lms-root aside,
+.lms-root section,
+.lms-root footer{
+  max-width:none;
+  margin:0;
+  padding:0;
+}
+.lms-root header{
+  position:static;
+  top:auto;
+  z-index:auto;
+  height:auto;
+  background:transparent;
+}
+.lms-root nav{
+  display:block;
+  gap:0;
+  font-size:inherit;
+  font-weight:inherit;
+}
+.lms-root nav a:first-child{
+  color:inherit;
+  border-bottom:0;
+  padding:0;
+}
+.lms-root .side-nav{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.lms-root .side-nav a:first-child{
+  padding:11px 14px;
+}
+.lms-root .topbar{
+  position:sticky;
+  top:0;
+  z-index:40;
+  height:68px;
+  max-width:none;
+  margin:0;
+  padding:0 34px;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:saturate(120%) blur(10px);
+}
+.lms-root .page{
+  margin:0 auto;
+  padding:32px 34px 56px;
+}
+
+/* consistent typography */
+.lms-root h1,
+.lms-root h2,
+.lms-root h3,
+.lms-root h4,
+.lms-root p{
+  margin-block-start:0;
+}
+.lms-root :is(
+  .home-intro h1,
+  .learn-premium-head h1,
+  .workshops-premium-head h1,
+  .community-head h1,
+  .projects-head h1,
+  .lms-page-heading h1,
+  .page-heading h1,
+  .project-detail-head h1,
+  .submission-head h1
+){
+  font-family:var(--font-lms-serif),Georgia,serif;
+  font-size:var(--lms-display-lg);
+  font-weight:500;
+  line-height:.98;
+  letter-spacing:-.035em;
+  margin:8px 0 10px;
+}
+.lms-root :is(
+  .hero-course-copy h2,
+  .feature-workshop-copy h2,
+  .pinned-discussion h2,
+  .active-project-copy h2,
+  .project-brief-block h2,
+  .thread-question h1,
+  .lesson-title
+){
+  font-family:var(--font-lms-serif),Georgia,serif;
+  font-weight:500;
+  letter-spacing:-.025em;
+}
+.lms-root :is(
+  .home-section-head h2,
+  .premium-program-copy h3,
+  .premium-course-row h3,
+  .schedule-main h3,
+  .post-main h3,
+  .project-copy h3,
+  .premium-side-panel h3
+){
+  font-family:var(--font-lms-sans),system-ui,sans-serif;
+}
+.lms-root .eyebrow{
+  font-family:var(--font-lms-sans),system-ui,sans-serif;
+  font-size:.6875rem;
+  line-height:1.2;
+  font-weight:700;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.lms-root p,
+.lms-root small,
+.lms-root label,
+.lms-root input,
+.lms-root textarea,
+.lms-root button{
+  font-family:var(--font-lms-sans),system-ui,sans-serif;
+}
+
+/* stop root homepage nav/highlight leakage */
+.lms-root .nav-link,
+.lms-root .side-nav a:first-child{
+  min-height:44px;
+  border-bottom:0;
+  color:#17384a;
+  font-weight:600;
+  letter-spacing:0;
+}
+.lms-root .nav-link.active,
+.lms-root .side-nav a:first-child.active{
+  color:#006b6e;
+}
+.lms-root .brand-wordmark{
+  font-family:var(--font-lms-sans),system-ui,sans-serif;
+  font-size:1rem;
+  font-weight:600;
+  letter-spacing:-.02em;
+  text-transform:lowercase;
+}
+
+/* accessible interaction language */
+.lms-root a,
+.lms-root button,
+.lms-root input,
+.lms-root textarea{
+  transition:border-color .16s ease,background-color .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;
+}
+.lms-root :focus-visible{
+  outline:3px solid rgba(0,125,121,.34);
+  outline-offset:3px;
+}
+.lms-root .button{
+  min-height:42px;
+  border-radius:var(--lms-radius-sm);
+}
+.lms-root .icon-button{
+  min-width:42px;
+  min-height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+}
+.lms-root .searchbox{
+  height:42px;
+  margin:0;
+}
+.lms-root .searchbox input[type="search"]{
+  appearance:none;
+}
+.lms-root .searchbox input[type="search"]::-webkit-search-cancel-button{
+  opacity:.55;
+}
+.lms-root input,
+.lms-root textarea{
+  color:var(--lms-ink);
+  background:var(--lms-surface);
+}
+.lms-root input::placeholder,
+.lms-root textarea::placeholder{
+  color:#7b8a93;
+}
+
+/* page headings must never sit behind the sticky product header */
+.lms-root :is(.learn-premium-head,.workshops-premium-head,.community-head,.projects-head){
+  position:static;
+  top:auto;
+  z-index:auto;
+  height:auto;
+  max-width:none;
+  margin:4px 0 30px;
+  padding:0;
+  background:transparent;
+  align-items:flex-end;
+}
+.lms-root .community-head,
+.lms-root .projects-head{
+  min-height:0;
+}
+.lms-root .breadcrumb{
+  margin-bottom:20px;
+}
+
+/* sizing rhythm */
+.lms-root .premium-side-panel,
+.lms-root .thread-question,
+.lms-root .project-detail-section,
+.lms-root .submission-form,
+.lms-root .premium-program-card,
+.lms-root .project-card{
+  border-color:var(--lms-line);
+}
+.lms-root .home-section-head h2{
+  font-size:1.5rem;
+  line-height:1.15;
+}
+.lms-root .premium-program-copy h3,
+.lms-root .project-copy h3{
+  font-size:1rem;
+  line-height:1.3;
+}
+.lms-root .premium-course-row h3,
+.lms-root .schedule-main h3{
+  font-size:.9375rem;
+  line-height:1.35;
+}
+.lms-root .post-main h3{
+  font-family:var(--font-lms-serif),Georgia,serif;
+  font-size:1.375rem;
+  line-height:1.2;
+}
+
+/* skip-link and keyboard access */
+.lms-root .skip-link{
+  position:fixed;
+  left:16px;
+  top:10px;
+  z-index:1000;
+  transform:translateY(-160%);
+  padding:9px 12px;
+  background:#072f35;
+  color:#fff;
+  border-radius:4px;
+  font-size:.875rem;
+}
+.lms-root .skip-link:focus{
+  transform:translateY(0);
+}
+
+/* readable content width without arbitrary giant whitespace */
+.lms-root .community-layout,
+.lms-root .thread-layout,
+.lms-root .project-detail-layout,
+.lms-root .submission-layout{
+  align-items:start;
+}
+.lms-root .community-post,
+.lms-root .thread-reply{
+  line-height:1.55;
+}
+
+/* WCAG-friendly semantics and motion preferences */
+@media (prefers-reduced-motion:reduce){
+  .lms-root *,
+  .lms-root *::before,
+  .lms-root *::after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
+@media(max-width:760px){
+  .lms-root .topbar{height:60px;padding:0 14px}
+  .lms-root .page{padding:24px 16px 90px}
+  .lms-root :is(.home-intro h1,.learn-premium-head h1,.workshops-premium-head h1,.community-head h1,.projects-head h1,.lms-page-heading h1,.page-heading h1,.project-detail-head h1,.submission-head h1){
+    font-size:clamp(2.35rem,12vw,3.15rem);
+  }
+}
