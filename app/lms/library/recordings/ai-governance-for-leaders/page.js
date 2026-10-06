@@ -1,0 +1,1 @@
+export { RecordingDetailScreen as default } from "../../../../../lms/runtime/screens";

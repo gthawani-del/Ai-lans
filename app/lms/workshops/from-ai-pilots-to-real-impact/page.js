@@ -1,0 +1,1 @@
+export { WorkshopDetailScreen as default } from "../../../../lms/runtime/screens";
