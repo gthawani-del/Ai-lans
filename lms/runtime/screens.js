@@ -65,10 +65,8 @@ export function DashboardScreen() {
           <h1>Gaurav.</h1>
           <p>Keep learning. Build what’s next.</p>
         </div>
-        <div className="home-date">
-          <span>Tuesday</span>
-          <strong>06 October</strong>
-          <small>2026</small>
+        <div className="home-date" aria-label="Tuesday 06 October 2026">
+          <span>Tuesday · 06 October 2026</span>
         </div>
       </section>
 
@@ -119,23 +117,51 @@ export function DashboardScreen() {
           </section>
         </section>
 
-        <aside className="home-rail">
-          <section className="premium-side-panel cohort-panel">
-            <div className="panel-heading"><div><span className="eyebrow">YOUR COHORT</span><h3>AI Strategy for Business Leaders</h3></div><Link href="/lms/community">Open →</Link></div>
-            <p>Mumbai · October 2026</p>
-            <div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div>
-            <div className="premium-metrics"><div><strong>7</strong><span>Discussions</span></div><div><strong>3</strong><span>Peer projects</span></div><div><strong>2</strong><span>Live sessions</span></div></div>
+        <aside className="home-rail home-companion" aria-label="Learning overview">
+          <section className="companion-section companion-cohort">
+            <div className="companion-head">
+              <div><span className="eyebrow">YOUR COHORT</span><h3>AI Strategy for Business Leaders</h3></div>
+              <Link href="/lms/community">Open →</Link>
+            </div>
+            <p className="companion-meta">Mumbai · October 2026 · 34 members</p>
+            <div className="companion-members" aria-label="Cohort members">
+              <div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div>
+            </div>
+            <div className="companion-metrics">
+              <div><strong>7</strong><span>Discussions</span></div>
+              <div><strong>3</strong><span>Peer projects</span></div>
+              <div><strong>2</strong><span>Live sessions</span></div>
+            </div>
           </section>
 
-          <section className="premium-side-panel">
-            <div className="panel-heading"><div><span className="eyebrow">PROGRESS</span><h3>Skills</h3></div><Link href="/lms/skills">View all →</Link></div>
-            {[["AI Strategy",78],["AI Governance",62],["Prompt Engineering",45],["Responsible AI",68]].map(([label,value])=><div className="premium-skill-row" key={label}><div><span>{label}</span><b>{value}%</b></div><div className="skill-track"><i style={{width:value+"%"}}/></div></div>)}
+          <section className="companion-section companion-skills">
+            <div className="companion-head">
+              <div><span className="eyebrow">PROGRESS</span><h3>Skills</h3></div>
+              <Link href="/lms/skills">View all →</Link>
+            </div>
+            <div className="companion-skill-list">
+              {[["AI Strategy",78],["AI Governance",62],["Prompt Engineering",45],["Responsible AI",68]].map(([label,value])=><div className="companion-skill-row" key={label}>
+                <div className="companion-skill-label"><span>{label}</span><b>{value}%</b></div>
+                <div className="skill-track"><i style={{width:value+"%"}}/></div>
+              </div>)}
+            </div>
           </section>
 
-          <section className="premium-side-panel premium-recordings">
-            <div className="panel-heading"><div><span className="eyebrow">WATCH AGAIN</span><h3>Recent recordings</h3></div><Link href="/lms/library/recordings">View all →</Link></div>
-            <Link className="premium-recording-row" href="/lms/library/recordings/ai-governance-for-leaders"><span className="premium-recording-thumb rec-one">▶</span><p><strong>AI Governance for Leaders</strong><small>48 min · 2 days ago</small></p></Link>
-            <Link className="premium-recording-row" href="/lms/library/recordings"><span className="premium-recording-thumb rec-two">▶</span><p><strong>From Ideas to Implementation</strong><small>56 min · 1 week ago</small></p></Link>
+          <section className="companion-section companion-recordings">
+            <div className="companion-head">
+              <div><span className="eyebrow">WATCH AGAIN</span><h3>Recent recordings</h3></div>
+              <Link href="/lms/library/recordings">View all →</Link>
+            </div>
+            <div className="companion-recording-list">
+              <Link className="companion-recording" href="/lms/library/recordings/ai-governance-for-leaders">
+                <span className="companion-thumb rec-one"><PlayCircle size={20} aria-hidden="true"/></span>
+                <span className="companion-recording-copy"><strong>AI Governance for Leaders</strong><small>48 min · 2 days ago</small></span>
+              </Link>
+              <Link className="companion-recording" href="/lms/library/recordings">
+                <span className="companion-thumb rec-two"><PlayCircle size={20} aria-hidden="true"/></span>
+                <span className="companion-recording-copy"><strong>From Ideas to Implementation</strong><small>56 min · 1 week ago</small></span>
+              </Link>
+            </div>
           </section>
         </aside>
       </div>
