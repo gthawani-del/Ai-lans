@@ -2,18 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import Lottie from "lottie-react";
+import learningPulse from "./learning-pulse.json";
 import {
   ArrowUpRight, Bell, BookOpen, Bookmark, CalendarDays, CheckCircle2, Clock3,
   Download, FileText, FolderKanban, Home, Library, MapPin, MessageCircle, Plus,
   PlayCircle, Search, ShieldCheck, Sparkles, Trophy, Upload, UserRound, UsersRound, Video
 } from "lucide-react";
 
-const nav = [
-  ["/lms", "Home", Home],
-  ["/lms/learn", "Learn", BookOpen],
-  ["/lms/workshops", "Workshops", CalendarDays],
-  ["/lms/community", "Community", UsersRound],
-  ["/lms/projects", "Projects", FolderKanban],
+const primaryNav = [
+  ["/lms", "Home"],
+  ["/lms/learn", "Learn"],
+  ["/lms/workshops", "Workshops"],
+  ["/lms/community", "Community"],
+  ["/lms/projects", "Projects"],
+];
+
+const utilityNav = [
   ["/lms/library", "Library", Library],
   ["/lms/skills", "Skills", Sparkles],
   ["/lms/assessments", "Assessments", ShieldCheck],
@@ -21,27 +28,57 @@ const nav = [
   ["/lms/profile", "Profile", UserRound],
 ];
 
+function SignatureMotion() {
+  return <div className="signature-motion" aria-hidden="true"><Lottie animationData={learningPulse} loop autoplay /></div>;
+}
+
 function Shell({ children }) {
   const pathname = usePathname();
-  return <div className="app-shell">
+  const shellRef = useRef(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(".lms-page-enter", { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: .42, ease: "power2.out" });
+      gsap.fromTo(".learner-nav-link", { autoAlpha: .55, y: -4 }, { autoAlpha: 1, y: 0, duration: .28, stagger: .025, ease: "power1.out" });
+    }, shellRef);
+    return () => ctx.revert();
+  }, [pathname]);
+
+  return <div className="app-shell learner-shell" ref={shellRef}>
     <a className="skip-link" href="#lms-main">Skip to content</a>
-    <aside className="sidebar" aria-label="LMS navigation">
-      <div className="brand-logo brand-wordmark" aria-label="WeAreAiLabs">weareailabs</div>
-      <nav className="side-nav" aria-label="Primary LMS">
-        {nav.map(([href,label,Icon]) => {
-          const active = href === "/lms" ? pathname === "/lms" : pathname.startsWith(href);
-          return <Link key={href} href={href} className={active ? "nav-link active" : "nav-link"}><Icon size={19}/><span>{label}</span></Link>
-        })}
-      </nav>
-    </aside>
-    <section className="workspace">
-      <header className="topbar">
-        <form className="searchbox" role="search" onSubmit={(event)=>event.preventDefault()}><Search size={18} aria-hidden="true"/><input type="search" aria-label="Search courses, workshops, people and resources" placeholder="Search courses, workshops, people, resources..." /></form>
-        <div className="top-actions"><button type="button" className="icon-button" aria-label="Open notifications"><Bell size={19} aria-hidden="true"/></button><div className="profile-chip" aria-label="Signed in as Gaurav Thawani, Learner"><div className="avatar" aria-hidden="true">GT</div><div><strong>Gaurav Thawani</strong><span>Learner</span></div></div></div>
-      </header>
-      <main className="page" id="lms-main" tabIndex="-1">{children}</main>
-    </section>
-  </div>
+    <header className="learner-header">
+      <div className="learner-header-inner">
+        <Link className="learner-brand" href="/lms" aria-label="WeAreAiLabs LMS home">weareailabs</Link>
+
+        <nav className="learner-nav" aria-label="Primary LMS">
+          {primaryNav.map(([href,label]) => {
+            const active = href === "/lms" ? pathname === "/lms" : pathname.startsWith(href);
+            return <Link key={href} href={href} className={active ? "learner-nav-link active" : "learner-nav-link"}>{label}</Link>;
+          })}
+          <details className="learner-more">
+            <summary>More</summary>
+            <div className="learner-more-menu">
+              {utilityNav.map(([href,label,Icon]) => <Link href={href} key={href}><Icon size={16} aria-hidden="true"/><span>{label}</span></Link>)}
+            </div>
+          </details>
+        </nav>
+
+        <div className="learner-tools">
+          <form className="learner-search" role="search" onSubmit={(event)=>event.preventDefault()}>
+            <Search size={17} aria-hidden="true"/>
+            <input type="search" aria-label="Search LMS" placeholder="Search"/>
+          </form>
+          <button type="button" className="icon-button" aria-label="Open notifications"><Bell size={18} aria-hidden="true"/></button>
+          <Link href="/lms/profile" className="learner-profile" aria-label="Open profile">
+            <span className="avatar" aria-hidden="true">GT</span>
+            <span className="learner-profile-copy"><strong>Gaurav</strong><small>Learner</small></span>
+          </Link>
+        </div>
+      </div>
+    </header>
+    <main className="page lms-page-enter" id="lms-main" tabIndex="-1">{children}</main>
+  </div>;
 }
 
 const agenda = [
@@ -52,119 +89,83 @@ const agenda = [
 
 export function DashboardScreen() {
   const upcoming = [
-    { date:"24", month:"OCT", title:"From AI Pilots to Real Impact", speaker:"Rohan Mehta", mode:"Online", tone:"one" },
-    { date:"08", month:"NOV", title:"Building AI-Ready Teams", speaker:"Anita Kapoor", mode:"Mumbai", tone:"two" },
-    { date:"22", month:"NOV", title:"AI & Regulation", speaker:"Vikram Sinha", mode:"Online", tone:"three" },
+    { date:"24", month:"OCT", title:"From AI Pilots to Real Impact", speaker:"Rohan Mehta", mode:"Online" },
+    { date:"08", month:"NOV", title:"Building AI-Ready Teams", speaker:"Anita Kapoor", mode:"Mumbai" },
+    { date:"22", month:"NOV", title:"AI & Regulation", speaker:"Vikram Sinha", mode:"Online" },
   ];
 
   return <Shell>
-    <div className="premium-home module-home">
-      <section className="home-intro">
-        <div>
-          <span className="eyebrow">WELCOME BACK</span>
-          <h1>Gaurav.</h1>
-          <p>Keep learning. Build what’s next.</p>
+    <div className="editorial-home module-home">
+      <section className="editorial-home-intro">
+        <div><span className="eyebrow">TUESDAY · 06 OCTOBER 2026</span><h1>Gaurav, keep<br/>building what’s next.</h1></div>
+        <p>Your learning, live sessions and practical work — without the dashboard clutter.</p>
+      </section>
+
+      <section className="editorial-resume">
+        <div className="editorial-resume-index">03</div>
+        <div className="editorial-resume-copy">
+          <span className="eyebrow light">CONTINUE LEARNING</span>
+          <p className="editorial-resume-meta">AI Strategy for Business Leaders · Module 3 of 8</p>
+          <h2>Identifying High-Value<br/>AI Use Cases</h2>
+          <div className="editorial-progress"><div className="progress"><span style={{width:"62%"}}/></div><b>62%</b></div>
+          <div className="action-row"><Link className="button accent" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue learning →</Link><Link className="text-link light-link" href="/lms/learn">View programme</Link></div>
         </div>
-        <div className="home-date" aria-label="Tuesday 06 October 2026">
-          <span>Tuesday · 06 October 2026</span>
+        <div className="editorial-resume-motion">
+          <SignatureMotion/>
+          <div><span>LEARNING MOMENTUM</span><strong>Turn possibility<br/>into progress.</strong></div>
         </div>
       </section>
 
-      <div className="home-grid">
-        <section className="home-main">
-          <article className="home-course-hero">
-            <div className="hero-course-copy">
-              <span className="eyebrow light">CONTINUE LEARNING</span>
-              <div className="hero-course-kicker">AI STRATEGY · MODULE 3 OF 8</div>
-              <h2>AI Strategy for<br/>Business Leaders</h2>
-              <p>Identifying High-Value AI Use Cases</p>
-              <div className="hero-progress-row"><div className="progress"><span style={{width:"62%"}}/></div><b>62%</b></div>
-              <div className="action-row">
-                <Link className="button accent premium-cta" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue learning →</Link>
-                <Link className="text-link light-link" href="/lms/learn">View programme →</Link>
-              </div>
-            </div>
-            <div className="home-hero-art">
-              <div className="hero-art-label"><span>STRATEGY</span><strong>Turn possibility<br/>into progress.</strong><i/></div>
-              <div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/>
-            </div>
-          </article>
+      <section className="editorial-home-pair">
+        <div className="editorial-agenda">
+          <div className="editorial-section-head"><div><span className="eyebrow">TODAY</span><h2>Your agenda</h2></div><a>Calendar →</a></div>
+          <div className="editorial-agenda-list">
+            {agenda.map(([time,type,title,meta,action],i)=><div className="editorial-agenda-row" key={time}>
+              <time>{time}</time>
+              <div className="editorial-agenda-copy"><strong>{title}</strong><small>{meta}</small></div>
+              <span className={type==="LIVE"?"status live":type==="DUE"?"status due":"agenda-type"}>{type}</span>
+              <button className={i===1?"button dark small":"button secondary small"}>{action}</button>
+            </div>)}
+          </div>
+        </div>
 
-          <section className="home-section today-section">
-            <div className="home-section-head"><div><span className="eyebrow">TODAY</span><h2>Your agenda</h2></div><a>View calendar →</a></div>
-            <div className="premium-agenda">
-              {agenda.map(([time,type,title,meta,action],i)=><div className="premium-agenda-row" key={time}>
-                <time>{time}</time>
-                <div className={"agenda-marker marker-"+i}>{i===1?<Video size={17}/>:<PlayCircle size={17}/>}</div>
-                <div className="premium-agenda-copy">
-                  <div><strong>{title}</strong>{type==="LIVE"||type==="DUE"?<span className={"status "+type.toLowerCase()}>{type}</span>:<span className="agenda-type">{type}</span>}</div>
-                  <small>{meta}</small>
-                </div>
-                <button className={i===1?"button dark small":"button secondary small"}>{action}</button>
-              </div>)}
-            </div>
-          </section>
+        <div className="editorial-cohort">
+          <div className="editorial-section-head"><div><span className="eyebrow">YOUR COHORT</span><h2>AI Strategy for Business Leaders</h2></div><Link href="/lms/community">Open →</Link></div>
+          <p>Mumbai · October 2026 · 34 members</p>
+          <div className="editorial-cohort-people"><div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div></div>
+          <div className="editorial-cohort-metrics"><div><strong>7</strong><span>active discussions</span></div><div><strong>3</strong><span>peer projects</span></div><div><strong>2</strong><span>live sessions</span></div></div>
+          <Link className="editorial-discussion-link" href="/lms/community/discussion/ai-roi"><span>Latest discussion</span><strong>How are you measuring ROI on AI pilots?</strong><ArrowUpRight size={16}/></Link>
+        </div>
+      </section>
 
-          <section className="home-section">
-            <div className="home-section-head"><div><span className="eyebrow">UPCOMING</span><h2>Workshops</h2></div><Link href="/lms/workshops">View all →</Link></div>
-            <div className="premium-workshop-grid">
-              {upcoming.map((w,i)=><article className="premium-workshop-card" key={w.title}>
-                <div className={"premium-workshop-art "+w.tone}><span>{w.mode}</span></div>
-                <div className="premium-workshop-meta"><div className="premium-date"><strong>{w.date}</strong><span>{w.month}</span></div><div><h3>{w.title}</h3><p>{w.speaker}</p></div></div>
-                <div className="premium-workshop-footer"><span>11:00–12:30 IST</span><Link href={i===0?"/lms/workshops/from-ai-pilots-to-real-impact":"/lms/workshops"}>View →</Link></div>
-              </article>)}
-            </div>
-          </section>
-        </section>
+      <section className="editorial-workshops">
+        <div className="editorial-section-head"><div><span className="eyebrow">UPCOMING</span><h2>Workshops</h2></div><Link href="/lms/workshops">All workshops →</Link></div>
+        <div className="editorial-workshop-list">
+          {upcoming.map((w,i)=><Link className="editorial-workshop-row" href={i===0?"/lms/workshops/from-ai-pilots-to-real-impact":"/lms/workshops"} key={w.title}>
+            <div className="editorial-workshop-date"><strong>{w.date}</strong><span>{w.month}</span></div>
+            <div className="editorial-workshop-title"><span>{w.mode}</span><h3>{w.title}</h3><p>{w.speaker}</p></div>
+            <div className="editorial-workshop-time">11:00–12:30 IST</div>
+            <ArrowUpRight size={17}/>
+          </Link>)}
+        </div>
+      </section>
 
-        <aside className="home-rail home-companion" aria-label="Learning overview">
-          <section className="companion-section companion-cohort">
-            <div className="companion-head">
-              <div><span className="eyebrow">YOUR COHORT</span><h3>AI Strategy for Business Leaders</h3></div>
-              <Link href="/lms/community">Open →</Link>
-            </div>
-            <p className="companion-meta">Mumbai · October 2026 · 34 members</p>
-            <div className="companion-members" aria-label="Cohort members">
-              <div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div>
-            </div>
-            <div className="companion-metrics">
-              <div><strong>7</strong><span>Discussions</span></div>
-              <div><strong>3</strong><span>Peer projects</span></div>
-              <div><strong>2</strong><span>Live sessions</span></div>
-            </div>
-          </section>
+      <section className="editorial-bottom-grid">
+        <div className="editorial-community-pulse">
+          <div className="editorial-section-head"><div><span className="eyebrow">COMMUNITY</span><h2>Worth joining.</h2></div><Link href="/lms/community">Open community →</Link></div>
+          {[
+            ["How are you measuring ROI on AI pilots?","12 replies · AI Strategy"],
+            ["A simple way to separate experimentation from scale","18 replies · Framework"],
+            ["Our first internal AI enablement playbook","9 replies · Show & Tell"]
+          ].map(([title,meta])=><Link href="/lms/community" className="editorial-topic-row" key={title}><div><strong>{title}</strong><span>{meta}</span></div><ArrowUpRight size={15}/></Link>)}
+        </div>
 
-          <section className="companion-section companion-skills">
-            <div className="companion-head">
-              <div><span className="eyebrow">PROGRESS</span><h3>Skills</h3></div>
-              <Link href="/lms/skills">View all →</Link>
-            </div>
-            <div className="companion-skill-list">
-              {[["AI Strategy",78],["AI Governance",62],["Prompt Engineering",45],["Responsible AI",68]].map(([label,value])=><div className="companion-skill-row" key={label}>
-                <div className="companion-skill-label"><span>{label}</span><b>{value}%</b></div>
-                <div className="skill-track"><i style={{width:value+"%"}}/></div>
-              </div>)}
-            </div>
-          </section>
-
-          <section className="companion-section companion-recordings">
-            <div className="companion-head">
-              <div><span className="eyebrow">WATCH AGAIN</span><h3>Recent recordings</h3></div>
-              <Link href="/lms/library/recordings">View all →</Link>
-            </div>
-            <div className="companion-recording-list">
-              <Link className="companion-recording" href="/lms/library/recordings/ai-governance-for-leaders">
-                <span className="companion-thumb rec-one"><PlayCircle size={20} aria-hidden="true"/></span>
-                <span className="companion-recording-copy"><strong>AI Governance for Leaders</strong><small>48 min · 2 days ago</small></span>
-              </Link>
-              <Link className="companion-recording" href="/lms/library/recordings">
-                <span className="companion-thumb rec-two"><PlayCircle size={20} aria-hidden="true"/></span>
-                <span className="companion-recording-copy"><strong>From Ideas to Implementation</strong><small>56 min · 1 week ago</small></span>
-              </Link>
-            </div>
-          </section>
-        </aside>
-      </div>
+        <div className="editorial-watch">
+          <div className="editorial-section-head"><div><span className="eyebrow">WATCH AGAIN</span><h2>Recent recordings</h2></div><Link href="/lms/library/recordings">Library →</Link></div>
+          <Link href="/lms/library/recordings/ai-governance-for-leaders" className="editorial-recording"><span className="editorial-recording-art recording-a"><PlayCircle size={22}/></span><span><strong>AI Governance for Leaders</strong><small>48 min · 2 days ago</small></span></Link>
+          <Link href="/lms/library/recordings" className="editorial-recording"><span className="editorial-recording-art recording-b"><PlayCircle size={22}/></span><span><strong>From Ideas to Implementation</strong><small>56 min · 1 week ago</small></span></Link>
+        </div>
+      </section>
     </div>
   </Shell>
 }
