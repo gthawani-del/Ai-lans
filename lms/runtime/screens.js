@@ -10,8 +10,8 @@ import { demoLmsData, getDemoSummary } from "../data/demo-data";
 import {
   ArrowUpRight, Bell, BookOpen, Bookmark, CalendarDays, CheckCircle2, ChevronLeft,
   ChevronRight, CircleHelp, Clock3, Compass, Download, FileText, FolderKanban, Home,
-  Library, MapPin, MessageCircle, Plus, PlayCircle, Search, ShieldCheck, Sparkles,
-  Trophy, Upload, UserRound, UsersRound, Video, X
+  Library, MapPin, MessageCircle, MoreHorizontal, Plus, PlayCircle, Search, ShieldCheck,
+  Sparkles, Trophy, Upload, UserRound, UsersRound, Video, X
 } from "lucide-react";
 
 const primaryNav = [
@@ -29,6 +29,14 @@ const utilityNav = [
   ["/lms/assessments", "Assessments", ShieldCheck],
   ["/lms/certificates", "Certificates", Trophy],
   ["/lms/profile", "Profile", UserRound],
+];
+
+const mobileNav = [
+  ["/lms", "Home", Home],
+  ["/lms/learn", "Learn", BookOpen],
+  ["/lms/workshops", "Sessions", CalendarDays],
+  ["/lms/community", "Community", UsersRound],
+  ["/lms/projects", "Projects", FolderKanban],
 ];
 
 function SignatureMotion() {
@@ -127,7 +135,12 @@ function Walkthrough({ pathname }) {
   useEffect(() => {
     if (!open) return;
     const update = () => {
-      const element = document.querySelector(walkthroughSteps[step].selector);
+      const mobile = window.innerWidth <= 760;
+      let selector = walkthroughSteps[step].selector;
+      if (mobile && step === 2) selector = '[data-tour="mobile-nav-workshops"]';
+      if (mobile && step === 3) selector = '[data-tour="mobile-nav-projects"]';
+      if (mobile && step === 4) selector = '[data-tour="mobile-more"]';
+      const element = document.querySelector(selector);
       if (!element) return setRect(null);
       const box = element.getBoundingClientRect();
       setRect({
@@ -227,8 +240,26 @@ function Shell({ children }) {
             <Search size={17} aria-hidden="true"/>
             <input type="search" aria-label="Search LMS" placeholder="Search"/>
           </form>
+
+          <details className="mobile-search-menu">
+            <summary aria-label="Search LMS"><Search size={18} aria-hidden="true"/></summary>
+            <form role="search" onSubmit={(event)=>event.preventDefault()}>
+              <Search size={17} aria-hidden="true"/>
+              <input type="search" aria-label="Search LMS" placeholder="Search courses, sessions, projects..."/>
+            </form>
+          </details>
+
           <HelpTooltip label="About notifications" text="Notifications will group feedback, session reminders and community mentions."><Bell size={18} aria-hidden="true"/></HelpTooltip>
           <HelpTooltip label="How to use this LMS" text="Need orientation? Open More → Getting around WeAreAiLabs."><CircleHelp size={18} aria-hidden="true"/></HelpTooltip>
+
+          <details className="mobile-more-wrap">
+            <summary data-tour="mobile-more" aria-label="More LMS sections"><MoreHorizontal size={20} aria-hidden="true"/></summary>
+            <div className="mobile-more-sheet">
+              <div className="mobile-sheet-head"><strong>More</strong><span>Resources, progress and account</span></div>
+              {utilityNav.map(([href,label,Icon]) => <Link href={href} key={href}><Icon size={18} aria-hidden="true"/><span>{label}</span><ArrowUpRight size={14}/></Link>)}
+            </div>
+          </details>
+
           <Link href="/lms/profile" className="learner-profile" aria-label="Open profile">
             <span className="avatar" aria-hidden="true">GT</span>
             <span className="learner-profile-copy"><strong>Gaurav</strong><small>Learner</small></span>
@@ -237,6 +268,13 @@ function Shell({ children }) {
       </div>
     </header>
     <main className="page lms-page-enter" id="lms-main" tabIndex="-1">{children}</main>
+    <nav className="mobile-bottom-nav" aria-label="Mobile LMS">
+      {mobileNav.map(([href,label,Icon]) => {
+        const active = href === "/lms" ? pathname === "/lms" : pathname.startsWith(href);
+        const tourKey = label==="Sessions" ? "mobile-nav-workshops" : label==="Projects" ? "mobile-nav-projects" : undefined;
+        return <Link key={href} href={href} data-tour={tourKey} className={active ? "active" : ""}><Icon size={20} aria-hidden="true"/><span>{label}</span></Link>;
+      })}
+    </nav>
     <Walkthrough pathname={pathname}/>
   </div>;
 }
@@ -533,9 +571,9 @@ export function SkillsScreen() {
         <div className="skills-table-head" role="row"><span>Skill</span><span>Level</span><span>Evidence</span><span>Last updated</span></div>
         {skills.map(skill => <div className="skills-table-row" role="row" key={skill.id}>
           <div><strong>{skill.name}</strong><p>{skill.description}</p></div>
-          <div><span className={"skill-level level-"+skill.levelKey}>{skill.level}</span></div>
-          <div className="skill-evidence-list">{skill.evidence.length?skill.evidence.map(item=><Link href={item.href} key={item.label}>{item.label}<ArrowUpRight size={13}/></Link>):<span className="skill-empty">Complete a project milestone to add evidence.</span>}</div>
-          <div><span>{skill.updatedLabel}</span></div>
+          <div><span className="mobile-field-label">Level</span><span className={"skill-level level-"+skill.levelKey}>{skill.level}</span></div>
+          <div className="skill-evidence-list"><span className="mobile-field-label">Evidence</span>{skill.evidence.length?skill.evidence.map(item=><Link href={item.href} key={item.label}>{item.label}<ArrowUpRight size={13}/></Link>):<span className="skill-empty">Complete a project milestone to add evidence.</span>}</div>
+          <div><span className="mobile-field-label">Updated</span><span>{skill.updatedLabel}</span></div>
         </div>)}
       </div>
 
