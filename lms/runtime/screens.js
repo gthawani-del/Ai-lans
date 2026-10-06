@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import gsap from "gsap";
 import Lottie from "lottie-react";
 import learningPulse from "./learning-pulse.json";
 import { demoLmsData, getDemoSummary } from "../data/demo-data";
 import {
-  ArrowUpRight, Bell, BookOpen, Bookmark, CalendarDays, CheckCircle2, Clock3,
-  Download, FileText, FolderKanban, Home, Library, MapPin, MessageCircle, Plus,
-  PlayCircle, Search, ShieldCheck, Sparkles, Trophy, Upload, UserRound, UsersRound, Video
+  ArrowUpRight, Bell, BookOpen, Bookmark, CalendarDays, CheckCircle2, ChevronLeft,
+  ChevronRight, CircleHelp, Clock3, Compass, Download, FileText, FolderKanban, Home,
+  Library, MapPin, MessageCircle, Plus, PlayCircle, Search, ShieldCheck, Sparkles,
+  Trophy, Upload, UserRound, UsersRound, Video, X
 } from "lucide-react";
 
 const primaryNav = [
@@ -22,6 +23,7 @@ const primaryNav = [
 ];
 
 const utilityNav = [
+  ["/lms/guide", "Getting around", Compass],
   ["/lms/library", "Library", Library],
   ["/lms/skills", "Skills", Sparkles],
   ["/lms/assessments", "Assessments", ShieldCheck],
@@ -31,6 +33,161 @@ const utilityNav = [
 
 function SignatureMotion() {
   return <div className="signature-motion" aria-hidden="true"><Lottie animationData={learningPulse} loop autoplay /></div>;
+}
+
+function HelpTooltip({ text, label = "More information", children }) {
+  const id = useId();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, [open]);
+
+  return <span className="help-tooltip" onMouseLeave={()=>setOpen(false)}>
+    <button
+      type="button"
+      className="help-tooltip-trigger"
+      aria-label={label}
+      aria-describedby={open ? id : undefined}
+      aria-expanded={open}
+      onMouseEnter={()=>setOpen(true)}
+      onFocus={()=>setOpen(true)}
+      onBlur={()=>setOpen(false)}
+      onClick={()=>setOpen(value=>!value)}
+    >
+      {children || <CircleHelp size={16} aria-hidden="true"/>}
+    </button>
+    {open && <span className="help-tooltip-bubble" role="tooltip" id={id}>{text}</span>}
+  </span>;
+}
+
+const walkthroughSteps = [
+  {
+    selector:'[data-tour="programme"]',
+    eyebrow:"YOUR PROGRAMME",
+    title:"Everything starts from here.",
+    body:"Home shows the programme you are enrolled in, its dates and your overall progress."
+  },
+  {
+    selector:'[data-tour="next-action"]',
+    eyebrow:"NEXT ACTION",
+    title:"You never need to guess what to do next.",
+    body:"This area changes with your programme state: pre-work, live session, deadline or next lesson."
+  },
+  {
+    selector:'[data-tour="nav-workshops"]',
+    eyebrow:"LIVE SESSIONS",
+    title:"Your schedule lives here.",
+    body:"See Day 1 and Day 2 sessions, registration state, timing, venue and later the recordings."
+  },
+  {
+    selector:'[data-tour="nav-projects"]',
+    eyebrow:"PRACTICAL WORK",
+    title:"Projects turn learning into evidence.",
+    body:"Build, submit, receive feedback and carry verified evidence into your Skills profile."
+  },
+  {
+    selector:'[data-tour="more"]',
+    eyebrow:"MORE",
+    title:"Resources and progress stay out of the main navigation.",
+    body:"Library, Skills, Assessments, Certificates, Profile and the permanent LMS Guide are here."
+  }
+];
+
+function Walkthrough({ pathname }) {
+  const storageKey = "weareailabs:lms-walkthrough-v1";
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(0);
+  const [rect, setRect] = useState(null);
+
+  useEffect(() => {
+    if (pathname !== "/lms") return;
+    try {
+      if (!window.localStorage.getItem(storageKey)) {
+        const timer = window.setTimeout(()=>setOpen(true), 650);
+        return () => window.clearTimeout(timer);
+      }
+    } catch {}
+  }, [pathname]);
+
+  useEffect(() => {
+    const replay = () => {
+      setStep(0);
+      setOpen(true);
+    };
+    window.addEventListener("lms:walkthrough", replay);
+    return () => window.removeEventListener("lms:walkthrough", replay);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const element = document.querySelector(walkthroughSteps[step].selector);
+      if (!element) return setRect(null);
+      const box = element.getBoundingClientRect();
+      setRect({
+        top: Math.max(6, box.top - 7),
+        left: Math.max(6, box.left - 7),
+        width: Math.min(window.innerWidth - 12, box.width + 14),
+        height: box.height + 14
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [open, step, pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (event) => {
+      if (event.key === "Escape") finish();
+    };
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  });
+
+  const finish = () => {
+    try { window.localStorage.setItem(storageKey, "done"); } catch {}
+    setOpen(false);
+    setStep(0);
+  };
+
+  if (!open || pathname !== "/lms") return null;
+  const current = walkthroughSteps[step];
+
+  return <>
+    <div className="tour-backdrop" aria-hidden="true"/>
+    {rect && <div className="tour-spotlight" aria-hidden="true" style={rect}/>}
+    <section className="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <div className="tour-card-top">
+        <span>{current.eyebrow}</span>
+        <button type="button" onClick={finish} aria-label="Close walkthrough"><X size={17}/></button>
+      </div>
+      <h2 id="tour-title">{current.title}</h2>
+      <p>{current.body}</p>
+      <div className="tour-progress" aria-label={"Step "+(step+1)+" of "+walkthroughSteps.length}>
+        {walkthroughSteps.map((_,index)=><i className={index===step?"active":""} key={index}/>)}
+      </div>
+      <div className="tour-actions">
+        <button type="button" className="tour-skip" onClick={finish}>Don’t show again</button>
+        <div>
+          {step>0 && <button type="button" className="tour-arrow" onClick={()=>setStep(step-1)} aria-label="Previous step"><ChevronLeft size={17}/></button>}
+          <button type="button" className="button dark" onClick={()=>step===walkthroughSteps.length-1?finish():setStep(step+1)}>
+            {step===walkthroughSteps.length-1?"Done":"Next"} {step<walkthroughSteps.length-1&&<ChevronRight size={16}/>}
+          </button>
+        </div>
+      </div>
+    </section>
+  </>;
 }
 
 function Shell({ children }) {
@@ -55,10 +212,10 @@ function Shell({ children }) {
         <nav className="learner-nav" aria-label="Primary LMS">
           {primaryNav.map(([href,label]) => {
             const active = href === "/lms" ? pathname === "/lms" : pathname.startsWith(href);
-            return <Link key={href} href={href} className={active ? "learner-nav-link active" : "learner-nav-link"}>{label}</Link>;
+            return <Link key={href} href={href} data-tour={"nav-"+label.toLowerCase()} className={active ? "learner-nav-link active" : "learner-nav-link"}>{label}</Link>;
           })}
           <details className="learner-more">
-            <summary>More</summary>
+            <summary data-tour="more" aria-label="More: Library, Skills, Assessments, Certificates, Profile and LMS Guide">More</summary>
             <div className="learner-more-menu">
               {utilityNav.map(([href,label,Icon]) => <Link href={href} key={href}><Icon size={16} aria-hidden="true"/><span>{label}</span></Link>)}
             </div>
@@ -70,7 +227,8 @@ function Shell({ children }) {
             <Search size={17} aria-hidden="true"/>
             <input type="search" aria-label="Search LMS" placeholder="Search"/>
           </form>
-          <button type="button" className="icon-button" aria-label="Open notifications"><Bell size={18} aria-hidden="true"/></button>
+          <HelpTooltip label="About notifications" text="Notifications will group feedback, session reminders and community mentions."><Bell size={18} aria-hidden="true"/></HelpTooltip>
+          <HelpTooltip label="How to use this LMS" text="Need orientation? Open More → Getting around WeAreAiLabs."><CircleHelp size={18} aria-hidden="true"/></HelpTooltip>
           <Link href="/lms/profile" className="learner-profile" aria-label="Open profile">
             <span className="avatar" aria-hidden="true">GT</span>
             <span className="learner-profile-copy"><strong>Gaurav</strong><small>Learner</small></span>
@@ -79,6 +237,7 @@ function Shell({ children }) {
       </div>
     </header>
     <main className="page lms-page-enter" id="lms-main" tabIndex="-1">{children}</main>
+    <Walkthrough pathname={pathname}/>
   </div>;
 }
 
@@ -97,12 +256,12 @@ export function DashboardScreen() {
 
   return <Shell>
     <div className="editorial-home module-home trust-home">
-      <section className="trust-page-head">
+      <section className="trust-page-head" data-tour="programme">
         <div><span className="eyebrow">AI BUSINESS LAB · MUMBAI</span><h1>Welcome back, {user.firstName}.</h1><p>{programme.datesLabel} · {programme.format} · {programme.location}</p></div>
-        <div className="trust-head-meta"><span>PROGRAMME PROGRESS</span><strong>{programme.progress}%</strong><small>{summary.completedItems} of {summary.totalItems} learning items complete</small></div>
+        <div className="trust-head-meta"><span className="help-label">PROGRAMME PROGRESS <HelpTooltip label="About programme progress" text="Progress counts completed pre-work and programme learning items. Live attendance and project review are tracked separately."/></span><strong>{programme.progress}%</strong><small>{summary.completedItems} of {summary.totalItems} learning items complete</small></div>
       </section>
 
-      <section className="trust-next-action">
+      <section className="trust-next-action" data-tour="next-action">
         <div className="trust-action-label"><span className="eyebrow light">NEXT ACTION</span><small>Pre-work · due {programme.preworkDueLabel}</small></div>
         <div className="trust-action-copy"><h2>{programme.currentLesson.title}</h2><p>{programme.currentLesson.description}</p><div className="editorial-progress"><div className="progress"><span style={{width:programme.currentLesson.progress+"%"}}/></div><b>{programme.currentLesson.progress}%</b></div></div>
         <div className="trust-action-side"><SignatureMotion/><Link className="button accent" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue pre-work →</Link></div>
@@ -247,7 +406,7 @@ export function CommunityScreen() {
     <div className="trust-community module-community">
       <header className="compact-page-head">
         <div><span className="eyebrow">COMMUNITY</span><h1>Your cohort</h1><p>{community.memberCount} participants · AI Business Lab · Mumbai</p></div>
-        <button className="button dark"><Plus size={16}/> Start a discussion</button>
+        <div className="context-head-stack community-head-actions"><Link className="context-help-link" href="/lms/guide#community">How Community works →</Link><button className="button dark"><Plus size={16}/> Start a discussion</button></div>
       </header>
 
       <div className="trust-community-tabs">{community.categories.map((category,i)=><button className={i===0?"active":""} key={category}>{category}</button>)}</div>
@@ -258,7 +417,7 @@ export function CommunityScreen() {
           {community.posts.map((post,i)=><article className="trust-community-post" key={post.id}>
             <div className="post-avatar">{post.avatar}</div>
             <div>
-              <div className="post-byline"><strong>{post.author}</strong><span>{post.scope} · {post.ageLabel}</span>{post.unread&&<i className="unread-dot" aria-label="Unread"/>}</div>
+              <div className="post-byline"><strong>{post.author}</strong><span>{post.scope} · {post.ageLabel}</span>{post.unread&&<HelpTooltip label="Unread discussion" text="New activity since your last visit."><i className="unread-dot" aria-hidden="true"/></HelpTooltip>}</div>
               <span className="post-tag">{post.category}</span>
               <h2>{post.title}</h2><p>{post.body}</p>
               <div className="post-actions"><Link href={i===0?"/lms/community/discussion/ai-roi":"/lms/community"}><MessageCircle size={15}/>{post.replies} replies</Link><button><Bookmark size={14}/>{post.saves} saves</button></div>
@@ -305,7 +464,7 @@ export function ProjectsScreen() {
     <div className="trust-projects module-projects">
       <header className="compact-page-head">
         <div><span className="eyebrow">PROJECTS</span><h1>Practical outputs</h1><p>Three pieces of work move from pre-work to in-room build to post-lab action.</p></div>
-        <div className="compact-head-action"><span>In progress</span><strong>{projects.filter(p=>p.status==="in_progress").length}/{projects.length}</strong></div>
+        <div className="context-head-stack"><div className="compact-head-action"><span>In progress</span><strong>{projects.filter(p=>p.status==="in_progress").length}/{projects.length}</strong></div><Link className="context-help-link" href="/lms/guide#projects">How project feedback works →</Link></div>
       </header>
 
       <div className="trust-project-list">
@@ -313,7 +472,7 @@ export function ProjectsScreen() {
           <div className="trust-project-state"><span className={project.status==="in_progress"?"status in-progress":"status open-state"}>{project.statusLabel}</span><small>Due {project.dueLabel}</small></div>
           <div className="trust-project-main"><span className="eyebrow">{project.phase}</span><h2>{project.title}</h2><p>{project.description}</p></div>
           <div className="trust-project-progress"><strong>{project.completedMilestones}/{project.totalMilestones}</strong><span>milestones</span></div>
-          <div className="trust-project-review">
+          <div className="trust-project-review"><span className="review-help"><HelpTooltip label="About project review" text="After submission, a facilitator can review the project, leave rubric feedback and add evidence to your Skills profile."/></span>
             {project.review.state==="feedback_ready"?<><span className="status in-progress">Feedback ready</span><small>{project.review.reviewer} · {project.review.comments} comments</small></>:project.review.state==="in_review"?<><span className="status due">In review</span><small>{project.review.reviewer}</small></>:<><span className="project-muted">Not submitted</span><small>No reviewer yet</small></>}
           </div>
           <Link href={project.id==="opportunity-map"?"/lms/projects/ai-research-assistant":"/lms/projects"}>{project.status==="in_progress"?"Continue":"View brief"} <ArrowUpRight size={15}/></Link>
@@ -367,7 +526,7 @@ export function SkillsScreen() {
     <div className="trust-skills">
       <header className="compact-page-head">
         <div><span className="eyebrow">SKILLS × EVIDENCE</span><h1>Your capability record</h1><p>Skills grow when there is evidence behind them — projects, reviews and facilitator sign-off.</p></div>
-        <div className="compact-head-action"><span>With evidence</span><strong>{skills.filter(skill=>skill.evidence.length>0).length}/{skills.length}</strong></div>
+        <div className="context-head-stack"><div className="compact-head-action"><span className="help-label">With evidence <HelpTooltip label="About skill evidence" text="Evidence can come from project submissions, reviewed work, cohort contributions and facilitator sign-off."/></span><strong>{skills.filter(skill=>skill.evidence.length>0).length}/{skills.length}</strong></div><Link className="context-help-link" href="/lms/guide#skills">How Skills × Evidence works →</Link></div>
       </header>
 
       <div className="skills-table" role="table" aria-label="Skills and evidence">
@@ -399,6 +558,52 @@ const sectionCopy = {
   certificates:["Certificates","ACHIEVEMENTS","View earned credentials and verify completion."],
   profile:["Profile","ACCOUNT","Manage your profile, learning history and account preferences."]
 };
+
+export function GuideScreen() {
+  const restartTour = () => {
+    try { window.localStorage.removeItem("weareailabs:lms-walkthrough-v1"); } catch {}
+    window.location.href = "/lms";
+  };
+
+  const sections = [
+    { id:"learn", label:"01", title:"Learn", copy:"Complete pre-work and access the programme material you need before and during the Lab.", href:"/lms/learn" },
+    { id:"sessions", label:"02", title:"Live Sessions", copy:"See Day 1 and Day 2 timing, venue, registration state and later the session recordings.", href:"/lms/workshops" },
+    { id:"projects", label:"03", title:"Projects", copy:"Build practical outputs, submit them for review, revise with feedback and carry evidence into Skills.", href:"/lms/projects" },
+    { id:"community", label:"04", title:"Community", copy:"Ask questions, compare approaches, join cohort discussions and continue the conversation after the Lab.", href:"/lms/community" },
+    { id:"skills", label:"05", title:"Skills × Evidence", copy:"See capabilities you have demonstrated and the work, feedback or facilitator sign-off supporting them.", href:"/lms/skills" },
+    { id:"library", label:"06", title:"Library", copy:"Return to recordings, transcripts, templates and supporting resources after sessions are published.", href:"/lms/library" }
+  ];
+
+  return <Shell>
+    <div className="guide-page">
+      <header className="guide-head">
+        <div><span className="eyebrow">LMS GUIDE</span><h1>Getting around WeAreAiLabs</h1><p>You only need to understand one workflow: prepare, attend, build, get feedback, show evidence and keep access.</p></div>
+        <button className="button secondary" type="button" onClick={restartTour}>Replay 5-step tour</button>
+      </header>
+
+      <section className="guide-flow" aria-labelledby="guide-flow-title">
+        <div><span className="eyebrow">THE FLOW</span><h2 id="guide-flow-title">How the LMS fits together</h2></div>
+        <ol>
+          {["Learn","Attend","Build","Get feedback","Show evidence","Keep access"].map((item,index)=><li key={item}><span>{String(index+1).padStart(2,"0")}</span><strong>{item}</strong>{index<5&&<ChevronRight size={16} aria-hidden="true"/>}</li>)}
+        </ol>
+      </section>
+
+      <section className="guide-map">
+        <div className="editorial-section-head"><div><span className="eyebrow">START HERE</span><h2>Where everything lives</h2></div></div>
+        {sections.map(item=><article className="guide-row" id={item.id} key={item.id}>
+          <span className="guide-number">{item.label}</span>
+          <div><h3>{item.title}</h3><p>{item.copy}</p></div>
+          <Link href={item.href}>Open <ArrowUpRight size={15}/></Link>
+        </article>)}
+      </section>
+
+      <section className="guide-principles">
+        <div><span className="eyebrow">WHEN IN DOUBT</span><h2>Use Home as your control point.</h2><p>Home always shows your programme, the next action, upcoming sessions, active project and current cohort context.</p></div>
+        <div><strong>More</strong><p>Library, Skills, Assessments, Certificates, Profile and this guide stay under More so the main navigation remains simple.</p></div>
+      </section>
+    </div>
+  </Shell>
+}
 
 export function SectionScreen({ section }) {
   if(section==="community") return <CommunityScreen/>;
