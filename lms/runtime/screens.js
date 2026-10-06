@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import Lottie from "lottie-react";
 import learningPulse from "./learning-pulse.json";
+import { demoLmsData, getDemoSummary } from "../data/demo-data";
 import {
   ArrowUpRight, Bell, BookOpen, Bookmark, CalendarDays, CheckCircle2, Clock3,
   Download, FileText, FolderKanban, Home, Library, MapPin, MessageCircle, Plus,
@@ -82,88 +83,69 @@ function Shell({ children }) {
 }
 
 const agenda = [
-  ["09:30","Continue learning","AI Strategy for Business Leaders","Module 3 · 62% complete","Continue"],
+  ["09:30","Continue learning","AI Business Lab","Module 3 · 62% complete","Continue"],
   ["11:00","LIVE","AI Governance for Leaders","with Dr. Meera Iyer","Join session"],
   ["14:00","DUE","Project review","Responsible AI Strategy","Submit"],
 ];
 
 export function DashboardScreen() {
-  const upcoming = [
-    { date:"24", month:"OCT", title:"From AI Pilots to Real Impact", speaker:"Rohan Mehta", mode:"Online" },
-    { date:"08", month:"NOV", title:"Building AI-Ready Teams", speaker:"Anita Kapoor", mode:"Mumbai" },
-    { date:"22", month:"NOV", title:"AI & Regulation", speaker:"Vikram Sinha", mode:"Online" },
-  ];
+  const { user, programme, sessions, projects, community, recordings } = demoLmsData;
+  const summary = getDemoSummary();
+  const nextSessions = sessions.filter(session => session.status === "registered").slice(0,3);
+  const activeProject = projects.find(project => project.status === "in_progress");
+  const latestDiscussion = community.posts[0];
 
   return <Shell>
-    <div className="editorial-home module-home">
-      <section className="editorial-home-intro">
-        <div><span className="eyebrow">TUESDAY · 06 OCTOBER 2026</span><h1>Gaurav, keep<br/>building what’s next.</h1></div>
-        <p>Your learning, live sessions and practical work — without the dashboard clutter.</p>
+    <div className="editorial-home module-home trust-home">
+      <section className="trust-page-head">
+        <div><span className="eyebrow">AI BUSINESS LAB · MUMBAI</span><h1>Welcome back, {user.firstName}.</h1><p>{programme.datesLabel} · {programme.format} · {programme.location}</p></div>
+        <div className="trust-head-meta"><span>PROGRAMME PROGRESS</span><strong>{programme.progress}%</strong><small>{summary.completedItems} of {summary.totalItems} learning items complete</small></div>
       </section>
 
-      <section className="editorial-resume">
-        <div className="editorial-resume-index">03</div>
-        <div className="editorial-resume-copy">
-          <span className="eyebrow light">CONTINUE LEARNING</span>
-          <p className="editorial-resume-meta">AI Strategy for Business Leaders · Module 3 of 8</p>
-          <h2>Identifying High-Value<br/>AI Use Cases</h2>
-          <div className="editorial-progress"><div className="progress"><span style={{width:"62%"}}/></div><b>62%</b></div>
-          <div className="action-row"><Link className="button accent" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue learning →</Link><Link className="text-link light-link" href="/lms/learn">View programme</Link></div>
-        </div>
-        <div className="editorial-resume-motion">
-          <SignatureMotion/>
-          <div><span>LEARNING MOMENTUM</span><strong>Turn possibility<br/>into progress.</strong></div>
-        </div>
+      <section className="trust-next-action">
+        <div className="trust-action-label"><span className="eyebrow light">NEXT ACTION</span><small>Pre-work · due {programme.preworkDueLabel}</small></div>
+        <div className="trust-action-copy"><h2>{programme.currentLesson.title}</h2><p>{programme.currentLesson.description}</p><div className="editorial-progress"><div className="progress"><span style={{width:programme.currentLesson.progress+"%"}}/></div><b>{programme.currentLesson.progress}%</b></div></div>
+        <div className="trust-action-side"><SignatureMotion/><Link className="button accent" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue pre-work →</Link></div>
       </section>
 
-      <section className="editorial-home-pair">
-        <div className="editorial-agenda">
-          <div className="editorial-section-head"><div><span className="eyebrow">TODAY</span><h2>Your agenda</h2></div><a>Calendar →</a></div>
-          <div className="editorial-agenda-list">
-            {agenda.map(([time,type,title,meta,action],i)=><div className="editorial-agenda-row" key={time}>
-              <time>{time}</time>
-              <div className="editorial-agenda-copy"><strong>{title}</strong><small>{meta}</small></div>
-              <span className={type==="LIVE"?"status live":type==="DUE"?"status due":"agenda-type"}>{type}</span>
-              <button className={i===1?"button dark small":"button secondary small"}>{action}</button>
-            </div>)}
+      <section className="trust-two-col">
+        <div>
+          <div className="editorial-section-head"><div><span className="eyebrow">PROGRAMME SCHEDULE</span><h2>What’s next</h2></div><Link href="/lms/workshops">Full schedule →</Link></div>
+          <div className="trust-schedule-list">
+            {nextSessions.map(session => <Link className="trust-schedule-row" href="/lms/workshops" key={session.id}>
+              <div className="trust-date"><strong>{session.day}</strong><span>{session.month}</span></div>
+              <div><strong>{session.title}</strong><small>{session.time} IST · {session.format}</small></div>
+              <span className="status in-progress">Registered</span>
+              <ArrowUpRight size={16}/>
+            </Link>)}
           </div>
         </div>
 
-        <div className="editorial-cohort">
-          <div className="editorial-section-head"><div><span className="eyebrow">YOUR COHORT</span><h2>AI Strategy for Business Leaders</h2></div><Link href="/lms/community">Open →</Link></div>
-          <p>Mumbai · October 2026 · 34 members</p>
-          <div className="editorial-cohort-people"><div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div></div>
-          <div className="editorial-cohort-metrics"><div><strong>7</strong><span>active discussions</span></div><div><strong>3</strong><span>peer projects</span></div><div><strong>2</strong><span>live sessions</span></div></div>
-          <Link className="editorial-discussion-link" href="/lms/community/discussion/ai-roi"><span>Latest discussion</span><strong>How are you measuring ROI on AI pilots?</strong><ArrowUpRight size={16}/></Link>
+        <div>
+          <div className="editorial-section-head"><div><span className="eyebrow">ACTIVE PROJECT</span><h2>{activeProject.title}</h2></div><Link href="/lms/projects">Projects →</Link></div>
+          <div className="trust-project-summary">
+            <p>{activeProject.description}</p>
+            <div className="trust-project-status"><span className="status in-progress">In progress</span><span>Due {activeProject.dueLabel}</span><span>{activeProject.completedMilestones}/{activeProject.totalMilestones} milestones complete</span></div>
+            <Link href="/lms/projects" className="text-link">Continue project →</Link>
+          </div>
         </div>
       </section>
 
-      <section className="editorial-workshops">
-        <div className="editorial-section-head"><div><span className="eyebrow">UPCOMING</span><h2>Workshops</h2></div><Link href="/lms/workshops">All workshops →</Link></div>
-        <div className="editorial-workshop-list">
-          {upcoming.map((w,i)=><Link className="editorial-workshop-row" href={i===0?"/lms/workshops/from-ai-pilots-to-real-impact":"/lms/workshops"} key={w.title}>
-            <div className="editorial-workshop-date"><strong>{w.date}</strong><span>{w.month}</span></div>
-            <div className="editorial-workshop-title"><span>{w.mode}</span><h3>{w.title}</h3><p>{w.speaker}</p></div>
-            <div className="editorial-workshop-time">11:00–12:30 IST</div>
-            <ArrowUpRight size={17}/>
-          </Link>)}
-        </div>
+      <section className="trust-three-col">
+        <div className="trust-stat-block"><span className="eyebrow">YOUR COHORT</span><strong>{community.memberCount}</strong><p>participants</p><div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+{community.memberCount-4}</span></div></div>
+        <div className="trust-stat-block"><span className="eyebrow">DISCUSSIONS</span><strong>{community.posts.length}</strong><p>active threads</p><Link href="/lms/community">Open community →</Link></div>
+        <div className="trust-stat-block"><span className="eyebrow">SKILLS WITH EVIDENCE</span><strong>{summary.skillsWithEvidence}</strong><p>of {demoLmsData.skills.length} tracked</p><Link href="/lms/skills">View skills →</Link></div>
       </section>
 
       <section className="editorial-bottom-grid">
         <div className="editorial-community-pulse">
-          <div className="editorial-section-head"><div><span className="eyebrow">COMMUNITY</span><h2>Worth joining.</h2></div><Link href="/lms/community">Open community →</Link></div>
-          {[
-            ["How are you measuring ROI on AI pilots?","12 replies · AI Strategy"],
-            ["A simple way to separate experimentation from scale","18 replies · Framework"],
-            ["Our first internal AI enablement playbook","9 replies · Show & Tell"]
-          ].map(([title,meta])=><Link href="/lms/community" className="editorial-topic-row" key={title}><div><strong>{title}</strong><span>{meta}</span></div><ArrowUpRight size={15}/></Link>)}
+          <div className="editorial-section-head"><div><span className="eyebrow">LATEST DISCUSSION</span><h2>{latestDiscussion.title}</h2></div><Link href="/lms/community/discussion/ai-roi">Open →</Link></div>
+          <p className="trust-discussion-copy">{latestDiscussion.body}</p>
+          <div className="trust-discussion-meta"><span>{latestDiscussion.replies} replies</span><span>{latestDiscussion.saves} saves</span><span>{latestDiscussion.scope}</span></div>
         </div>
-
         <div className="editorial-watch">
           <div className="editorial-section-head"><div><span className="eyebrow">WATCH AGAIN</span><h2>Recent recordings</h2></div><Link href="/lms/library/recordings">Library →</Link></div>
-          <Link href="/lms/library/recordings/ai-governance-for-leaders" className="editorial-recording"><span className="editorial-recording-art recording-a"><PlayCircle size={22}/></span><span><strong>AI Governance for Leaders</strong><small>48 min · 2 days ago</small></span></Link>
-          <Link href="/lms/library/recordings" className="editorial-recording"><span className="editorial-recording-art recording-b"><PlayCircle size={22}/></span><span><strong>From Ideas to Implementation</strong><small>56 min · 1 week ago</small></span></Link>
+          {recordings.slice(0,2).map((recording,i)=><Link href="/lms/library/recordings" className="editorial-recording" key={recording.id}><span className={"editorial-recording-art "+(i===0?"recording-a":"recording-b")}><PlayCircle size={22}/></span><span><strong>{recording.title}</strong><small>{recording.duration} · {recording.ageLabel}</small></span></Link>)}
         </div>
       </section>
     </div>
@@ -171,125 +153,75 @@ export function DashboardScreen() {
 }
 
 export function LearnScreen() {
-  const programs=[
-    { title:"AI Strategy for Business Leaders", label:"EXECUTIVE PROGRAMME", desc:"Turn AI potential into measurable business impact.", meta:"8 modules · 6 weeks", level:"Intermediate", cover:"strategy", progress:"62%" },
-    { title:"Build AI Products Without Code", label:"BUILD TRACK", desc:"Move from idea to a working prototype using modern AI tools.", meta:"6 modules · 4 weeks", level:"Beginner", cover:"builder" },
-    { title:"Responsible AI for Organisations", label:"GOVERNANCE", desc:"Make AI adoption safer, accountable and practical.", meta:"5 modules · 4 weeks", level:"Intermediate", cover:"governance" },
-  ];
-  const courses=[
-    { title:"Generative AI for Work", topic:"PRODUCTIVITY", length:"12 lessons · 2h 10m", cover:"work" },
-    { title:"Prompt Engineering Essentials", topic:"PRACTICAL SKILL", length:"10 lessons · 1h 45m", cover:"prompt" },
-    { title:"AI for Data Analysis", topic:"DATA", length:"8 lessons · 2h 05m", cover:"data" },
-    { title:"AI for Marketing", topic:"FUNCTIONAL AI", length:"9 lessons · 1h 50m", cover:"marketing" },
-  ];
+  const { programme } = demoLmsData;
   return <Shell>
-    <div className="premium-learn module-learn">
-      <header className="learn-premium-head">
-        <div><span className="eyebrow">LEARN</span><h1>Skills for what’s next.</h1><p>Practical learning for real-world decisions, projects and leadership.</p></div>
-        <div className="learn-head-note"><span>YOUR FOCUS</span><strong>AI Strategy</strong><small>4 skills in progress</small></div>
+    <div className="trust-learn module-learn">
+      <header className="compact-page-head">
+        <div><span className="eyebrow">LEARN</span><h1>{programme.title}</h1><p>{programme.datesLabel} · {programme.format} · {programme.location}</p></div>
+        <div className="compact-head-action"><span>Programme progress</span><strong>{programme.progress}%</strong></div>
       </header>
 
-      <section className="learning-resume">
-        <div className="resume-index">03</div>
-        <div className="resume-copy"><span className="eyebrow">CONTINUE LEARNING</span><h2>Identifying High-Value AI Use Cases</h2><p>AI Strategy for Business Leaders · Module 3 of 8</p></div>
-        <div className="resume-progress"><div><span>Progress</span><b>62%</b></div><div className="skill-track"><i style={{width:"62%"}}/></div></div>
-        <Link className="button dark" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue →</Link>
+      <section className="trust-continue-strip">
+        <div><span className="eyebrow light">CONTINUE PRE-WORK</span><h2>{programme.currentLesson.title}</h2><p>{programme.currentLesson.description}</p></div>
+        <div className="trust-continue-progress"><div className="progress"><span style={{width:programme.currentLesson.progress+"%"}}/></div><b>{programme.currentLesson.progress}%</b></div>
+        <Link className="button accent" href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Continue →</Link>
       </section>
 
-      <div className="learn-nav-row">
-        <div className="tabs-row premium-tabs">{["All","Programs","Courses","Workshops","Short Lessons","Learning Paths"].map((x,i)=><button className={i===0?"tab active":"tab"} key={x}>{x}</button>)}</div>
-        <button className="learn-sort">Recommended ↓</button>
-      </div>
-
-      <div className="premium-catalog-layout">
-        <aside className="premium-filter">
-          <div className="premium-filter-head"><span>FILTERS</span><button>Clear</button></div>
-          <fieldset><legend>Format</legend>{["Programs","Courses","Short lessons","Workshop replays"].map(x=><label key={x}><input type="checkbox"/><span>{x}</span></label>)}</fieldset>
-          <fieldset><legend>Topic</legend>{["AI Strategy","Generative AI","Product & Design","Data & Analytics","Leadership","Governance"].map(x=><label key={x}><input type="checkbox"/><span>{x}</span></label>)}</fieldset>
-          <fieldset><legend>Level</legend>{["Beginner","Intermediate","Advanced"].map(x=><label key={x}><input type="checkbox"/><span>{x}</span></label>)}</fieldset>
-        </aside>
-
-        <div className="premium-catalog">
-          <div className="home-section-head"><div><span className="eyebrow">CURATED</span><h2>Featured programmes</h2></div><a>View all →</a></div>
-          <div className="premium-program-grid">
-            {programs.map((p,i)=><article className="premium-program-card" key={p.title}>
-              <div className={"editorial-cover cover-"+p.cover}>
-                <span>{p.label}</span><strong>{String(i+1).padStart(2,"0")}</strong><i/>
-              </div>
-              <div className="premium-program-copy">
-                <div className="programme-meta"><span>{p.meta}</span><span>{p.level}</span></div>
-                <h3>{p.title}</h3><p>{p.desc}</p>
-                {p.progress&&<div className="programme-progress"><div className="skill-track"><i style={{width:p.progress}}/></div><b>{p.progress}</b></div>}
-                <Link href={i===0?"/lms/learn/ai-strategy/lesson/high-value-use-cases":"/lms/learn"}>Explore programme <ArrowUpRight size={14}/></Link>
-              </div>
-            </article>)}
+      <section className="trust-learning-sections">
+        {programme.stages.map(stage => <article className="trust-learning-stage" key={stage.id}>
+          <div className="trust-stage-date"><span>{stage.label}</span><strong>{stage.dateLabel}</strong></div>
+          <div className="trust-stage-main"><h2>{stage.title}</h2><p>{stage.description}</p>
+            <div className="trust-stage-items">{stage.items.map(item => <div className="trust-stage-item" key={item.id}><span className={item.complete?"stage-check complete":"stage-check"}>{item.complete?"✓":"○"}</span><div><strong>{item.title}</strong><small>{item.meta}</small></div></div>)}</div>
           </div>
+          <div className="trust-stage-status"><span>{stage.completedCount}/{stage.items.length} complete</span></div>
+        </article>)}
+      </section>
 
-          <div className="home-section-head learn-subhead"><div><span className="eyebrow">ON DEMAND</span><h2>Courses</h2></div><a>Browse all →</a></div>
-          <div className="premium-course-list">
-            {courses.map((c,i)=><article className="premium-course-row" key={c.title}>
-              <div className={"course-tile tile-"+c.cover}><span>{String(i+1).padStart(2,"0")}</span><i/></div>
-              <div><span className="course-topic">{c.topic}</span><h3>{c.title}</h3><p>{c.length} · Certificate eligible</p></div>
-              <div className="course-skill-tags"><span>{i%2===0?"Business":"Hands-on"}</span><span>{i<2?"Popular":"New"}</span></div>
-              <Link href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Start <ArrowUpRight size={14}/></Link>
-            </article>)}
-          </div>
-
-          <div className="home-section-head learn-subhead"><div><span className="eyebrow">GUIDED</span><h2>Learning paths</h2></div></div>
-          <div className="learning-paths">
-            <article><span>01</span><div><strong>From Beginner to Builder</strong><p>4 courses · 3 practical projects</p></div><ArrowUpRight size={18}/></article>
-            <article><span>02</span><div><strong>AI for Business Functions</strong><p>Role-based learning across teams</p></div><ArrowUpRight size={18}/></article>
-            <article><span>03</span><div><strong>Governance & Responsible AI</strong><p>Policy, risk and operating practice</p></div><ArrowUpRight size={18}/></article>
-          </div>
-        </div>
-      </div>
+      <section className="trust-learning-links">
+        <Link href="/lms/projects"><span className="eyebrow">PROJECTS</span><strong>{demoLmsData.projects.length} practical outputs</strong><ArrowUpRight size={17}/></Link>
+        <Link href="/lms/workshops"><span className="eyebrow">LIVE SESSIONS</span><strong>{demoLmsData.sessions.length} scheduled sessions</strong><ArrowUpRight size={17}/></Link>
+        <Link href="/lms/skills"><span className="eyebrow">SKILLS</span><strong>{demoLmsData.skills.length} capabilities tracked</strong><ArrowUpRight size={17}/></Link>
+      </section>
     </div>
   </Shell>
 }
 
 export function LessonScreen() {
-  const lessons=["Identifying High-Value AI Use Cases","Evaluating Feasibility and ROI","Building a Business Case","Stakeholder Alignment","From Pilot to Scale","Module Review & Quiz"];
-  return <Shell><div className="lesson-layout"><section className="lesson-main"><div className="breadcrumb">Learn <span>›</span> AI Strategy for Business Leaders <span>›</span> Module 3</div><span className="status in-progress">In Progress</span><h1 className="lesson-title">Identifying High-Value AI Use Cases</h1><p className="lesson-deck">Learn how to evaluate, prioritise and scope AI use cases that deliver real business impact.</p><div className="video-stage"><div className="video-copy"><span>MODULE 3</span><h2>Identifying<br/>High-Value<br/>AI Use Cases</h2><p>From possibility to practical impact.</p></div><button className="play-button"><PlayCircle size={50}/></button><div className="video-controls"><span>▶</span><div className="video-progress"><i/></div><span>0:12 / 12:34</span><span>CC</span><span>1×</span></div></div><div className="tabs-row lesson-tabs">{["Overview","Notes","Transcript","Resources","Discussion"].map((x,i)=><button className={i===0?"tab active":"tab"} key={x}>{x}</button>)}</div><article className="lesson-body"><h2>About this lesson</h2><p>We break down a practical framework to identify, evaluate and prioritise AI use cases in your organisation.</p><div className="takeaways"><h3>Key takeaways</h3><div><span>✓ Identify high-value use cases</span><span>✓ Assess feasibility and ROI</span><span>✓ Learn from real examples</span><span>✓ Use a practical template</span></div></div></article></section><aside className="lesson-rail"><section className="course-summary"><div className="course-cover"/><h2>AI Strategy for Business Leaders</h2><p>Turn AI potential into measurable business impact.</p><div className="progress"><span style={{width:"62%"}}/></div><div className="summary-meta"><span>Module 3 of 8</span><b>62% complete</b></div></section><section className="curriculum">{lessons.map((x,i)=><div className={i===0?"lesson-row active":"lesson-row"} key={x}><span>{i===0?"▶":"🔒"}</span><strong>{i+1}. {x}</strong><small>{10+i}:21</small></div>)}</section></aside></div></Shell>
+  const lessons=["Identify Your High-Value AI Use Case","Evaluating Feasibility and ROI","Building a Business Case","Stakeholder Alignment","From Pilot to Scale","Module Review & Quiz"];
+  return <Shell><div className="lesson-layout"><section className="lesson-main"><div className="breadcrumb">Learn <span>›</span> AI Business Lab <span>›</span> Module 3</div><span className="status in-progress">In Progress</span><h1 className="lesson-title">Identify Your High-Value AI Use Case</h1><p className="lesson-deck">Learn how to evaluate, prioritise and scope AI use cases that deliver real business impact.</p><div className="video-stage"><div className="video-copy"><span>MODULE 3</span><h2>Identifying<br/>High-Value<br/>AI Use Cases</h2><p>From possibility to practical impact.</p></div><button className="play-button"><PlayCircle size={50}/></button><div className="video-controls"><span>▶</span><div className="video-progress"><i/></div><span>0:12 / 12:34</span><span>CC</span><span>1×</span></div></div><div className="tabs-row lesson-tabs">{["Overview","Notes","Transcript","Resources","Discussion"].map((x,i)=><button className={i===0?"tab active":"tab"} key={x}>{x}</button>)}</div><article className="lesson-body"><h2>About this lesson</h2><p>We break down a practical framework to identify, evaluate and prioritise AI use cases in your organisation.</p><div className="takeaways"><h3>Key takeaways</h3><div><span>✓ Identify high-value use cases</span><span>✓ Assess feasibility and ROI</span><span>✓ Learn from real examples</span><span>✓ Use a practical template</span></div></div></article></section><aside className="lesson-rail"><section className="course-summary"><div className="course-cover"/><h2>AI Business Lab</h2><p>Turn AI potential into measurable business impact.</p><div className="progress"><span style={{width:"62%"}}/></div><div className="summary-meta"><span>Module 3 of 8</span><b>62% complete</b></div></section><section className="curriculum">{lessons.map((x,i)=><div className={i===0?"lesson-row active":"lesson-row"} key={x}><span>{i===0?"▶":"🔒"}</span><strong>{i+1}. {x}</strong><small>{10+i}:21</small></div>)}</section></aside></div></Shell>
 }
 
 export function WorkshopsScreen() {
-  const rows=[
-    {date:"24",month:"OCT",title:"From AI Pilots to Real Impact",speaker:"Rohan Mehta",role:"AI transformation advisor",time:"11:00–12:30",format:"Online",cohort:"AI Strategy Cohort",state:"REGISTERED",tone:"one"},
-    {date:"08",month:"NOV",title:"Building AI-Ready Teams",speaker:"Anita Kapoor",role:"Organisation design leader",time:"11:00–12:30",format:"Mumbai",cohort:"AI Strategy Cohort",state:"OPEN",tone:"two"},
-    {date:"22",month:"NOV",title:"AI & Regulation: What Leaders Need to Know",speaker:"Vikram Sinha",role:"Technology counsel",time:"11:00–12:30",format:"Online",cohort:"Leadership Series",state:"OPEN",tone:"three"},
-    {date:"05",month:"DEC",title:"Scaling AI Across the Enterprise",speaker:"Nisha Rao",role:"Enterprise AI operator",time:"15:00–16:30",format:"Mumbai",cohort:"Leadership Series",state:"OPEN",tone:"four"},
-  ];
+  const { programme, sessions } = demoLmsData;
+  const registered = sessions.filter(session => session.status === "registered");
   return <Shell>
-    <div className="premium-workshops module-workshops">
-      <header className="workshops-premium-head">
-        <div><span className="eyebrow">WORKSHOPS</span><h1>Live learning.<br/>Real decisions.</h1><p>Expert-led sessions built around the work leaders actually need to do.</p></div>
-        <div className="workshop-stats"><div><strong>4</strong><span>upcoming</span></div><div><strong>2</strong><span>registered</span></div><div><strong>7.5h</strong><span>attended</span></div></div>
+    <div className="trust-workshops module-workshops">
+      <header className="compact-page-head">
+        <div><span className="eyebrow">LIVE SESSIONS</span><h1>{programme.title}</h1><p>{programme.datesLabel} · {programme.location}</p></div>
+        <div className="compact-head-action"><span>Registered</span><strong>{registered.length}/{sessions.length}</strong></div>
       </header>
 
-      <div className="tabs-row premium-tabs workshop-tabs">{["Upcoming","Registered","Past sessions","Recordings"].map((x,i)=><button className={i===0?"tab active":"tab"} key={x}>{x}</button>)}</div>
-
-      <section className="premium-workshop-feature">
-        <div className="feature-date-block"><span>OCT</span><strong>24</strong><small>SATURDAY</small></div>
-        <div className="feature-workshop-copy"><span className="eyebrow">NEXT LIVE SESSION</span><h2>From AI Pilots to Real Impact</h2><p>Move from isolated experiments to repeatable business outcomes — using a practical scale-up framework.</p><div className="feature-workshop-meta"><span><Clock3 size={15}/> 11:00–12:30 IST</span><span><Video size={15}/> Online</span><span><UsersRound size={15}/> 34 cohort members</span></div><div className="action-row"><Link className="button dark" href="/lms/workshops/from-ai-pilots-to-real-impact">Open workshop →</Link><button className="button secondary">Add to calendar</button></div></div>
-        <div className="feature-workshop-art"><span>WORKSHOP 04</span><strong>From pilot<br/>to progress.</strong><i/></div>
+      <section className="trust-session-summary">
+        <div><span className="eyebrow">DAY 1</span><h2>Build</h2><p>Hands-on application building from opportunity to working prototype.</p></div>
+        <div><span className="eyebrow">DAY 2</span><h2>Refine + Decide</h2><p>Continue building, then close with the expert panel across legal, technology and business.</p></div>
       </section>
 
-      <section className="workshop-schedule">
-        <div className="home-section-head"><div><span className="eyebrow">SCHEDULE</span><h2>Upcoming workshops</h2></div><a>Calendar view →</a></div>
-        <div className="premium-workshop-rows">
-          {rows.map((w,i)=><article className="premium-workshop-row" key={w.title}>
-            <div className="schedule-date"><strong>{w.date}</strong><span>{w.month}</span></div>
-            <div className={"schedule-art schedule-"+w.tone}><span>{w.format}</span></div>
-            <div className="schedule-main"><div className="schedule-title-line"><h3>{w.title}</h3><span className={w.state==="REGISTERED"?"registered-state":"open-state"}>{w.state}</span></div><div className="speaker-line"><span className="speaker-initial">{w.speaker.split(" ").map(x=>x[0]).join("")}</span><p><strong>{w.speaker}</strong><small>{w.role}</small></p></div></div>
-            <div className="schedule-context"><span><Clock3 size={14}/>{w.time}</span><span><UsersRound size={14}/>{w.cohort}</span></div>
-            <Link className="schedule-link" href={i===0?"/lms/workshops/from-ai-pilots-to-real-impact":"/lms/workshops"}>View <ArrowUpRight size={15}/></Link>
-          </article>)}
-        </div>
-      </section>
+      <div className="editorial-section-head trust-schedule-head"><div><span className="eyebrow">SCHEDULE</span><h2>All sessions</h2></div><span className="trust-timezone">Times shown in IST</span></div>
+      <div className="trust-session-list">
+        {sessions.map(session => <article className="trust-session-row" key={session.id}>
+          <div className="trust-date"><strong>{session.day}</strong><span>{session.month}</span></div>
+          <div className="trust-session-time"><strong>{session.time}</strong><small>IST</small></div>
+          <div className="trust-session-main"><span className="eyebrow">{session.track}</span><h3>{session.title}</h3><p>{session.facilitator} · {session.format}</p></div>
+          <div className="trust-session-actions">
+            {session.status==="registered"?<span className="status in-progress">✓ Registered</span>:<button className="button dark small">Register</button>}
+            <Link href="/lms/workshops/from-ai-pilots-to-real-impact">Details →</Link>
+          </div>
+        </article>)}
+      </div>
 
-      <section className="workshop-after">
-        <div><span className="eyebrow">AFTER THE ROOM</span><h2>Every workshop keeps working.</h2><p>Recordings, transcripts, resources and cohort discussions are kept together so the learning continues after the session.</p></div>
-        <Link href="/lms/library/recordings">Browse recordings <ArrowUpRight size={16}/></Link>
+      <section className="trust-post-session">
+        <div><span className="eyebrow light">AFTER THE LAB</span><h2>Recordings, resources and follow-up stay together.</h2><p>Every session will link to its recording, transcript, resources and discussion after the programme.</p></div>
+        <Link href="/lms/library/recordings">Open recordings →</Link>
       </section>
     </div>
   </Shell>
@@ -310,44 +242,33 @@ export function RecordingDetailScreen() {
 
 
 export function CommunityScreen() {
-  const posts=[
-    {avatar:"PS",name:"Priya Shah",role:"AI Strategy Cohort",time:"2h",tag:"DISCUSSION",title:"How are you measuring ROI on AI pilots?",body:"We have good pilot-level engagement, but I’m struggling with what to track once a use case moves into a business team. What has worked for others?",replies:12,saves:8},
-    {avatar:"RM",name:"Rohan Mehta",role:"Workshop faculty",time:"5h",tag:"FRAMEWORK",title:"A simple way to separate experimentation from scale",body:"Sharing the 2×2 framework from last week’s session. The useful distinction is not pilot vs production — it is evidence vs operating readiness.",replies:18,saves:23},
-    {avatar:"AK",name:"Anita Kapoor",role:"Cohort member",time:"1d",tag:"SHOW & TELL",title:"Our first internal AI enablement playbook",body:"We turned our workshop notes into a 6-page internal guide for managers. Posting the structure here in case it helps anyone building something similar.",replies:9,saves:14},
-  ];
+  const { community } = demoLmsData;
   return <Shell>
-    <div className="premium-community module-community">
-      <header className="community-head">
-        <div><span className="eyebrow">COMMUNITY</span><h1>Learn together.<br/>Build in public.</h1><p>Questions, frameworks and practical work from your cohort and the wider WeAreAiLabs network.</p></div>
-        <button className="button dark community-new"><Plus size={16}/> Start a discussion</button>
+    <div className="trust-community module-community">
+      <header className="compact-page-head">
+        <div><span className="eyebrow">COMMUNITY</span><h1>Your cohort</h1><p>{community.memberCount} participants · AI Business Lab · Mumbai</p></div>
+        <button className="button dark"><Plus size={16}/> Start a discussion</button>
       </header>
 
-      <div className="tabs-row premium-tabs community-tabs">{["My cohort","All discussions","Q&A","Show & Tell","Announcements"].map((x,i)=><button className={i===0?"tab active":"tab"} key={x}>{x}</button>)}</div>
+      <div className="trust-community-tabs">{community.categories.map((category,i)=><button className={i===0?"active":""} key={category}>{category}</button>)}</div>
 
-      <div className="community-layout">
-        <main className="community-feed">
-          <Link className="pinned-discussion" href="/lms/community/discussion/ai-roi">
-            <div><span className="eyebrow">PINNED · COHORT QUESTION</span><h2>What should AI ROI actually look like?</h2><p>A focused thread before our next workshop — share one metric you trust and one you don’t.</p></div><ArrowUpRight size={20}/>
-          </Link>
-
-          <div className="feed-toolbar"><span>Latest from your cohort</span><button>Newest ↓</button></div>
-          {posts.map((p,i)=><article className="community-post" key={p.title}>
-            <div className="post-avatar">{p.avatar}</div>
-            <div className="post-main">
-              <div className="post-byline"><strong>{p.name}</strong><span>{p.role} · {p.time}</span></div>
-              <span className="post-tag">{p.tag}</span>
-              <h3>{p.title}</h3><p>{p.body}</p>
-              <div className="post-actions"><Link href={i===0?"/lms/community/discussion/ai-roi":"/lms/community"}><MessageCircle size={15}/>{p.replies} replies</Link><button><Bookmark size={14}/>{p.saves} saves</button><button>Share</button></div>
+      <div className="community-layout trust-community-layout">
+        <main>
+          <div className="trust-new-divider"><span>New since your last visit</span></div>
+          {community.posts.map((post,i)=><article className="trust-community-post" key={post.id}>
+            <div className="post-avatar">{post.avatar}</div>
+            <div>
+              <div className="post-byline"><strong>{post.author}</strong><span>{post.scope} · {post.ageLabel}</span>{post.unread&&<i className="unread-dot" aria-label="Unread"/>}</div>
+              <span className="post-tag">{post.category}</span>
+              <h2>{post.title}</h2><p>{post.body}</p>
+              <div className="post-actions"><Link href={i===0?"/lms/community/discussion/ai-roi":"/lms/community"}><MessageCircle size={15}/>{post.replies} replies</Link><button><Bookmark size={14}/>{post.saves} saves</button></div>
             </div>
           </article>)}
         </main>
 
-        <aside className="community-rail">
-          <section className="premium-side-panel community-cohort">
-            <span className="eyebrow">YOUR COHORT</span><h3>AI Strategy for Business Leaders</h3><p>Mumbai · October 2026</p><div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+30</span></div><div className="community-cohort-stats"><span><b>34</b> members</span><span><b>7</b> active discussions</span></div>
-          </section>
-          <section className="premium-side-panel ama-panel"><span className="eyebrow">UPCOMING AMA</span><div className="ama-date"><strong>09</strong><span>OCT</span></div><h3>Ask Dr. Meera Iyer</h3><p>AI governance, decision rights and risk. Add your question before Thursday.</p><button className="button secondary">Submit a question</button></section>
-          <section className="premium-side-panel"><div className="panel-heading"><div><span className="eyebrow">CONTRIBUTORS</span><h3>Most helpful this week</h3></div></div>{[["RM","Rohan Mehta","18 helpful replies"],["PS","Priya Shah","12 helpful replies"],["AK","Anita Kapoor","9 helpful replies"]].map(x=><div className="contributor-row" key={x[1]}><span>{x[0]}</span><p><strong>{x[1]}</strong><small>{x[2]}</small></p></div>)}</section>
+        <aside className="trust-community-side">
+          <section><span className="eyebrow">COHORT</span><h3>AI Business Lab</h3><p>{community.memberCount} participants · Mumbai</p><div className="premium-avatar-stack"><span>PS</span><span>RM</span><span>AK</span><span>VS</span><span>+{community.memberCount-4}</span></div></section>
+          <section><span className="eyebrow">PRE-WORK AMA</span><h3>{community.ama.title}</h3><p>{community.ama.dateLabel} · {community.ama.description}</p><button className="button secondary">Submit a question</button></section>
         </aside>
       </div>
     </div>
@@ -373,32 +294,36 @@ export function CommunityThreadScreen() {
         {replies.map(r=><article className="thread-reply" key={r[1]}><div className="thread-author"><span>{r[0]}</span><p><strong>{r[1]}</strong><small>{r[2]}</small></p></div><p>{r[3]}</p><div><button>Helpful</button><button>Reply</button></div></article>)}
         <section className="reply-composer"><div className="post-avatar">GT</div><div><textarea placeholder="Add to the discussion..."/><div><span>Keep it practical and useful to the cohort.</span><button className="button dark">Reply</button></div></div></section>
       </main>
-      <aside><section className="premium-side-panel"><span className="eyebrow">THREAD CONTEXT</span><h3>AI Strategy for Business Leaders</h3><p>Module 3 · Identifying High-Value AI Use Cases</p><Link href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Open lesson →</Link></section><section className="premium-side-panel"><span className="eyebrow">RELATED</span>{["How we prioritised 14 AI use cases","Pilot scorecards that finance trusts","When adoption metrics matter more than ROI"].map(x=><Link className="related-thread" href="/lms/community" key={x}>{x}<ArrowUpRight size={13}/></Link>)}</section></aside>
+      <aside><section className="premium-side-panel"><span className="eyebrow">THREAD CONTEXT</span><h3>AI Business Lab</h3><p>Module 3 · Identify Your High-Value AI Use Case</p><Link href="/lms/learn/ai-strategy/lesson/high-value-use-cases">Open lesson →</Link></section><section className="premium-side-panel"><span className="eyebrow">RELATED</span>{["How we prioritised 14 AI use cases","Pilot scorecards that finance trusts","When adoption metrics matter more than ROI"].map(x=><Link className="related-thread" href="/lms/community" key={x}>{x}<ArrowUpRight size={13}/></Link>)}</section></aside>
     </div>
   </Shell>
 }
 
 export function ProjectsScreen() {
-  const projects=[
-    {title:"AI Research Assistant",type:"CAPSTONE",desc:"Design a focused AI assistant that helps a business team research, synthesise and decide faster.",due:"18 Oct",status:"IN PROGRESS",tone:"research"},
-    {title:"Responsible AI Playbook",type:"PRACTICAL BRIEF",desc:"Turn governance principles into a concise operating playbook for a real organisation.",due:"02 Nov",status:"NOT STARTED",tone:"govern"},
-    {title:"AI Opportunity Map",type:"STRATEGY EXERCISE",desc:"Map and prioritise opportunities across one business function using evidence and readiness.",due:"15 Nov",status:"NOT STARTED",tone:"map"},
-  ];
+  const { projects } = demoLmsData;
   return <Shell>
-    <div className="premium-projects module-projects">
-      <header className="projects-head"><div><span className="eyebrow">PROJECTS</span><h1>Build. Share.<br/>Get feedback.</h1><p>Turn learning into evidence by solving practical, real-world briefs.</p></div><div className="projects-score"><span>YOUR PROJECTS</span><strong>1 / 3</strong><small>currently in progress</small></div></header>
+    <div className="trust-projects module-projects">
+      <header className="compact-page-head">
+        <div><span className="eyebrow">PROJECTS</span><h1>Practical outputs</h1><p>Three pieces of work move from pre-work to in-room build to post-lab action.</p></div>
+        <div className="compact-head-action"><span>In progress</span><strong>{projects.filter(p=>p.status==="in_progress").length}/{projects.length}</strong></div>
+      </header>
 
-      <section className="active-project">
-        <div className="active-project-art"><span>CAPSTONE 01</span><strong>Research.<br/>Synthesis.<br/>Decision.</strong><i/></div>
-        <div className="active-project-copy"><span className="eyebrow">ACTIVE PROJECT</span><h2>AI Research Assistant</h2><p>Design a focused assistant that helps a business team research, synthesise and decide faster.</p><div className="active-project-meta"><span><Clock3 size={15}/> Due 18 October</span><span><UsersRound size={15}/> 11 cohort submissions</span></div><div className="project-progress"><span>Brief reviewed</span><span>Evidence added</span><span className="current">Build in progress</span><span>Submit</span></div><div className="action-row"><Link className="button dark" href="/lms/projects/ai-research-assistant">Continue project →</Link><Link className="text-link" href="/lms/community">See peer work →</Link></div></div>
-      </section>
-
-      <div className="home-section-head project-subhead"><div><span className="eyebrow">YOUR BRIEFS</span><h2>Projects</h2></div><button className="project-filter">All projects ↓</button></div>
-      <div className="project-grid">
-        {projects.map((p,i)=><article className="project-card" key={p.title}><div className={"project-cover project-"+p.tone}><span>{p.type}</span><strong>{String(i+1).padStart(2,"0")}</strong></div><div className="project-copy"><div className="project-status-line"><span className={p.status==="IN PROGRESS"?"project-live":"project-muted"}>{p.status}</span><small>Due {p.due}</small></div><h3>{p.title}</h3><p>{p.desc}</p><div className="project-card-foot"><span>{i===0?"3 of 4 milestones":"4 milestones"}</span><Link href={i===0?"/lms/projects/ai-research-assistant":"/lms/projects"}>{i===0?"Continue":"View brief"} <ArrowUpRight size={14}/></Link></div></div></article>)}
+      <div className="trust-project-list">
+        {projects.map(project => <article className="trust-project-row" key={project.id}>
+          <div className="trust-project-state"><span className={project.status==="in_progress"?"status in-progress":"status open-state"}>{project.statusLabel}</span><small>Due {project.dueLabel}</small></div>
+          <div className="trust-project-main"><span className="eyebrow">{project.phase}</span><h2>{project.title}</h2><p>{project.description}</p></div>
+          <div className="trust-project-progress"><strong>{project.completedMilestones}/{project.totalMilestones}</strong><span>milestones</span></div>
+          <div className="trust-project-review">
+            {project.review.state==="feedback_ready"?<><span className="status in-progress">Feedback ready</span><small>{project.review.reviewer} · {project.review.comments} comments</small></>:project.review.state==="in_review"?<><span className="status due">In review</span><small>{project.review.reviewer}</small></>:<><span className="project-muted">Not submitted</span><small>No reviewer yet</small></>}
+          </div>
+          <Link href={project.id==="opportunity-map"?"/lms/projects/ai-research-assistant":"/lms/projects"}>{project.status==="in_progress"?"Continue":"View brief"} <ArrowUpRight size={15}/></Link>
+        </article>)}
       </div>
 
-      <section className="peer-showcase"><div><span className="eyebrow">FROM YOUR COHORT</span><h2>Peer work worth seeing.</h2><p>Selected submissions and work-in-progress shared by your cohort.</p></div><div className="peer-items"><article><span>PS</span><div><strong>Procurement Research Copilot</strong><p>Priya Shah · 14 helpful reactions</p></div></article><article><span>AK</span><div><strong>Manager AI Readiness Toolkit</strong><p>Anita Kapoor · 11 helpful reactions</p></div></article></div><Link href="/lms/community">Open showcase →</Link></section>
+      <section className="trust-feedback-explainer">
+        <div><span className="eyebrow light">FEEDBACK LOOP</span><h2>Submit → review → revise → complete.</h2><p>Each project can carry facilitator comments, rubric scores and evidence into your Skills profile.</p></div>
+        <Link href="/lms/skills">See Skills × Evidence →</Link>
+      </section>
     </div>
   </Shell>
 }
@@ -435,6 +360,36 @@ export function ProjectSubmissionScreen() {
   </Shell>
 }
 
+
+export function SkillsScreen() {
+  const { skills } = demoLmsData;
+  return <Shell>
+    <div className="trust-skills">
+      <header className="compact-page-head">
+        <div><span className="eyebrow">SKILLS × EVIDENCE</span><h1>Your capability record</h1><p>Skills grow when there is evidence behind them — projects, reviews and facilitator sign-off.</p></div>
+        <div className="compact-head-action"><span>With evidence</span><strong>{skills.filter(skill=>skill.evidence.length>0).length}/{skills.length}</strong></div>
+      </header>
+
+      <div className="skills-table" role="table" aria-label="Skills and evidence">
+        <div className="skills-table-head" role="row"><span>Skill</span><span>Level</span><span>Evidence</span><span>Last updated</span></div>
+        {skills.map(skill => <div className="skills-table-row" role="row" key={skill.id}>
+          <div><strong>{skill.name}</strong><p>{skill.description}</p></div>
+          <div><span className={"skill-level level-"+skill.levelKey}>{skill.level}</span></div>
+          <div className="skill-evidence-list">{skill.evidence.length?skill.evidence.map(item=><Link href={item.href} key={item.label}>{item.label}<ArrowUpRight size={13}/></Link>):<span className="skill-empty">Complete a project milestone to add evidence.</span>}</div>
+          <div><span>{skill.updatedLabel}</span></div>
+        </div>)}
+      </div>
+
+      <section className="skills-explainer">
+        <span className="eyebrow">HOW IT WORKS</span>
+        <div><strong>1. Learn</strong><p>Complete pre-work and live sessions.</p></div>
+        <div><strong>2. Apply</strong><p>Use the skill in a project or exercise.</p></div>
+        <div><strong>3. Verify</strong><p>Facilitator review or project evidence confirms it.</p></div>
+      </section>
+    </div>
+  </Shell>
+}
+
 const sectionCopy = {
   community:["Community","CONNECT","Discuss, ask, share and learn with your cohort and the wider WeAreAiLabs community."],
   projects:["Projects","BUILD","Apply your learning through practical projects and real submissions."],
@@ -448,6 +403,13 @@ const sectionCopy = {
 export function SectionScreen({ section }) {
   if(section==="community") return <CommunityScreen/>;
   if(section==="projects") return <ProjectsScreen/>;
-  const item = sectionCopy[section] || ["Not found","LMS","This LMS area is not available."];
-  return <Shell><div className="page-heading"><span className="eyebrow">{item[1]}</span><h1>{item[0]}</h1><p>{item[2]}</p></div><div className="empty-module"><div><span className="eyebrow">MODULE READY</span><h2>{item[0]}</h2><p>This area is wired into the LMS route system and will be expanded from the approved UI specification.</p></div></div></Shell>
+  if(section==="skills") return <SkillsScreen/>;
+  const item = sectionCopy[section] || ["This area","LMS","Nothing is available here yet."];
+  const emptyCopy = {
+    library:"Recordings and resources will appear here as they are published.",
+    assessments:"No assessments are due right now.",
+    certificates:"Certificates will appear here after programme completion.",
+    profile:"Your account and learning history will appear here."
+  };
+  return <Shell><div className="compact-page-head"><div><span className="eyebrow">{item[1]}</span><h1>{item[0]}</h1><p>{item[2]}</p></div></div><div className="trust-empty-state"><span className="eyebrow">NOTHING TO SHOW YET</span><h2>{item[0]}</h2><p>{emptyCopy[section] || "There is nothing to show here yet."}</p></div></Shell>
 }
