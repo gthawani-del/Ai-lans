@@ -1,0 +1,1 @@
+export { CommunityScreen as default } from "../../../lms/runtime/screens";

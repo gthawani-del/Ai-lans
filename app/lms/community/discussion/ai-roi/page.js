@@ -1,0 +1,1 @@
+export { CommunityThreadScreen as default } from "../../../../../lms/runtime/screens";
