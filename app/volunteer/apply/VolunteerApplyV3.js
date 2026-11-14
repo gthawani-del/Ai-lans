@@ -478,11 +478,13 @@ export default function VolunteerApplyV3({ config }) {
       </div>
     );
   }
+  const optionalDetails = ["addressStreetArea", "addressBuilding", "linkedin", "github"];
   function fields(s) {
     return rules
       .filter(
         (r) =>
           r.step === s &&
+          !optionalDetails.includes(r.key) &&
           !["commitmentAgreed", "accurate", "consent"].includes(r.key),
       )
       .map(field);
@@ -524,10 +526,11 @@ export default function VolunteerApplyV3({ config }) {
           Build together.
         </h2>
         <p>Technical, creative and operational backgrounds are welcome.</p>
-        <div>
-          <b>Workshop details</b>
+        <details className="v3-context">
+          <summary>Workshop details</summary>
           <p>{eventLabel}</p>
-        </div>
+          <p>Technical, creative and operational backgrounds are welcome. Education and location do not automatically exclude you.</p>
+        </details>
         <Link href="/volunteer">Explore the benefits →</Link>
       </aside>
       <section className="v3-main">
@@ -540,8 +543,7 @@ export default function VolunteerApplyV3({ config }) {
             {titles[step]}
           </h1>
           <p>
-            Fields marked * are required. Your answers help us place you;
-            education and location do not automatically exclude you.
+            Fields marked * are required.
           </p>
           <nav aria-label="Application progress">
             {titles.map((t, i) => (
@@ -549,6 +551,7 @@ export default function VolunteerApplyV3({ config }) {
                 key={t}
                 type="button"
                 disabled={i > step}
+                aria-label={`Step ${i + 1}: ${t}`}
                 aria-current={step === i ? "step" : undefined}
                 onClick={() => changeStep(i)}
               >
@@ -631,6 +634,10 @@ export default function VolunteerApplyV3({ config }) {
                 </div>
               </div>
               <div className="v3-grid">{fields(0)}</div>
+              <details className="v3-disclosure" open={optionalDetails.some(k => errors[k]) || undefined}>
+                <summary>Address & profile links <span>(optional)</span></summary>
+                <div className="v3-grid">{rules.filter(r => optionalDetails.includes(r.key)).map(field)}</div>
+              </details>
             </>
           )}
           {step === 1 && (
@@ -818,7 +825,8 @@ export default function VolunteerApplyV3({ config }) {
           {step === 4 && (
             <>
               {reviewSections(data, tools).map((section) => (
-                <section className="v3-review" key={section.step}>
+                <details className="v3-review v3-disclosure" key={section.step}>
+                  <summary>{titles[section.step]} <span>{section.rows.length} answers</span></summary>
                   <h2>
                     {titles[section.step]}{" "}
                     <button
@@ -837,7 +845,7 @@ export default function VolunteerApplyV3({ config }) {
                       </div>
                     ))}
                   </dl>
-                </section>
+                </details>
               ))}
               <section className="v3-review">
                 <h2>How we use your application</h2>

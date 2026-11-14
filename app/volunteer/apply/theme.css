@@ -176,3 +176,52 @@
  .volunteerFormTheme .v3-actions { flex-wrap:wrap; }
  .volunteerFormTheme .v3-actions > span:not(:has(button)) { display:block; font-size:.875rem; }
 }
+
+/* Compact mobile workflow: preserve legible inputs and touch targets. */
+.volunteerFormTheme .v3-field > small:empty { display:none; }
+.volunteerFormTheme .v3-context { background:var(--vf-soft); border-radius:8px; padding:0 12px; }
+.volunteerFormTheme .v3-context summary,
+.volunteerFormTheme .v3-disclosure summary { cursor:pointer; min-height:44px; padding:10px 0; font-weight:500; }
+.volunteerFormTheme .v3-context p { padding-bottom:12px; font-size:14px; }
+.volunteerFormTheme .v3-disclosure { margin-top:16px; border-top:1px solid var(--vf-line); }
+.volunteerFormTheme .v3-disclosure summary span { color:var(--vf-muted); font-size:14px; font-weight:400; }
+.volunteerFormTheme .v3-disclosure > .v3-grid { padding-top:10px; }
+.volunteerFormTheme .v3-review.v3-disclosure { margin:0; }
+.volunteerFormTheme .v3-review.v3-disclosure h2 { font-size:16px; margin:8px 0; }
+.volunteerFormTheme :is(button,a,input,select,summary,label) { touch-action:manipulation; }
+@media(max-width:760px) {
+ .volunteerFormTheme .vf-brand-header { padding:8px 16px; min-height:64px; gap:12px; flex-wrap:nowrap; }
+ .volunteerFormTheme .vf-brand-header img { width:90px; }
+ .volunteerFormTheme .v3-rail { padding:8px 16px 0; }
+ .volunteerFormTheme .v3-rail > .v3-context { display:block; }
+ .volunteerFormTheme .v3-main { padding:12px 16px 20px; }
+ .volunteerFormTheme .v3-main > header { margin-bottom:12px; }
+ .volunteerFormTheme .v3-main > header .vf-eyebrow { display:none; }
+ .volunteerFormTheme .v3-main > header h1 { font-size:26px; margin-bottom:6px; }
+ .volunteerFormTheme .v3-main nav { margin:8px 0; padding-bottom:8px; }
+ .volunteerFormTheme .v3-main nav button { padding:0; gap:0; justify-content:center; }
+ .volunteerFormTheme .v3-main nav small { display:none; }
+ .volunteerFormTheme .v3-content { padding:14px; border-radius:8px; }
+ .volunteerFormTheme .v3-grid { gap:12px; }
+ .volunteerFormTheme .v3-field { gap:4px; }
+ .volunteerFormTheme .v3-field > label { font-size:14px; }
+ .volunteerFormTheme .v3-photo { margin-bottom:14px; padding-bottom:14px; gap:8px; }
+ .volunteerFormTheme .v3-photo p { margin:4px 0 8px; }
+ .volunteerFormTheme .v3-photo input::file-selector-button { padding:8px; margin-right:6px; }
+ .volunteerFormTheme .v3-shell fieldset { padding:10px; margin:12px 0; }
+ .volunteerFormTheme .v3-field fieldset { margin:0; }
+ .volunteerFormTheme .v3-choices { gap:2px; }
+ .volunteerFormTheme .v3-choices label { padding:8px 0; }
+ .volunteerFormTheme .v3-tool:not(.v3-custom-tool) { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:8px; margin:8px 0; }
+ .volunteerFormTheme .v3-tool:not(.v3-custom-tool) label { width:auto; font-size:14px; overflow-wrap:anywhere; }
+ .volunteerFormTheme .v3-tool select { min-width:0; padding:8px; }
+ .volunteerFormTheme .v3-commitments { padding:12px; margin-top:14px; }
+ .volunteerFormTheme .v3-commitments h2 { font-size:18px; margin:0 0 8px; }
+ .volunteerFormTheme .v3-commitments p { margin:8px 0; font-size:14px; }
+ .volunteerFormTheme .v3-commitments ul { padding:0; }
+ .volunteerFormTheme .v3-commitments li { margin:0; padding:5px 0; }
+ .volunteerFormTheme .v3-review { margin-bottom:16px; }
+ .volunteerFormTheme .v3-review dt { font-size:14px; }
+ .volunteerFormTheme .v3-actions { gap:8px; padding-top:12px; }
+ .volunteerFormTheme .v3-actions > span:not(:has(button)) { display:none; }
+}
