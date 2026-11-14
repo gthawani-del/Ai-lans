@@ -88,7 +88,7 @@ export async function POST(request) {
         p_token: resumeToken,
       });
       if (error)
-        return fail("Could not start the application: " + error.message, 502);
+        return fail("Could not start the application. Please retry.", 502);
       appId = data?.id || "";
       if (!appId) return fail("Could not start the application.", 502);
     }
@@ -106,7 +106,7 @@ export async function POST(request) {
       .from("volunteer-photos")
       .upload(path, safeBytes, { contentType: "image/webp", upsert: false });
     if (uploadError)
-      return fail("Photo storage failed: " + uploadError.message, 502);
+      return fail("Photo storage failed. Please retry.", 502);
 
     const { error: registerError } = await sb.rpc(
       "register_volunteer_photo_upload",
@@ -121,7 +121,7 @@ export async function POST(request) {
       },
     );
     if (registerError)
-      return fail("Photo registration failed: " + registerError.message, 502);
+      return fail("Photo registration failed. Please retry.", 502);
 
     return Response.json(
       { ok: true, id: appId, token: resumeToken, path },

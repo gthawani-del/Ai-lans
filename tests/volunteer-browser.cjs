@@ -56,9 +56,12 @@ const fs = require("fs");
       .getByRole("heading", { name: "Tell us about you", exact: true })
       .waitFor();
     await page.locator("#v3-postcode").fill("012345");
+    await page.locator("#v3-postcode").blur();
+    await page.locator("#v3-postcode").evaluate(el => { if (el.value !== "012345") throw Error("Invalid PIN was not retained"); });
     await page.getByRole("button", { name: "Continue →" }).click();
     await page.locator("#v3-errors").waitFor();
     await page.locator("#v3-postcode").fill("400001");
+    await page.locator("#v3-postcode").blur();
     for (let s = 0; s < 4; s++) {
       if (s === 3) {
         await page
@@ -123,6 +126,7 @@ const fs = require("fs");
     await page.getByRole("heading", { name: "Application received" }).waitFor();
     if (submits !== 1) throw Error("Submission count " + submits);
     results.push({ width, completed: true, submits });
+    console.log(JSON.stringify(results.at(-1)));
     await page.close();
   }
   await browser.close();
