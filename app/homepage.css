@@ -1,0 +1,56 @@
+/* Color-only overrides scoped to the homepage. Typography stays in the existing stylesheets. */
+.homepage {
+  --home-ink: #071c2c;
+  --home-teal: #006d71;
+  --home-deep: #003e46;
+  --home-soft: #edf8f6;
+  --home-line: #dfe6e8;
+  color: var(--home-ink);
+  background: #fff;
+}
+.homepage em,
+.homepage .heroStatement i,
+.homepage .meta,
+.homepage .transform h3,
+.homepage .earlyContent>div>b { color: var(--home-teal); }
+.homepage .heroStatement,
+.homepage .eliv8Brand,
+.homepage .eliv8Brand>span { color: var(--home-ink); }
+.homepage .eliv8Brand .brandEight { color: var(--home-teal)!important; }
+.homepage .heroDescription,
+.homepage header nav a { color: #1a3345; }
+.homepage .heroPresentedBy>span,
+.homepage .formStatus,
+.homepage .ask small { color: #52646b; }
+.homepage header nav a:first-child { color: var(--home-teal); border-bottom-color: var(--home-teal); }
+.homepage .headerCta,
+.homepage .heroAction>a,
+.homepage .ask>span,
+.homepage .meta b:before { background: var(--home-teal); }
+.homepage .headerCta:hover,
+.homepage .heroAction>a:not(.heroSecondary):hover { background: var(--home-deep); }
+.homepage .heroAction .heroSecondary { background: transparent; color: #1a3345; border-color: var(--home-line); }
+.homepage .heroAction .heroSecondary:hover { color: var(--home-deep); border-color: var(--home-deep); }
+.homepage .transform { background: #f7faf9; border-color: var(--home-line); }
+.homepage .transformIntro span { border-color: var(--home-teal); }
+.homepage .transform article { border-color: var(--home-line); box-shadow: 0 8px 30px #003e460b; }
+.homepage .arrow { background: var(--home-soft); color: var(--home-teal); }
+.homepage .videoOverlay { background: linear-gradient(180deg,rgba(3,30,34,.4),rgba(3,30,34,.25) 36%,rgba(3,30,34,.88)); }
+.homepage .early { background: var(--home-soft)!important; }
+.homepage .earlyContent { background: linear-gradient(90deg,rgba(237,248,246,.99) 0%,rgba(237,248,246,.98) 72%,rgba(237,248,246,.78) 88%,rgba(237,248,246,0) 100%); }
+.homepage .ask { border-color: var(--home-line); color: var(--home-ink); }
+.homepage .skipLink { background: var(--home-ink); }
+.homepage :focus-visible { outline-color: var(--home-teal); }
+.homepage ~ .attendeeRegisterLink { background: #006d71; box-shadow: 0 10px 30px #003e4626; }
+.homepage ~ .attendeeRegisterLink:hover { background: #003e46; }
+.homepage ~ .attendeeRegisterLink:focus-visible { outline-color: #006d71; }
+/* Dimensions for the replacement image assets; no font changes. */
+.homepage .headerLogo,
+.homepage .footerLogo { display: block; width: 140px; height: auto; }
+.homepage footer { gap: 20px; padding-left: 4.5%; padding-right: 4.5%; flex-wrap: wrap; }
+@media(max-width:800px) {
+  .homepage .headerLogo { width: 110px; }
+  .homepage nav.open { border-color: var(--home-line); }
+  .homepage nav.open a { color: var(--home-ink)!important; }
+  .homepage .earlyContent { background: linear-gradient(180deg,rgba(237,248,246,.99) 0%,rgba(237,248,246,.96) 45%,rgba(237,248,246,.55) 66%,rgba(237,248,246,0) 78%); }
+}
