@@ -582,7 +582,7 @@ export default function VolunteerApplyV3({ config }) {
           <p>
             All fields are required unless marked optional.
           </p>
-          <button type="button" onClick={clearDraft} disabled={busy||photoBusy}>Clear saved draft on this device</button>
+          <button type="button" className="v3-clear-draft" onClick={clearDraft} disabled={busy||photoBusy}>Clear saved draft on this device</button>
           <nav aria-label="Application progress">
             {titles.map((t, i) => (
               <button
@@ -797,7 +797,7 @@ export default function VolunteerApplyV3({ config }) {
             <>
               <h2 className="v3-group-title">Education & languages</h2>
               <div className="v3-grid">{fields(3)}</div>
-              <section className="v3-commitments">
+              <section className="v3-commitments" id="v3-commitmentAgreed" tabIndex={-1}>
                 <h2>Your volunteer commitments</h2>
                 <p>All commitments are required for this role.</p>
                 <p>{eventLabel}</p>

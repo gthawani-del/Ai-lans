@@ -96,3 +96,7 @@ Status: **Implemented** = code/config inspected; **This change** = included in t
 5. Named admin accounts must rotate shared credentials and enrol MFA before enforcement. Confirm canonical launch domain/indexing plan.
 
 None of these is silently marked completed. This ledger supersedes any implication that the homepage refresh covered both full documents.
+
+## Follow-up verification
+
+Hosted Vercel build succeeded. Browser checks: empty Step 1 blocked with focused error summary; Step 1 proceeds without photo; unanswered experience blocks; explicit no-experience proceeds; CS Yes reveals exact 2024–2026 question; all six independent commitments lead to review; photo appears in final review, consent boxes unchecked. Registration test-only notice, removed testimonial/footer links and visible 16+ verified. Registration clear-draft confirmation clears synthetic local input. Volunteer reflow checked at 545 and 340 CSS pixels with no horizontal page overflow; this used browser zoom, not phone hardware. No test application submitted. Eight unit tests pass. Local build failure was in external Google font loading; hosted compilation succeeded.
