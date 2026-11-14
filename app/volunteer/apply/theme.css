@@ -225,3 +225,32 @@
  .volunteerFormTheme .v3-actions { gap:8px; padding-top:12px; }
  .volunteerFormTheme .v3-actions > span:not(:has(button)) { display:none; }
 }
+
+/* One form type scale, direct choices and a native-picker upload surface. */
+.volunteerFormTheme .v3-main > header h1,
+.volunteerFormTheme .v3-rail h2,
+.volunteerFormTheme .complete h1,
+.volunteerFormTheme .formHead h1 { font-family:var(--vf-sans),Arial,sans-serif; font-weight:600; letter-spacing:-.02em; }
+.volunteerFormTheme .v3-group-title { margin:0 0 16px; }
+.volunteerFormTheme .v3-segments { display:flex; flex-wrap:wrap; gap:8px; }
+.volunteerFormTheme .v3-segments label { position:relative; flex:1 1 110px; min-width:0; cursor:pointer; }
+.volunteerFormTheme .v3-segments input[type=radio] { position:absolute; opacity:0; width:100%; height:100%; min-height:0; margin:0; inset:0; cursor:pointer; }
+.volunteerFormTheme .v3-segments span { display:flex; align-items:center; justify-content:center; text-align:center; min-height:48px; padding:10px 12px; border:1px solid #758681; border-radius:8px; font-size:16px; }
+.volunteerFormTheme .v3-segments input:checked + span { background:var(--vf-soft); border:2px solid var(--vf-teal); padding:9px 11px; font-weight:600; color:var(--vf-teal); }
+.volunteerFormTheme .v3-segments input:focus-visible + span { outline:3px solid var(--vf-active); outline-offset:3px; }
+.volunteerFormTheme .v3-phone { display:flex; align-items:center; border:1px solid #758681; border-radius:8px; background:white; }
+.volunteerFormTheme .v3-phone > span { padding:0 12px; border-right:1px solid var(--vf-line); font-size:16px; }
+.volunteerFormTheme .v3-phone input { min-width:0; }
+.volunteerFormTheme .v3-shell .v3-phone input { border:0; background:transparent; }
+.volunteerFormTheme .v3-phone:has([aria-invalid=true]) { border-color:var(--vf-danger); }
+.volunteerFormTheme .v3-upload { position:relative; display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:52px; border:1px solid var(--vf-teal); border-radius:8px; background:var(--vf-soft); color:var(--vf-teal); font-weight:500; cursor:pointer; }
+.volunteerFormTheme .v3-upload input[type=file] { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+.volunteerFormTheme .v3-upload:focus-within { outline:3px solid var(--vf-active); outline-offset:3px; }
+.volunteerFormTheme .v3-upload:has(input:disabled) { opacity:.65; }
+.volunteerFormTheme .v3-photo img { border-radius:50%; aspect-ratio:1; object-fit:cover; height:auto; }
+.volunteerFormTheme .v3-first-actions .v3-primary { margin-left:auto; }
+@media(max-width:760px) {
+ .volunteerFormTheme .v3-first-actions .v3-primary { width:100%; }
+ .volunteerFormTheme .v3-main > header h1 { font-size:24px; }
+ .volunteerFormTheme .v3-group-title { font-size:18px; margin-bottom:12px; }
+}
