@@ -117,6 +117,16 @@ export default function VolunteerApplyV3({ config }) {
   useEffect(() => {
     if (ready) heading.current?.focus();
   }, [step, ready]);
+  async function clearDraft() {
+    if (!window.confirm('Clear this device’s saved answers and start again? Any draft or photo already sent to the team remains on the server. This is not a deletion request.')) return;
+    setBusy(true); submitting.current = true;
+    await queue.current.catch(() => {});
+    try {
+      [DRAFT, "ai-lab-volunteer-id", "ai-lab-volunteer-token"].forEach(k => localStorage.removeItem(k));
+      ids.current = {id:null,token:null}; setData({...initial}); setStep(0);setPhotoUrl("");setErrors({});setTouched({});setNotice("Device draft cleared. Previously uploaded data has not been deleted.");setSaveState("Draft cleared");
+    } catch {setNotice("Could not clear device storage. Please try again.");}
+    finally {submitting.current=false;setBusy(false);}
+  }
   function persistLocal(d, s) {
     localStorage.setItem(DRAFT, JSON.stringify({ data: d, step: s }));
   }
@@ -508,7 +518,7 @@ export default function VolunteerApplyV3({ config }) {
         (r) =>
           r.step === s &&
           !optionalDetails.includes(r.key) &&
-          !["commitmentAgreed", "accurate", "consent"].includes(r.key),
+          !["commitmentAgreed", "commitmentChecks", "accurate", "consent"].includes(r.key),
       )
       .sort((a, b) => {
         const position = r => r.key === "postcode" ? rules.findIndex(x => x.key === "city") : r.key === "city" ? rules.findIndex(x => x.key === "postcode") : rules.indexOf(r);
@@ -572,6 +582,7 @@ export default function VolunteerApplyV3({ config }) {
           <p>
             All fields are required unless marked optional.
           </p>
+          <button type="button" className="v3-clear-draft" onClick={clearDraft} disabled={busy||photoBusy}>Clear saved draft on this device</button>
           <nav aria-label="Application progress">
             {titles.map((t, i) => (
               <button
@@ -619,51 +630,6 @@ export default function VolunteerApplyV3({ config }) {
         <div className="v3-content">
           {step === 0 && (
             <>
-              <div className="v3-photo" id="v3-photoApproved" tabIndex={-1}>
-                {photoUrl ? <img src={photoUrl} alt="Your photo preview" /> : <div className="vf-photo-placeholder" aria-hidden="true"><UserRound size={42} strokeWidth={1.4} /></div>}
-                <div>
-                  <b>Profile photo</b>
-                  <p>
-                    For identification and team review. Only you should appear;
-                    no inappropriate images.
-                  </p>
-                  <label className="v3-upload" htmlFor="v3-photo-file">
-                    <Camera size={20} aria-hidden="true" />
-                    <span>{photoBusy ? "Uploading photo…" : photoUrl ? "Change photo" : "Add your photo"}</span>
-                  <input
-                    ref={fileInput}
-                    id="v3-photo-file"
-                    aria-required="true"
-                    aria-invalid={!!errors.photoApproved}
-                    aria-describedby={errors.photoApproved ? "v3-photo-help v3-photo-error" : "v3-photo-help"}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={upload}
-                    disabled={photoBusy}
-                  />
-                  </label>
-                  <small id="v3-photo-help">
-                    JPG, PNG or WebP · up to 5 MB · minimum 240 × 240 pixels
-                  </small>
-                  {photoBusy ? (
-                    <p role="status">Processing and uploading…</p>
-                  ) : (
-                    data.photoApproved && (
-                      <p>
-                        Uploaded · pending team review{" "}
-                        <button type="button" onClick={removePhoto}>
-                          Remove photo
-                        </button>
-                      </p>
-                    )
-                  )}
-                  {errors.photoApproved && (
-                    <p id="v3-photo-error" role="alert" className="v3-error">
-                      {errors.photoApproved}
-                    </p>
-                  )}
-                </div>
-              </div>
               <div className="v3-grid">{fields(0)}</div>
               <details className="v3-disclosure" open={optionalDetails.some(k => errors[k]) || undefined}>
                 <summary>More about you <span>(optional)</span></summary>
@@ -831,7 +797,7 @@ export default function VolunteerApplyV3({ config }) {
             <>
               <h2 className="v3-group-title">Education & languages</h2>
               <div className="v3-grid">{fields(3)}</div>
-              <section className="v3-commitments">
+              <section className="v3-commitments" id="v3-commitmentAgreed" tabIndex={-1}>
                 <h2>Your volunteer commitments</h2>
                 <p>All commitments are required for this role.</p>
                 <p>{eventLabel}</p>
@@ -844,20 +810,58 @@ export default function VolunteerApplyV3({ config }) {
                     </strong>
                   </p>
                 )}
-                <ul>
-                  {commitments.map((c) => (
-                    <li key={c}>
-                      <span aria-hidden="true">✓</span>
-                      {c}
-                    </li>
-                  ))}
-                </ul>
-                {field(rules.find((r) => r.key === "commitmentAgreed"))}
+                {field(rules.find((r) => r.key === "commitmentChecks"))}
               </section>
             </>
           )}
           {step === 4 && (
             <>
+              <div className="v3-photo" id="v3-photoApproved" tabIndex={-1}>
+                {photoUrl ? <img src={photoUrl} alt="Your photo preview" /> : <div className="vf-photo-placeholder" aria-hidden="true"><UserRound size={42} strokeWidth={1.4} /></div>}
+                <div>
+                  <b>Profile photo</b>
+                  <p>
+                    For identification and team review. Only you should appear;
+                    no inappropriate images.
+                  </p>
+                  <label className="v3-upload" htmlFor="v3-photo-file">
+                    <Camera size={20} aria-hidden="true" />
+                    <span>{photoBusy ? "Uploading photo…" : photoUrl ? "Change photo" : "Add your photo"}</span>
+                  <input
+                    ref={fileInput}
+                    id="v3-photo-file"
+                    aria-required="true"
+                    aria-invalid={!!errors.photoApproved}
+                    aria-describedby={errors.photoApproved ? "v3-photo-help v3-photo-error" : "v3-photo-help"}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={upload}
+                    disabled={photoBusy}
+                  />
+                  </label>
+                  <small id="v3-photo-help">
+                    JPG, PNG or WebP · up to 5 MB · minimum 240 × 240 pixels
+                  </small>
+                  {photoBusy ? (
+                    <p role="status">Processing and uploading…</p>
+                  ) : (
+                    data.photoApproved && (
+                      <p>
+                        Uploaded · pending team review{" "}
+                        <button type="button" onClick={removePhoto}>
+                          Remove photo
+                        </button>
+                      </p>
+                    )
+                  )}
+                  {errors.photoApproved && (
+                    <p id="v3-photo-error" role="alert" className="v3-error">
+                      {errors.photoApproved}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               {reviewSections(data, tools).map((section) => (
                 <details className="v3-review v3-disclosure" key={section.step}>
                   <summary>{titles[section.step]} <span>{section.rows.length} answers</span></summary>

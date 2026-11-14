@@ -52,3 +52,5 @@
   .countryComboTrigger{padding:0 7px;grid-template-columns:22px 1fr 10px}
   .countryComboPopover{width:calc(100vw - 54px)}
 }
+
+.registrationCheckout .reg-clear-draft { min-height:44px; padding:8px 0; border:0; background:transparent; color:inherit; text-decoration:underline; cursor:pointer; }

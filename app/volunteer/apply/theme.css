@@ -283,3 +283,5 @@
 .volunteerFormTheme #v3-evidenceVisibility .v3-segments { flex-direction:column; }
 .volunteerFormTheme #v3-experienceStatus .v3-segments label,
 .volunteerFormTheme #v3-evidenceVisibility .v3-segments label { flex-basis:auto; }
+
+.volunteerFormTheme .v3-main > header .v3-clear-draft { order:5; align-self:flex-start; width:auto; min-height:44px; padding:8px 0; border:0; background:transparent; color:var(--vf-muted); text-decoration:underline; cursor:pointer; }

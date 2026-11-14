@@ -37,7 +37,7 @@ begin
   elsif r ? 'array' then
    if jsonb_typeof(d->k) is distinct from 'array' then errs:=errs||jsonb_build_object(k,'Choose valid options');continue;end if;
    ar:=d->k;
-   if (required and jsonb_array_length(ar)=0) or exists(select 1 from jsonb_array_elements(ar) a where jsonb_typeof(a)<>'string' or not (r->'array' ? (a #>> '{}'))) or jsonb_array_length(ar)<>(select count(distinct a) from jsonb_array_elements(ar) a) then errs:=errs||jsonb_build_object(k,'Choose valid options for '||(r->>'label'));end if;
+   if (required and jsonb_array_length(ar)=0) or (r ? 'minItems' and jsonb_array_length(ar)<(r->>'minItems')::int) or exists(select 1 from jsonb_array_elements(ar) a where jsonb_typeof(a)<>'string' or not (r->'array' ? (a #>> '{}'))) or jsonb_array_length(ar)<>(select count(distinct a) from jsonb_array_elements(ar) a) then errs:=errs||jsonb_build_object(k,'Choose valid options for '||(r->>'label'));end if;
   elsif v='' then
    if required then errs:=errs||jsonb_build_object(k,'Please complete '||(r->>'label'));end if;
   else
