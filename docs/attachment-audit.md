@@ -17,7 +17,7 @@ Status: **Implemented** = code/config inspected; **This change** = included in t
 | Privacy, terms, contact destinations | Partial: fake `#` footer links removed and missing launch prerequisites disclosed. Decision: actual approved policy, refund rules, monitored contact and data retention; no invented legal text or mailbox. |
 | Price/refund before payment | Partial: API fee/tax/total already shown in payment step. Demo notice added before entry. Open: authoritative price before submitting personal information; refund policy needs owner. |
 | International registration numbers | Implemented: searchable calling codes; browser/server phone validation uses libphonenumber. Volunteer international eligibility remains separate decision. |
-| Nonoverlapping experience band | This change: visible `16+`, preserving backend historical `15+` enum compatibility. Stored old records are not reinterpreted. Backend enum/report migration remains Open. |
+| Nonoverlapping experience band | This change: new applications display and store `16+`; server also accepts historical `15+` clients. Existing records are not reinterpreted. Old device drafts must reselect a valid range. |
 | Keep registration dark mode / text-size tools | Implemented, retained. |
 | Clear saved drafts | This change: both active forms provide confirmation and clear device drafts; explicitly says this does not delete server records/photos. Server deletion workflow requires retention policy. |
 | Truthful autosave state | This change: registration storage failure no longer says saved. Volunteer already has serial saves, revision guard, status and retry. |

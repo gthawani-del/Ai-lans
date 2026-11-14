@@ -7,3 +7,5 @@ Volunteer validation: the existing shared contract gains `commitmentChecks`, an 
 Security advisory checks also found no verified MFA factors and leaked-password protection disabled. This change does not enrol users or rotate credentials. Named staff accounts, MFA and password rotation remain owner tasks.
 
 Reference consulted: https://supabase.com/docs/guides/database/postgres/row-level-security — RLS with no policies denies browser roles; service-role access bypasses RLS. Revoke grants as well because TRUNCATE is not protected by RLS.
+
+Attendee experience range: server allowlist adds `16+` while retaining `15+` for old clients. Frontend options use `16+`; no existing rows are rewritten. Inspected table constraints: no experience enum constraint. Deployment preserves the existing public endpoint verify_jwt=false setting and all other source behavior.
