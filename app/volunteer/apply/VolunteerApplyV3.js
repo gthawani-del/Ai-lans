@@ -276,6 +276,7 @@ export default function VolunteerApplyV3({ config }) {
         rules.find((r) => r.key === first)?.step ?? (first === "stack" ? 1 : 0);
       setStep(s);
       setErrors(e);
+      setTimeout(() => document.getElementById("v3-errors")?.focus(), 0);
       return;
     }
     submitting.current = true;
@@ -304,6 +305,7 @@ export default function VolunteerApplyV3({ config }) {
             setErrors(details);
             const first = Object.keys(details)[0];
             setStep(rules.find((x) => x.key === first)?.step ?? 0);
+            setTimeout(() => document.getElementById("v3-errors")?.focus(), 0);
           }
         } catch {}
         throw error;
@@ -331,6 +333,7 @@ export default function VolunteerApplyV3({ config }) {
       id,
       name: r.key,
       "aria-invalid": !!err,
+      "aria-required": !!r.required,
       "aria-describedby": id + "-help",
       onBlur: () => setTouched((t) => ({ ...t, [r.key]: true })),
     };
@@ -351,7 +354,7 @@ export default function VolunteerApplyV3({ config }) {
         </span>
       </label>
     ) : r.array ? (
-      <fieldset id={id} tabIndex={-1} aria-describedby={id + "-help"}>
+      <fieldset id={id} tabIndex={-1} aria-invalid={!!err} aria-describedby={id + "-help"}>
         <legend>
           {r.label} {r.required ? "*" : "(optional)"}
         </legend>
@@ -360,6 +363,8 @@ export default function VolunteerApplyV3({ config }) {
             <label key={x}>
               <input
                 type="checkbox"
+                aria-invalid={!!err}
+                aria-describedby={id + "-help"}
                 checked={(data[r.key] || []).includes(x)}
                 onChange={(e) =>
                   set(
@@ -424,6 +429,7 @@ export default function VolunteerApplyV3({ config }) {
                 city: "address-level2",
                 postcode: "postal-code",
                 company: "organization",
+                designation: "organization-title",
                 addressStreetArea: "address-line1",
                 addressBuilding: "address-line2",
               }[r.key] || "off"
@@ -528,9 +534,9 @@ export default function VolunteerApplyV3({ config }) {
         <header>
           <p className="vf-eyebrow">Volunteer application</p>
           <p>
-            Step {step + 1} of 5 · {saveState}
+            Step {step + 1} of 5 · <span role="status" aria-live="polite" aria-atomic="true">{saveState}</span>
           </p>
-          <h1 ref={heading} tabIndex={-1}>
+          <h1 id="application-step-title" ref={heading} tabIndex={-1}>
             {titles[step]}
           </h1>
           <p>
@@ -579,26 +585,30 @@ export default function VolunteerApplyV3({ config }) {
             </ul>
           </div>
         )}
+        <form noValidate aria-labelledby="application-step-title" onSubmit={(event) => { event.preventDefault(); if (!busy && !photoBusy) { if (step === 4) submit(); else next(); } }}>
         <div className="v3-content">
           {step === 0 && (
             <>
               <div className="v3-photo" id="v3-photoApproved" tabIndex={-1}>
                 {photoUrl ? <img src={photoUrl} alt="Your photo preview" /> : <div className="vf-photo-placeholder" aria-hidden="true"><UserRound size={42} strokeWidth={1.4} /></div>}
                 <div>
-                  <b>Profile photo *</b>
+                  <label htmlFor="v3-photo-file"><b>Profile photo *</b></label>
                   <p>
                     For identification and team review. Only you should appear;
                     no inappropriate images.
                   </p>
                   <input
                     ref={fileInput}
-                    aria-label="Profile photo"
+                    id="v3-photo-file"
+                    aria-required="true"
+                    aria-invalid={!!errors.photoApproved}
+                    aria-describedby={errors.photoApproved ? "v3-photo-help v3-photo-error" : "v3-photo-help"}
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     onChange={upload}
                     disabled={photoBusy}
                   />
-                  <small>
+                  <small id="v3-photo-help">
                     JPG, PNG or WebP · up to 5 MB · minimum 240 × 240 pixels
                   </small>
                   {photoBusy ? (
@@ -614,7 +624,7 @@ export default function VolunteerApplyV3({ config }) {
                     )
                   )}
                   {errors.photoApproved && (
-                    <p role="alert" className="v3-error">
+                    <p id="v3-photo-error" role="alert" className="v3-error">
                       {errors.photoApproved}
                     </p>
                   )}
@@ -626,7 +636,7 @@ export default function VolunteerApplyV3({ config }) {
           {step === 1 && (
             <>
               <div className="v3-grid">{fields(1)}</div>
-              <fieldset id="v3-stack" tabIndex={-1}>
+              <fieldset id="v3-stack" tabIndex={-1} aria-describedby={errors.stack ? "v3-stack-error" : undefined}>
                 <legend>Your tools *</legend>
                 <p>
                   New to it: not used yet · Used it: tried with guidance ·
@@ -638,6 +648,9 @@ export default function VolunteerApplyV3({ config }) {
                     <label htmlFor={"tool-" + k}>{l}</label>
                     <select
                       id={"tool-" + k}
+                      aria-required="true"
+                      aria-invalid={!!errors.stack && !data.stack[k]}
+                      aria-describedby={errors.stack ? "v3-stack-error" : undefined}
                       value={data.stack[k] || ""}
                       onChange={(e) =>
                         set("stack", { ...data.stack, [k]: e.target.value })
@@ -650,14 +663,17 @@ export default function VolunteerApplyV3({ config }) {
                     </select>
                   </div>
                 ))}
-                {errors.stack && <p className="v3-error">{errors.stack}</p>}
+                {errors.stack && <p id="v3-stack-error" className="v3-error">{errors.stack}</p>}
               </fieldset>
-              <fieldset id="v3-customTools" tabIndex={-1}>
+              <fieldset id="v3-customTools" tabIndex={-1} aria-describedby={errors.customTools ? "v3-customTools-error" : undefined}>
                 <legend>Additional tools (optional)</legend>
                 {data.customTools.map((t, i) => (
-                  <div className="v3-tool" key={i}>
+                  <div className="v3-tool v3-custom-tool" key={i}>
+                    <label htmlFor={"custom-tool-" + i}>Tool {i + 1} name
                     <input
-                      aria-label={"Additional tool " + (i + 1)}
+                      id={"custom-tool-" + i}
+                      aria-invalid={!!errors.customTools}
+                      aria-describedby={errors.customTools ? "v3-customTools-error" : undefined}
                       maxLength={80}
                       value={t.name}
                       onChange={(e) =>
@@ -669,8 +685,13 @@ export default function VolunteerApplyV3({ config }) {
                         )
                       }
                     />
+                    </label>
+                    <label htmlFor={"custom-level-" + i}>Proficiency
                     <select
-                      aria-label={"Additional tool " + (i + 1) + " level"}
+                      id={"custom-level-" + i}
+                      aria-invalid={!!errors.customTools}
+                      aria-describedby={errors.customTools ? "v3-customTools-error" : undefined}
+                      aria-label={"Proficiency for additional tool " + (i + 1)}
                       value={t.level}
                       onChange={(e) =>
                         set(
@@ -686,7 +707,10 @@ export default function VolunteerApplyV3({ config }) {
                         <option key={l}>{l}</option>
                       ))}
                     </select>
+                    </label>
                     <button
+                      type="button"
+                      aria-label={"Remove additional tool " + (i + 1)}
                       onClick={() =>
                         set(
                           "customTools",
@@ -711,7 +735,7 @@ export default function VolunteerApplyV3({ config }) {
                   + Add another tool
                 </button>
                 {errors.customTools && (
-                  <p className="v3-error">{errors.customTools}</p>
+                  <p id="v3-customTools-error" className="v3-error">{errors.customTools}</p>
                 )}
               </fieldset>
             </>
@@ -725,7 +749,7 @@ export default function VolunteerApplyV3({ config }) {
               </p>
               <div className="v3-grid">{fields(2)}</div>
               {data.experienceStatus === "Some experience" && (
-                <fieldset id="v3-involvement" tabIndex={-1}>
+                <fieldset id="v3-involvement" tabIndex={-1} aria-describedby={errors.involvement ? "v3-involvement-error" : undefined}>
                   <legend>Your involvement *</legend>
                   {(data.contributionAreas || []).map((x) => (
                     <div className="v3-tool" key={x}>
@@ -738,6 +762,9 @@ export default function VolunteerApplyV3({ config }) {
                       </label>
                       <select
                         id={"depth-" + options.contributionAreas.indexOf(x)}
+                        aria-required="true"
+                        aria-invalid={!!errors.involvement && !data.involvement[x]}
+                        aria-describedby={errors.involvement ? "v3-involvement-error" : undefined}
                         value={data.involvement[x] || ""}
                         onChange={(e) =>
                           set("involvement", {
@@ -754,7 +781,7 @@ export default function VolunteerApplyV3({ config }) {
                     </div>
                   ))}
                   {errors.involvement && (
-                    <p className="v3-error">{errors.involvement}</p>
+                    <p id="v3-involvement-error" className="v3-error">{errors.involvement}</p>
                   )}
                 </fieldset>
               )}
@@ -796,6 +823,7 @@ export default function VolunteerApplyV3({ config }) {
                     {titles[section.step]}{" "}
                     <button
                       type="button"
+                      aria-label={"Edit " + titles[section.step]}
                       onClick={() => changeStep(section.step)}
                     >
                       Edit
@@ -833,17 +861,16 @@ export default function VolunteerApplyV3({ config }) {
           >
             ← Back
           </button>
-          <span role="status">
+          <span>
             {saveState}
             {saveState.startsWith("Save failed") && (
-              <button onClick={() => save().catch(() => {})}>Retry</button>
+              <button type="button" onClick={() => save().catch(() => {})}>Retry</button>
             )}
           </span>
           <button
-            type="button"
+            type="submit"
             className="v3-primary"
             disabled={busy || photoBusy}
-            onClick={step === 4 ? submit : next}
           >
             {busy
               ? "Submitting…"
@@ -852,6 +879,7 @@ export default function VolunteerApplyV3({ config }) {
                 : "Continue →"}
           </button>
         </footer>
+        </form>
       </section>
     </main>
   );

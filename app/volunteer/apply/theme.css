@@ -136,3 +136,43 @@
  .volunteerFormTheme .v3-actions:has(span button) { flex-wrap:wrap; }
  .volunteerFormTheme .v3-actions button { font-size:14px; }
 }
+
+/* Accessibility baseline: visible controls, scalable text and unobscured focus. */
+.volunteerFormTheme .v3-shell input:not([type=checkbox]):not([type=file]),
+.volunteerFormTheme .v3-shell select,
+.volunteerFormTheme .v3-shell textarea,
+.volunteerFormTheme .field input,
+.volunteerFormTheme .field select,
+.volunteerFormTheme .field textarea { border:1px solid #758681; font-size:1rem; min-height:48px; }
+.volunteerFormTheme input::placeholder,
+.volunteerFormTheme textarea::placeholder { color:#526174; opacity:1; }
+.volunteerFormTheme .v3-main nav button { min-height:44px; min-width:44px; }
+.volunteerFormTheme .v3-main nav small { font-size:.8125rem; overflow-wrap:anywhere; }
+.volunteerFormTheme .v3-main nav { flex-wrap:wrap; }
+.volunteerFormTheme .v3-choices label,
+.volunteerFormTheme .v3-check { min-height:44px; cursor:pointer; }
+.volunteerFormTheme .v3-shell input[type=checkbox] { min-width:24px; width:24px; height:24px; flex-shrink:0; }
+.volunteerFormTheme .v3-content button,
+.volunteerFormTheme .v3-actions button { border-color:#758681; }
+.volunteerFormTheme .v3-actions { position:static; }
+.volunteerFormTheme .v3-field > label { font-size:1rem; }
+.volunteerFormTheme .v3-shell small { font-size:.875rem; }
+.volunteerFormTheme .v3-content p,
+.volunteerFormTheme .v3-review dt,
+.volunteerFormTheme .v3-review dd,
+.volunteerFormTheme .v3-choices label { font-size:1rem; }
+.volunteerFormTheme .v3-custom-tool { align-items:flex-end; flex-wrap:wrap; }
+.volunteerFormTheme .v3-custom-tool label { display:grid; gap:6px; flex:1 1 180px; font-size:1rem; }
+.volunteerFormTheme .v3-custom-tool select { width:100%; }
+.volunteerFormTheme .v3-shell :is(input,select,textarea,button,fieldset) { scroll-margin-block:24px; }
+.volunteerFormTheme .vf-brand-header { flex-wrap:wrap; }
+.volunteerFormTheme .vf-skip { transform:none; clip-path:inset(50%); width:1px; height:1px; overflow:hidden; }
+.volunteerFormTheme .vf-skip:focus { clip-path:none; width:auto; height:auto; overflow:visible; }
+@media(max-width:760px) {
+ .volunteerFormTheme .v3-main nav { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; }
+ .volunteerFormTheme .v3-main nav small { font-size:.75rem; }
+ .volunteerFormTheme .v3-main > header > p:not(.vf-eyebrow) { font-size:.875rem; }
+ .volunteerFormTheme .v3-photo p, .volunteerFormTheme .v3-photo small { font-size:.875rem; }
+ .volunteerFormTheme .v3-actions { flex-wrap:wrap; }
+ .volunteerFormTheme .v3-actions > span:not(:has(button)) { display:block; font-size:.875rem; }
+}
