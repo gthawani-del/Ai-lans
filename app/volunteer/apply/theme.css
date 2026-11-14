@@ -10,12 +10,12 @@
 .volunteerFormTheme .vf-brand-header { display:flex; position:relative; top:auto; width:100%; max-width:none; height:auto; min-height:104px; padding:14px 36px; margin:0; justify-content:space-between; align-items:center; gap:24px; background:white; border-bottom:1px solid var(--vf-line); }
 .vf-brand-header img { display:block; width:170px; height:auto; }
 .volunteerFormTheme .vf-brand-header a { color:var(--vf-teal); font-weight:600; min-height:44px; display:flex; align-items:center; text-decoration:none; }
-.volunteerFormTheme :focus-visible { outline:3px solid var(--vf-active); outline-offset:3px; }
+.volunteerFormTheme :focus-visible, .volunteerFormTheme .v3-shell :focus-visible { outline:3px solid var(--vf-active); outline-offset:3px; }
 .vf-skip { position:fixed; top:8px; left:8px; transform:translateY(-200%); padding:12px; background:white; z-index:100; }
 .vf-skip:focus { transform:translateY(0); }
 .volunteerFormTheme .v3-shell { min-height:calc(100svh - 125px); background:var(--vf-canvas); color:var(--vf-ink); grid-template-columns:248px minmax(0,1fr); font-family:var(--vf-sans),Arial,sans-serif; }
 .volunteerFormTheme .v3-rail { background:var(--vf-canvas); color:var(--vf-ink); border-right:1px solid var(--vf-line); padding:44px 24px; gap:24px; }
-.volunteerFormTheme .v3-rail h2 { font:600 34px/1.12 var(--vf-serif),Georgia,serif; color:var(--vf-teal); margin:0; }
+.volunteerFormTheme .v3-rail h2 { font:600 30px/1.12 var(--vf-serif),Georgia,serif; color:var(--vf-teal); margin:0; }
 .volunteerFormTheme .v3-rail p { margin:0; color:var(--vf-muted); }
 .volunteerFormTheme .v3-rail > div { background:var(--vf-soft); padding:18px; border-radius:9px; }
 .volunteerFormTheme .v3-rail > div p { margin-top:10px; }
