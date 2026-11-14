@@ -6,7 +6,7 @@ import './theme.css';
 const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--vf-sans' });
 const serif = Newsreader({ subsets: ['latin'], weight: ['400', '500', '600'], display: 'swap', variable: '--vf-serif' });
 
-export const metadata = { title: 'Volunteer application | weareailabs' };
+export const metadata = { title: 'Volunteer application | weareailabs', description: 'Apply to support weareailabs participants with technical, creative or operational skills.', robots: { index: false, follow: false } };
 
 export default function VolunteerApplicationLayout({ children }) {
   return <div className={`volunteerFormTheme ${sans.variable} ${serif.variable}`}>

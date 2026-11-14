@@ -31,6 +31,7 @@ export const beginner = {
   mumbaiResident: "No",
   languages: ["Hindi"],
   commitmentAgreed: true,
+  commitmentChecks: [...commitments],
   accurate: true,
   consent: true,
   photoApproved: true,
@@ -105,7 +106,7 @@ test("honest experience answer required and public claims need matching evidence
 });
 test("commitment requires explicit boolean and hidden values are discarded", () => {
   assert.ok(
-    validate({ ...beginner, commitmentAgreed: false, commitment: commitments })
+    validate({ ...beginner, commitmentChecks: [], commitmentAgreed: true, commitment: commitments })
       .commitmentAgreed,
   );
   const d = normalize({
@@ -137,4 +138,12 @@ test("tampered enums, duplicates and missing proficiency fail", () => {
   assert.ok(validate({ ...beginner, languages: ["Hindi", "Hindi"] }).languages);
   assert.ok(validate({ ...beginner, stack: {} }).stack);
   assert.ok(validate({ ...beginner, consent: "true" }).consent);
+});
+
+test('each commitment is acknowledged, with no implicit migration from blanket agreement',()=>{
+ for(const checks of [undefined,[],commitments.slice(1),[...commitments.slice(1),commitments[1]]]){
+  const errors=validate({...beginner,commitmentChecks:checks,commitmentAgreed:true});
+  assert.ok(errors.commitmentChecks||errors.commitmentAgreed);
+ }
+ assert.deepEqual(validate({...beginner,commitmentChecks:[...commitments].reverse()}),{});
 });

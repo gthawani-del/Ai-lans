@@ -1,5 +1,7 @@
 import {AdminSessionProvider} from './AdminSessionContext';
 
+export const metadata={title:'Backoffice | weareailabs',robots:{index:false,follow:false}};
+
 export const dynamic='force-dynamic';
 export const revalidate=0;
 
