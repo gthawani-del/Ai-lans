@@ -1,51 +1,121 @@
-import {createClient} from '@supabase/supabase-js';
-import {SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY} from '../../../../lib/supabase-browser';
+import sharp from "sharp";
+import { createClient } from "@supabase/supabase-js";
+import {
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+} from "../../../../lib/supabase-browser";
 
-export const runtime='nodejs';
-export const dynamic='force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-function fail(message,status=500){return Response.json({error:message},{status,headers:{'Cache-Control':'no-store'}})}
+function fail(message, status = 500) {
+  return Response.json(
+    { error: message },
+    { status, headers: { "Cache-Control": "no-store" } },
+  );
+}
 
-export async function POST(request){
-  try{
-    const form=await request.formData();
-    const file=form.get('file');
-    const suppliedId=String(form.get('id')||'').trim();
-    const resumeToken=String(form.get('token')||'').trim();
-    if(!resumeToken)return fail('Upload session token is missing.',400);
-    if(!file||typeof file.arrayBuffer!=='function')return fail('No photo was received.',400);
-    if(file.size>5*1024*1024)return fail('Maximum upload size is 5 MB.',400);
+export async function POST(request) {
+  try {
+    const form = await request.formData();
+    const file = form.get("file");
+    const suppliedId = String(form.get("id") || "").trim();
+    const resumeToken = String(form.get("token") || "").trim();
+    if (!resumeToken) return fail("Upload session token is missing.", 400);
+    if (!file || typeof file.arrayBuffer !== "function")
+      return fail("No photo was received.", 400);
+    if (file.size > 5 * 1024 * 1024)
+      return fail("Maximum upload size is 5 MB.", 400);
 
-    let payload={};
-    try{payload=JSON.parse(String(form.get('payload')||'{}'))}catch{return fail('Invalid application payload.',400)}
-
-    const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-    let appId=suppliedId;
-
-    if(!appId){
-      const {data,error}=await sb.rpc('start_volunteer_application',{p_payload:payload,p_token:resumeToken});
-      if(error)return fail('Could not start the application: '+error.message,502);
-      appId=data?.id||'';
-      if(!appId)return fail('Could not start the application.',502);
+    const bytes = Buffer.from(await file.arrayBuffer());
+    if (
+      file.type !== "image/webp" ||
+      bytes.length < 12 ||
+      bytes.toString("ascii", 0, 4) !== "RIFF" ||
+      bytes.toString("ascii", 8, 12) !== "WEBP"
+    )
+      return fail("Upload a valid processed WebP photo.", 400);
+    let safeBytes;
+    try {
+      const image = sharp(bytes, { limitInputPixels: 20000000 });
+      const meta = await image.metadata();
+      if (meta.width < 240 || meta.height < 240)
+        return fail("Photo must be at least 240 × 240 pixels.", 400);
+      safeBytes = await image
+        .rotate()
+        .resize({
+          width: 800,
+          height: 800,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 85 })
+        .toBuffer();
+    } catch {
+      return fail("The photo is corrupt or cannot be decoded.", 400);
+    }
+    let payload = {};
+    try {
+      payload = JSON.parse(String(form.get("payload") || "{}"));
+    } catch {
+      return fail("Invalid application payload.", 400);
     }
 
-    const bytes=Buffer.from(await file.arrayBuffer());
-    const nonce=crypto.randomUUID().replaceAll('-','');
-    const path='pending/'+appId+'-'+nonce+'.webp';
-
-    const {error:uploadError}=await sb.storage.from('volunteer-photos').upload(path,bytes,{contentType:'image/webp',upsert:false});
-    if(uploadError)return fail('Photo storage failed: '+uploadError.message,502);
-
-    const {error:registerError}=await sb.rpc('register_volunteer_photo_upload',{
-      p_id:appId,
-      p_token:resumeToken,
-      p_path:path,
-      p_moderation:{clientSanitized:true,model:'trusted_backoffice_review'}
+    const sb = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
     });
-    if(registerError)return fail('Photo registration failed: '+registerError.message,502);
+    let appId = suppliedId;
 
-    return Response.json({ok:true,id:appId,token:resumeToken,path},{headers:{'Cache-Control':'no-store'}});
-  }catch(error){
-    return fail(error?.message||'Photo upload failed.',500);
+    if (!appId) {
+      const { data, error } = await sb.rpc("start_volunteer_application", {
+        p_payload: payload,
+        p_token: resumeToken,
+      });
+      if (error)
+        return fail("Could not start the application: " + error.message, 502);
+      appId = data?.id || "";
+      if (!appId) return fail("Could not start the application.", 502);
+    }
+
+    const { data: session, error: sessionError } = await sb.rpc(
+      "get_volunteer_resume_state",
+      { p_id: appId, p_token: resumeToken },
+    );
+    if (sessionError || session?.status !== "draft")
+      return fail("Invalid application session.", 403);
+    const nonce = crypto.randomUUID().replaceAll("-", "");
+    const path = "pending/" + appId + "-" + nonce + ".webp";
+
+    const { error: uploadError } = await sb.storage
+      .from("volunteer-photos")
+      .upload(path, safeBytes, { contentType: "image/webp", upsert: false });
+    if (uploadError)
+      return fail("Photo storage failed: " + uploadError.message, 502);
+
+    const { error: registerError } = await sb.rpc(
+      "register_volunteer_photo_upload",
+      {
+        p_id: appId,
+        p_token: resumeToken,
+        p_path: path,
+        p_moderation: {
+          clientSanitized: true,
+          model: "trusted_backoffice_review",
+        },
+      },
+    );
+    if (registerError)
+      return fail("Photo registration failed: " + registerError.message, 502);
+
+    return Response.json(
+      { ok: true, id: appId, token: resumeToken, path },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    return fail(error?.message || "Photo upload failed.", 500);
   }
 }

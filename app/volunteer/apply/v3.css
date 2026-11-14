@@ -1,0 +1,356 @@
+.v3-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100vh;
+  background: #f7f7fb;
+  color: #22243b;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.v3-rail {
+  background: #202239;
+  color: white;
+  padding: 40px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.v3-rail a {
+  color: #e4dbff;
+}
+.v3-rail h2 {
+  font-size: 32px;
+  line-height: 1.2;
+}
+.v3-main {
+  width: 100%;
+  max-width: 1040px;
+  margin: auto;
+  padding: 32px 40px;
+  min-width: 0;
+}
+.v3-main header h1 {
+  font-size: 30px;
+  margin: 8px 0;
+}
+.v3-main header p,
+.v3-content p {
+  color: #575b70;
+}
+.v3-main nav {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0;
+}
+.v3-main nav button {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-bottom: 3px solid #dddde8;
+  background: transparent;
+  padding: 8px;
+  color: #66697c;
+}
+.v3-main nav button[aria-current] {
+  border-color: #6940c7;
+  color: #4d259f;
+}
+.v3-main nav small {
+  display: block;
+  font-size: 12px;
+}
+.v3-content {
+  background: white;
+  border: 1px solid #e1e2eb;
+  border-radius: 16px;
+  padding: 28px;
+}
+.v3-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.v3-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.v3-field.wide {
+  grid-column: 1/-1;
+}
+.v3-field > label {
+  font-weight: 600;
+  font-size: 14px;
+}
+.v3-shell input:not([type="checkbox"]):not([type="file"]),
+.v3-shell select,
+.v3-shell textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  min-height: 46px;
+  border: 1px solid #bfc3d2;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #22243b;
+  background: #fff;
+  box-sizing: border-box;
+}
+.v3-shell textarea {
+  resize: vertical;
+}
+.v3-shell small {
+  font-size: 13px;
+  color: #62677b;
+}
+.v3-shell button {
+  font: inherit;
+  cursor: pointer;
+}
+.v3-shell button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.v3-shell :focus-visible {
+  outline: 3px solid #8053dc;
+  outline-offset: 3px;
+}
+.v3-shell [aria-invalid="true"] {
+  border-color: #ae2437 !important;
+}
+.v3-shell fieldset {
+  border: 1px solid #dedfea;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 18px 0;
+  min-width: 0;
+}
+.v3-field fieldset {
+  margin: 0;
+}
+.v3-shell legend {
+  font-weight: 600;
+  padding: 0 5px;
+}
+.v3-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.v3-choices label,
+.v3-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+}
+.v3-shell input[type="checkbox"] {
+  accent-color: #6940c7;
+  min-width: 20px;
+  height: 20px;
+  margin-top: 3px;
+}
+.v3-tool {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+.v3-tool label {
+  flex: 1;
+}
+.v3-tool select {
+  width: 220px;
+}
+.v3-photo {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+}
+.v3-photo img {
+  width: 100px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.v3-photo input {
+  max-width: 100%;
+}
+.v3-photo small {
+  display: block;
+  margin: 8px 0;
+}
+.v3-commitments {
+  background: #f8f5ff;
+  border: 1px solid #ded2fa;
+  border-radius: 12px;
+  margin-top: 24px;
+  padding: 20px;
+}
+.v3-commitments h2 {
+  font-size: 20px;
+  margin: 0;
+}
+.v3-commitments ul {
+  padding: 0;
+  list-style: none;
+}
+.v3-commitments li {
+  display: flex;
+  gap: 12px;
+  padding: 7px 0;
+}
+.v3-commitments li span {
+  color: #5a329d;
+  font-weight: 700;
+}
+.v3-check {
+  border-top: 1px solid #d7cdeb;
+  margin-top: 12px;
+  font-weight: 600;
+}
+.v3-error,
+.v3-field small.v3-error {
+  color: #a71c31;
+}
+.v3-error-summary {
+  background: #fff4f4;
+  border: 1px solid #c84455;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.v3-error-summary a {
+  color: #941529;
+}
+.v3-review {
+  margin-bottom: 24px;
+  overflow-wrap: anywhere;
+}
+.v3-review h2 {
+  font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+.v3-review dl > div {
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  gap: 16px;
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+}
+.v3-review dt {
+  color: #62677b;
+}
+.v3-review dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.v3-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f7f7fb;
+  padding: 16px 0;
+  z-index: 5;
+}
+.v3-actions > span {
+  flex: 1;
+  font-size: 13px;
+  color: #565d71;
+}
+.v3-actions button,
+.v3-review button {
+  border: 1px solid #c9c8d8;
+  border-radius: 8px;
+  background: white;
+  padding: 10px 16px;
+  min-height: 44px;
+}
+.v3-actions .v3-primary {
+  background: #6336bf;
+  color: white;
+  border-color: #6336bf;
+}
+.v3-complete {
+  max-width: 800px;
+  margin: auto;
+  padding: 40px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .v3-shell {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+  .v3-main {
+    padding: 24px;
+  }
+  .v3-rail {
+    padding: 30px 20px;
+  }
+}
+@media (max-width: 760px) {
+  .v3-shell {
+    display: block;
+  }
+  .v3-rail {
+    padding: 12px 20px;
+    display: block;
+  }
+  .v3-rail > *:not(:first-child) {
+    display: none;
+  }
+  .v3-main {
+    padding: 20px 14px;
+  }
+  .v3-main header h1 {
+    font-size: 26px;
+  }
+  .v3-main nav small {
+    display: none;
+  }
+  .v3-content {
+    padding: 18px;
+  }
+  .v3-grid,
+  .v3-choices {
+    grid-template-columns: 1fr;
+  }
+  .v3-tool {
+    flex-wrap: wrap;
+  }
+  .v3-tool select {
+    width: 100%;
+  }
+  .v3-tool label {
+    flex-basis: 100%;
+  }
+  .v3-review dl > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+  .v3-actions {
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .v3-actions > span {
+    order: 3;
+    flex-basis: 100%;
+    text-align: center;
+  }
+  .v3-actions .v3-primary {
+    margin-left: auto;
+  }
+  .v3-photo {
+    display: block;
+  }
+  .v3-photo img {
+    margin-bottom: 12px;
+  }
+}
