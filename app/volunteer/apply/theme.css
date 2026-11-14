@@ -4,6 +4,7 @@
   --vf-active:#087f7a; --vf-soft:#e5f2ef; --vf-success:#2c6e49;
   --vf-danger:#b42318;
   min-height:100svh; background:var(--vf-canvas); color:var(--vf-ink);
+  -webkit-text-size-adjust:100%; text-size-adjust:100%; font-synthesis:none;
   font:400 16px/1.5 var(--vf-sans),Arial,sans-serif;
 }
 .volunteerFormTheme * { box-sizing:border-box; }
@@ -15,7 +16,7 @@
 .vf-skip:focus { transform:translateY(0); }
 .volunteerFormTheme .v3-shell { min-height:calc(100svh - 125px); background:var(--vf-canvas); color:var(--vf-ink); grid-template-columns:248px minmax(0,1fr); font-family:var(--vf-sans),Arial,sans-serif; }
 .volunteerFormTheme .v3-rail { background:var(--vf-canvas); color:var(--vf-ink); border-right:1px solid var(--vf-line); padding:44px 24px; gap:24px; }
-.volunteerFormTheme .v3-rail h2 { font:600 30px/1.12 var(--vf-serif),Georgia,serif; color:var(--vf-teal); margin:0; }
+.volunteerFormTheme .v3-rail h2 { font:500 28px/1.2 var(--vf-serif),Georgia,serif; color:var(--vf-teal); margin:0; }
 .volunteerFormTheme .v3-rail p { margin:0; color:var(--vf-muted); }
 .volunteerFormTheme .v3-rail > div { background:var(--vf-soft); padding:18px; border-radius:9px; }
 .volunteerFormTheme .v3-rail > div p { margin-top:10px; }
@@ -23,17 +24,17 @@
 .volunteerFormTheme .v3-main { max-width:1100px; padding:40px 32px; margin:0 auto; }
 .volunteerFormTheme .v3-main > header { position:static; display:flex; flex-direction:column; align-items:stretch; height:auto; max-width:none; padding:0; margin:0 0 24px; background:transparent; z-index:auto; }
 .volunteerFormTheme .v3-main > header .vf-eyebrow { order:0; text-transform:uppercase; letter-spacing:.18em; font-size:12px; font-weight:600; margin:0 0 12px; }
-.volunteerFormTheme .v3-main > header h1 { order:1; font:600 clamp(32px,3.5vw,48px)/1.1 var(--vf-serif),Georgia,serif; color:var(--vf-ink); letter-spacing:-.025em; margin:0 0 12px; }
+.volunteerFormTheme .v3-main > header h1 { order:1; font:500 clamp(28px,3vw,38px)/1.2 var(--vf-serif),Georgia,serif; color:var(--vf-ink); letter-spacing:-.025em; margin:0 0 12px; }
 .volunteerFormTheme .v3-main > header > p:not(.vf-eyebrow) { margin:0; color:var(--vf-muted); order:2; }
 .volunteerFormTheme .v3-main > header > p:last-of-type { order:4; font-size:14px; }
-.volunteerFormTheme .v3-main nav { order:3; display:flex; flex-wrap:nowrap; justify-content:space-between; gap:12px; margin:24px 0 20px; padding-bottom:20px; border-bottom:1px solid var(--vf-line); font-size:14px; }
-.volunteerFormTheme .v3-main nav button { flex:1; display:flex; align-items:center; gap:8px; padding:4px 0; border:0; color:var(--vf-muted); background:transparent; text-align:left; }
+.volunteerFormTheme .v3-main nav { order:3; display:flex; flex-wrap:nowrap; justify-content:space-between; gap:12px; margin:24px 0 20px; padding-bottom:20px; border-bottom:1px solid var(--vf-line); font-size:14px; font-weight:400; }
+.volunteerFormTheme .v3-main nav button { flex:1; display:flex; align-items:center; gap:8px; padding:4px 0; border:0; color:var(--vf-muted); background:transparent; text-align:left; font-weight:400; }
 .volunteerFormTheme .v3-main nav button:disabled { opacity:1; }
 .volunteerFormTheme .v3-main nav button > span { display:grid; place-items:center; border:1px solid #7b8b8b; border-radius:50%; width:30px; height:30px; flex-shrink:0; font-size:14px; }
 .volunteerFormTheme .v3-main nav button[aria-current] { color:var(--vf-ink); font-weight:600; }
 .volunteerFormTheme .v3-main nav button[aria-current] > span { background:var(--vf-teal); border-color:var(--vf-teal); color:white; }
 .volunteerFormTheme .v3-main nav button:not(:disabled):not([aria-current]) > span { background:#e7f1eb; border-color:var(--vf-success); color:var(--vf-success); }
-.volunteerFormTheme .v3-main nav small { font-size:13px; color:inherit; }
+.volunteerFormTheme .v3-main nav small { font-size:13px; font-weight:500; color:inherit; }
 .volunteerFormTheme .v3-content { border-color:var(--vf-line); border-radius:12px; padding:26px; background:white; }
 .volunteerFormTheme .v3-content p { color:var(--vf-muted); }
 .volunteerFormTheme .v3-field > label { color:var(--vf-ink); }
@@ -65,7 +66,7 @@
 .volunteerFormTheme .v3-actions .v3-primary { background:var(--vf-teal); color:white; border-color:var(--vf-teal); }
 .volunteerFormTheme .v3-actions .v3-primary:hover:not(:disabled) { background:#064b4e; }
 .volunteerFormTheme .complete { width:min(760px,calc(100% - 36px)); max-width:760px; padding:36px; margin:48px auto; border:1px solid var(--vf-line); border-radius:12px; background:white; color:var(--vf-ink); font-family:inherit; overflow-wrap:anywhere; }
-.volunteerFormTheme .complete h1 { font:600 40px/1.12 var(--vf-serif),Georgia,serif; }
+.volunteerFormTheme .complete h1 { font:500 34px/1.2 var(--vf-serif),Georgia,serif; }
 .volunteerFormTheme .complete p { color:var(--vf-muted); }
 .volunteerFormTheme .complete a, .volunteerFormTheme .complete button { display:inline-flex; padding:12px 18px; min-height:44px; border:1px solid var(--vf-teal); background:var(--vf-teal); color:white; border-radius:7px; font:inherit; text-decoration:none; }
 /* Existing version-pinned drafts keep their workflow and receive the same identity. */
@@ -95,10 +96,13 @@
  .volunteerFormTheme .v3-rail > * { display:none; }
  .volunteerFormTheme .v3-rail > div { display:block; padding:12px 16px; font-size:13px; }
  .volunteerFormTheme .v3-rail > div p { margin-top:4px; }
- .volunteerFormTheme .v3-main { padding:26px 16px; }
+ .volunteerFormTheme .v3-main { padding:20px 16px; }
+ .volunteerFormTheme .v3-main > header h1 { font-size:28px; line-height:1.2; letter-spacing:-.015em; }
+ .volunteerFormTheme .v3-main > header .vf-eyebrow { font-size:10px; letter-spacing:.12em; margin-bottom:8px; }
+ .volunteerFormTheme .v3-main > header > p:not(.vf-eyebrow) { font-size:13px; line-height:1.5; }
  .volunteerFormTheme .v3-main nav { gap:8px; margin:20px 0; }
  .volunteerFormTheme .v3-main nav button { align-items:center; text-align:center; }
- .volunteerFormTheme .v3-main nav small { display:block; font-size:10px; line-height:1.25; }
+ .volunteerFormTheme .v3-main nav small { display:block; font-size:11px; line-height:1.3; }
  .volunteerFormTheme .v3-content { padding:18px; }
  .volunteerFormTheme .v3-photo { display:flex; flex-wrap:wrap; gap:14px; }
  .volunteerFormTheme .v3-photo img, .vf-photo-placeholder { width:72px; height:84px; }
@@ -108,4 +112,27 @@
  .volunteerFormTheme .v3-review dl > div { grid-template-columns:1fr; gap:4px; }
  .volunteerFormTheme .complete { margin:28px auto; padding:24px; }
  .volunteerFormTheme .complete h1 { font-size:32px; }
+}
+
+/* Programmatic step announcements retain focus without presenting a control outline. */
+.volunteerFormTheme .v3-main > header h1:focus { outline:none; }
+.volunteerFormTheme .v3-field > label { font:500 14px/1.4 var(--vf-sans),Arial,sans-serif; }
+.volunteerFormTheme .v3-shell legend, .volunteerFormTheme .v3-photo b { font:600 15px/1.4 var(--vf-sans),Arial,sans-serif; }
+.volunteerFormTheme .v3-content h2 { font:600 20px/1.35 var(--vf-sans),Arial,sans-serif; }
+.volunteerFormTheme .v3-content p, .volunteerFormTheme .v3-review dd, .volunteerFormTheme .v3-review dt { font-size:15px; line-height:1.55; }
+.volunteerFormTheme .v3-check { font-weight:500; }
+.volunteerFormTheme .v3-shell button { font-weight:500; }
+.volunteerFormTheme .v3-shell small { line-height:1.45; }
+.volunteerFormTheme .v3-choices label { font-size:15px; line-height:1.5; }
+.volunteerFormTheme .v3-shell input:not([type=checkbox]), .volunteerFormTheme .v3-shell select, .volunteerFormTheme .v3-shell textarea { font-family:var(--vf-sans),Arial,sans-serif; font-size:16px; font-weight:400; }
+@media(max-width:760px) {
+ .volunteerFormTheme .v3-main nav small { line-height:1.3; }
+ .volunteerFormTheme .v3-photo { display:grid; grid-template-columns:48px minmax(0,1fr); gap:12px; }
+ .volunteerFormTheme .v3-photo img, .volunteerFormTheme .vf-photo-placeholder { width:48px; height:60px; }
+ .volunteerFormTheme .v3-photo p { font-size:13px; line-height:1.5; }
+ .volunteerFormTheme .v3-photo small { font-size:12px; }
+ .volunteerFormTheme .v3-actions { flex-wrap:nowrap; gap:12px; }
+ .volunteerFormTheme .v3-actions > span:not(:has(button)) { display:none; }
+ .volunteerFormTheme .v3-actions:has(span button) { flex-wrap:wrap; }
+ .volunteerFormTheme .v3-actions button { font-size:14px; }
 }
