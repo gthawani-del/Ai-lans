@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { UserRound } from "lucide-react";
 import {
   getSupabaseBrowserClient,
   SUPABASE_URL,
@@ -511,13 +512,11 @@ export default function VolunteerApplyV3({ config }) {
   return (
     <main className="v3-shell">
       <aside className="v3-rail">
-        <Link href="/volunteer">weareailabs</Link>
         <h2>
           Volunteer.
           <br />
           Build together.
         </h2>
-        <p>Help participants turn ideas into working projects.</p>
         <p>Technical, creative and operational backgrounds are welcome.</p>
         <div>
           <b>Workshop details</b>
@@ -527,6 +526,7 @@ export default function VolunteerApplyV3({ config }) {
       </aside>
       <section className="v3-main">
         <header>
+          <p className="vf-eyebrow">Volunteer application</p>
           <p>
             Step {step + 1} of 5 · {saveState}
           </p>
@@ -547,7 +547,7 @@ export default function VolunteerApplyV3({ config }) {
                 onClick={() => changeStep(i)}
               >
                 <span>{i < step ? "✓" : i + 1}</span>
-                <small>{t}</small>
+                <small>{["You", "Profile & skills", "Experience & work", "Commitments", "Review"][i]}</small>
               </button>
             ))}
           </nav>
@@ -583,7 +583,7 @@ export default function VolunteerApplyV3({ config }) {
           {step === 0 && (
             <>
               <div className="v3-photo" id="v3-photoApproved" tabIndex={-1}>
-                {photoUrl && <img src={photoUrl} alt="Your photo preview" />}
+                {photoUrl ? <img src={photoUrl} alt="Your photo preview" /> : <div className="vf-photo-placeholder" aria-hidden="true"><UserRound size={42} strokeWidth={1.4} /></div>}
                 <div>
                   <b>Profile photo *</b>
                   <p>
