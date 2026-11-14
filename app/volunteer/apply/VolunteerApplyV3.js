@@ -580,7 +580,7 @@ export default function VolunteerApplyV3({ config }) {
             {titles[step]}
           </h1>
           <p>
-            All fields are required unless marked optional.
+            All fields are required unless marked optional. <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a>
           </p>
           <button type="button" className="v3-clear-draft" onClick={clearDraft} disabled={busy||photoBusy}>Clear saved draft on this device</button>
           <nav aria-label="Application progress">
@@ -891,7 +891,7 @@ export default function VolunteerApplyV3({ config }) {
                   Your answers and photo are used by the workshop team for
                   selection, photo review and coordination. This agreement does
                   not grant permission for publicity or marketing use. You can
-                  ask the workshop team to correct or delete your application.
+                  ask the workshop team to correct or delete your application at <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a>. See our <a href="/privacy" target="_blank" rel="noopener noreferrer">privacy policy (opens in a new tab)</a>.
                 </p>
               </section>
               {field(rules.find((r) => r.key === "accurate"))}
