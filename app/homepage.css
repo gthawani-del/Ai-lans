@@ -41,9 +41,6 @@
 .homepage .ask { border-color: var(--home-line); color: var(--home-ink); }
 .homepage .skipLink { background: var(--home-ink); }
 .homepage :focus-visible { outline-color: var(--home-teal); }
-.homepage ~ .attendeeRegisterLink { background: #006d71; box-shadow: 0 10px 30px #003e4626; }
-.homepage ~ .attendeeRegisterLink:hover { background: #003e46; }
-.homepage ~ .attendeeRegisterLink:focus-visible { outline-color: #006d71; }
 /* Dimensions for the replacement image assets; no font changes. */
 .homepage .headerLogo,
 .homepage .footerLogo { display: block; width: 140px; height: auto; }
