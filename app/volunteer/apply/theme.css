@@ -254,3 +254,6 @@
  .volunteerFormTheme .v3-main > header h1 { font-size:24px; }
  .volunteerFormTheme .v3-group-title { font-size:18px; margin-bottom:12px; }
 }
+/* The country prefix and editable number share one border and focus ring. */
+.volunteerFormTheme .v3-shell .v3-phone input:not([type=checkbox]):not([type=file]) { border:0; outline:none; box-shadow:none; }
+.volunteerFormTheme .v3-phone:focus-within { outline:3px solid var(--vf-active); outline-offset:3px; }
