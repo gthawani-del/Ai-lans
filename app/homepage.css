@@ -113,3 +113,6 @@
   .homepage footer small { font-size:12px; line-height:1.5; }
   .homepage section[id] { scroll-margin-top:80px; }
 }
+
+.homepage footer { flex-wrap:wrap; }
+.homepage .privacyLink { color:var(--home-teal); text-decoration:underline; display:inline-flex; align-items:center; min-height:44px; font-size:14px; }
