@@ -178,6 +178,7 @@ export default function VolunteerApplyV3({ config }) {
     setErrors((e) => {
       const next = { ...e };
       delete next[k];
+      if (k === "commitmentChecks") delete next.commitmentAgreed;
       return next;
     });
   }
@@ -865,7 +866,7 @@ export default function VolunteerApplyV3({ config }) {
 
               {reviewSections(data, tools).map((section) => (
                 <details className="v3-review v3-disclosure" key={section.step}>
-                  <summary>{titles[section.step]} <span>{section.rows.length} answers</span></summary>
+                  <summary>{titles[section.step]} <span className="v3-answer-count"> · {section.rows.length} answers</span></summary>
                   <h2>
                     {titles[section.step]}{" "}
                     <button

@@ -76,6 +76,7 @@ const fs = require("fs");
             name: commitments[0], exact: true,
           })
           .check();
+        await page.locator("#v3-errors").waitFor({state:"hidden"});
         await page.screenshot({
           path: `test-results/commitments-${width}.png`,
           fullPage: true,

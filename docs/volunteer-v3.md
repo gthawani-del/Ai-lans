@@ -36,5 +36,6 @@ RLS on `public.workshop_cohorts` was addressed by migration `20261114210100_prot
 - Browser normalization strips unsolicited top-level and additional-tool metadata. This is not a claim that direct RPC payloads are fully allowlisted server-side.
 - Malformed contribution and tool data produces errors instead of crashing the validator.
 - Photo API bounds streamed multipart bodies to 6 MB before parsing, including absent/false Content-Length; application JSON is capped at 50 KB. Processed-image restrictions remain in place.
+- Next.js is patched to 15.5.29. Dependency audit no longer reports a critical finding; PostCSS and attendee Zod findings remain and are not represented as resolved.
 - Fourteen unit tests pass. Updated browser harness includes all six viewport widths, final-step photo error routing, review edits, reload recovery and mocked submission. Local Chromium cannot launch in the current runtime; these browser changes are not reported as executed.
 - No applicant was submitted and no physical-device testing was performed.
