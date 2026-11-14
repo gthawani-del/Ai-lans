@@ -184,6 +184,6 @@ export default function RegistrationCheckoutV3(){
 
 
 
-          <div className="trust onePageTrust"><span className="shield"><UiIcon name="shield" size={25}/></span><span><b>Your information is secure</b><small>We only use this information for workshop coordination.</small></span><span className="cloud"><UiIcon name="cloud" size={25}/></span><span><b>{saveState}</b><small>Your unfinished draft stays on this device.</small></span></div>
+          <div className="trust onePageTrust"><span className="shield"><UiIcon name="shield" size={25}/></span><span><b>Your application information</b><small>Used for application review and workshop coordination.</small></span><span className="cloud"><UiIcon name="cloud" size={25}/></span><span><b>{saveState}</b><small>Your unfinished draft stays on this device.</small></span></div>
         </form></section><footer className="regFooter"><b><AILabMark small/><span>AI LAB<small>An ELIV8 LYF initiative</small></span></b><p><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a> · <a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a></p></footer></div></main>;
 }
