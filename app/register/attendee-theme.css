@@ -1,0 +1,57 @@
+/* Volunteer identity applied only to attendee presentation. Layout and type stay intact. */
+.registrationCheckout.registrationCheckout, .paymentSuccessPage {
+  --at-canvas:#f7f8f5; --at-surface:#fff; --at-ink:#0b1720;
+  --at-muted:#526174; --at-line:#d8e1df; --at-input:#758681;
+  --at-teal:#075b5e; --at-active:#087f7a; --at-soft:#e5f2ef;
+  --at-success:#2c6e49; --at-success-bg:#e7f1eb;
+}
+.registrationCheckout.registrationCheckout[data-theme="dark"], .paymentSuccessPage[data-theme="dark"] {
+  --at-canvas:#102021; --at-surface:#172c2d; --at-ink:#edf5f2;
+  --at-muted:#b1c6c1; --at-line:#385754; --at-input:#74958d;
+  --at-teal:#8cd4c7; --at-active:#a4e3d7; --at-soft:#24433f;
+  --at-success:#a0d7b2; --at-success-bg:#233f32;
+}
+.registrationCheckout.registrationCheckout, .paymentSuccessPage.paymentSuccessPage {
+  background:var(--at-canvas); color:var(--at-ink);
+}
+.registrationCheckout.registrationCheckout .regRail { background:var(--at-canvas); color:var(--at-ink); box-shadow:none; }
+.registrationCheckout.registrationCheckout .regRail h2 { color:var(--at-teal); }
+.registrationCheckout.registrationCheckout .regRail > p, .registrationCheckout.registrationCheckout .benefits > div,
+.registrationCheckout.registrationCheckout .benefits small { color:var(--at-muted); }
+.registrationCheckout.registrationCheckout .benefits i, .registrationCheckout.registrationCheckout .event { background:var(--at-soft); color:var(--at-teal); border-color:var(--at-line); }
+.registrationCheckout.registrationCheckout .regRail .event > span::before { color:var(--at-teal); }
+.registrationCheckout.registrationCheckout .regRail .regBrand::before { content:none; }
+.registrationCheckout.registrationCheckout .attendeeLogo { display:block; width:184px; height:58px; object-fit:contain; object-position:left center; }
+.registrationCheckout.registrationCheckout .regFooter .attendeeLogo { width:120px; height:66px; }
+.registrationCheckout.registrationCheckout[data-theme="dark"] .attendeeLogo { background:#fff; border-radius:7px; }
+.registrationCheckout.registrationCheckout .regRail .railArt::before { background:linear-gradient(180deg,transparent 58%,var(--at-canvas) 100%),url('https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/step1-workshop-collaboration.jpg') center 42%/cover no-repeat; }
+.registrationCheckout.registrationCheckout .regRail .railArt::after { background:linear-gradient(180deg,transparent,var(--at-canvas)); }
+.registrationCheckout.registrationCheckout .railArt strong { color:var(--at-teal); text-shadow:none; }
+.registrationCheckout.registrationCheckout :is(.regCard,.formModule,.moduleBody,.reviewApplication,.reviewGrid,.reviewGrid article,.reviewHeader,.reviewConfirm,.displayButton,.textScalePopover,.countryComboPopover,.countryOption) {
+  background:var(--at-surface)!important; color:var(--at-ink)!important; border-color:var(--at-line)!important; box-shadow:none;
+}
+.registrationCheckout.registrationCheckout :is(.formModule.isLocked,.trust,.moduleTrail span,.textScaleStops button,.textReset) { background:var(--at-canvas)!important; color:var(--at-muted)!important; border-color:var(--at-line)!important; }
+.registrationCheckout.registrationCheckout :is(.registrationTitle,.moduleHeading h2,.field label,.regCard legend,.toolField>label,.choiceTop>b,.reviewHeader h2,.reviewCardHead>b,.reviewGrid dd,.time b) { color:var(--at-ink)!important; }
+.registrationCheckout.registrationCheckout :is(.onePageHead p,.moduleHeading p,.moduleLock,.fieldIcon,.dialDisplay,.comboChevron,.phoneHint,.countrySearch,.countryOption strong,.toolField>label span,.emptyTools,.buildToolbar,.choiceDescription,.reviewHeader p,.reviewGrid dt,.consent,.trust small,.time span) { color:var(--at-muted)!important; }
+.registrationCheckout.registrationCheckout :is(.moduleNumber,.profileModule .moduleNumber,.readinessModule .moduleNumber,.buildModule .moduleNumber,.moduleTrail span.active,.toolChip,.buildToolbar b,.textScaleStops button.on,.countryOption.selected) { background:var(--at-soft)!important; color:var(--at-teal)!important; border-color:var(--at-teal)!important; }
+.registrationCheckout.registrationCheckout :is(.moduleDone,.reviewReady) { background:var(--at-success-bg); color:var(--at-success); }
+.registrationCheckout.registrationCheckout :is(.regCard input,.regCard select,.regCard textarea,.selectedTools,.countryComboTrigger,.aiLevelGroup button,.buildChoice) { background:var(--at-surface)!important; color:var(--at-ink)!important; border-color:var(--at-input)!important; }
+.registrationCheckout.registrationCheckout :is(input,textarea)::placeholder { color:var(--at-muted)!important; }
+.registrationCheckout.registrationCheckout :is(.aiLevelGroup button.on,.buildChoice.on) { background:var(--at-soft)!important; border-color:var(--at-teal)!important; color:var(--at-teal)!important; box-shadow:inset 0 0 0 1px var(--at-teal); }
+.registrationCheckout.registrationCheckout :is(.regCard input,.regCard select,.regCard textarea):focus,
+.registrationCheckout.registrationCheckout .countryComboTrigger[aria-expanded="true"] { border-color:var(--at-active)!important; box-shadow:0 0 0 3px var(--at-soft); }
+.registrationCheckout.registrationCheckout :is(.aiLevelGroup button,.buildChoice,.displayButton,.countryComboTrigger):hover { border-color:var(--at-active)!important; }
+.registrationCheckout.registrationCheckout :is(.countryOption:hover,.displayButton:hover) { background:var(--at-soft)!important; }
+.registrationCheckout.registrationCheckout :is(.choiceCheck,.countrySearch,.moduleHeader,.reviewLaunch,.reviewCardHead,.reviewConfirm) { border-color:var(--at-line)!important; }
+.registrationCheckout.registrationCheckout :is(.reviewEyebrow,.reviewCardHead button,.textScaleTop span,.toolChip span,.time,.shield,.cloud,.buildToolbar svg) { color:var(--at-teal); }
+.registrationCheckout.registrationCheckout :is(.reviewButton,.completeButton,.choiceTop i,.buildChoice.on .choiceCheck), .paymentSuccessPage .successReturn { background:#075b5e!important; color:#fff!important; border-color:#075b5e!important; box-shadow:none; }
+.registrationCheckout.registrationCheckout :is(.reviewButton,.completeButton):hover:not(:disabled), .paymentSuccessPage .successReturn:hover { background:#064b4e!important; }
+.registrationCheckout.registrationCheckout input, .registrationCheckout.registrationCheckout .textScaleSlider input { accent-color:var(--at-teal); }
+.registrationCheckout.registrationCheckout :focus-visible { outline-color:var(--at-active); }
+.registrationCheckout.registrationCheckout .regFooter { color:var(--at-ink)!important; }
+.registrationCheckout.registrationCheckout a, .registrationCheckout.registrationCheckout .regFooter a, .paymentSuccessPage a:not(.successReturn) { color:var(--at-teal)!important; }
+.paymentSuccessPage .successLead, .paymentSuccessPage .successMeta span { color:var(--at-muted)!important; }
+.paymentSuccessPage .successMeta > div { background:var(--at-surface)!important; border-color:var(--at-line)!important; }
+@media(max-width:900px) {
+  .registrationCheckout.registrationCheckout .regRail .attendeeLogo { width:152px; height:44px; }
+}

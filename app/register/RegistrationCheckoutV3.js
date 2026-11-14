@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import './attendee-theme.css';
 import {submitAttendeeApplication} from '../../lib/attendee-application.mjs';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -62,7 +63,7 @@ function UiIcon({name,size=18}){
 }
 
 function AILabMark({small=false}){
-  return <svg className={small?'aiMark small':'aiMark'} viewBox="0 0 48 48" role="img" aria-label="AI Lab"><path d="M23.8 4 8.2 39.5h10.2l5.5-13.4 5.7 13.4h10.3L25 4h-1.2Z"/></svg>;
+  return <img className={small?'attendeeLogo small':'attendeeLogo'} src="/brand/weareailabs-volunteer.webp" alt="weareailabs — Explore. Learn. Create. Together." width="200" height="110"/>;
 }
 
 function ModuleHeader({number,title,subtitle,locked=false,complete=false}){
@@ -169,7 +170,7 @@ export default function RegistrationCheckoutV3(){
   function optionTitle(slug){return options.find(option=>option.slug===slug)?.title||slug;}
   if(success)return <SuccessScreen success={success} theme={theme} textScale={textScale}/>;
 
-  return <main className="regShell onePageRegistration registrationCheckout" data-theme={theme} data-text-scale={textScale} style={{fontSize:`${textScale}%`}}><div className="regFrame onePageFrame"><aside className="regRail"><a href="/" className="regBrand"><AILabMark/><span>AI LAB<small>AI BUSINESS<br/>TRANSFORMATION</small></span></a><h2>From Ideas to<br/>Real Impact</h2><p>A hands-on workshop for CXOs, founders and business leaders.</p><div className="benefits"><div><i><UiIcon name="people"/></i><span>Build <b>Real AI MVPs</b><small>in two days</small></span></div><div><i><UiIcon name="bulb"/></i><span>Learn from<br/>experts & peers</span></div><div><i><UiIcon name="network"/></i><span>Expand<br/>your network</span></div><div><i><UiIcon name="rocket"/></i><span>Leave with a<br/>90-day action plan</span></div></div><div className="event"><b><UiIcon name="calendar" size={24}/></b><span>Dates to be confirmed<small>Mumbai · venue to be confirmed</small></span></div><div className="railArt"><strong>Build<br/>What’s Next</strong></div></aside>
+  return <main className="regShell onePageRegistration registrationCheckout" data-theme={theme} data-text-scale={textScale} style={{fontSize:`${textScale}%`}}><div className="regFrame onePageFrame"><aside className="regRail"><a href="/" className="regBrand"><AILabMark/></a><h2>From Ideas to<br/>Real Impact</h2><p>A hands-on workshop for CXOs, founders and business leaders.</p><div className="benefits"><div><i><UiIcon name="people"/></i><span>Build <b>Real AI MVPs</b><small>in two days</small></span></div><div><i><UiIcon name="bulb"/></i><span>Learn from<br/>experts & peers</span></div><div><i><UiIcon name="network"/></i><span>Expand<br/>your network</span></div><div><i><UiIcon name="rocket"/></i><span>Leave with a<br/>90-day action plan</span></div></div><div className="event"><b><UiIcon name="calendar" size={24}/></b><span>Dates to be confirmed<small>Mumbai · venue to be confirmed</small></span></div><div className="railArt"><strong>Build<br/>What’s Next</strong></div></aside>
 
       <section className="regMain onePageMain"><p><a href="/privacy" target="_blank" rel="noopener noreferrer">How we use your information (opens in a new tab)</a></p><p role="note">Applications are open. Dates and venue are to be confirmed. Applying does not confirm a place; no payment is taken here.</p><button type="button" className="reg-clear-draft" disabled={isSubmitting} onClick={clearDraft}>Clear saved draft</button><div className="moduleTrail moduleTrailFour" aria-label="Registration sections"><span className="active">01 About You</span><span className={unlockedModule>=2?'active':''}>02 AI Readiness</span><span className={unlockedModule>=3?'active':''}>03 What You’ll Build</span><span className={reviewOpen?'active':''}>04 Review</span></div>
         <form className="regCard onePageCard" onSubmit={handleSubmit(confirmApplication,handleInvalid)} noValidate><div className="formHead onePageHead checkoutHead compactCheckoutHead"><div className="checkoutTitleBlock"><h1 className="registrationTitle">ATTENDEE APPLICATION</h1><p>Complete the sections below and submit your application for review.</p></div><div className="headerUtilities"><DisplayControls theme={theme} onToggleTheme={changeTheme} textScale={textScale} onTextScale={changeTextScale} textOpen={textOpen} setTextOpen={setTextOpen}/><div className="time"><UiIcon name="clock" size={21}/><span>Takes about<br/><b>3 minutes</b></span></div></div></div>
@@ -185,5 +186,5 @@ export default function RegistrationCheckoutV3(){
 
 
           <div className="trust onePageTrust"><span className="shield"><UiIcon name="shield" size={25}/></span><span><b>Your application information</b><small>Used for application review and workshop coordination.</small></span><span className="cloud"><UiIcon name="cloud" size={25}/></span><span><b>{saveState}</b><small>Your unfinished draft stays on this device.</small></span></div>
-        </form></section><footer className="regFooter"><b><AILabMark small/><span>AI LAB<small>An ELIV8 LYF initiative</small></span></b><p><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a> · <a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a></p></footer></div></main>;
+        </form></section><footer className="regFooter"><b><AILabMark small/></b><p><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a> · <a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a></p></footer></div></main>;
 }
