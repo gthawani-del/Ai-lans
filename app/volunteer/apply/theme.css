@@ -257,3 +257,29 @@
 /* The country prefix and editable number share one border and focus ring. */
 .volunteerFormTheme .v3-shell .v3-phone input:not([type=checkbox]):not([type=file]) { border:0; outline:none; box-shadow:none; }
 .volunteerFormTheme .v3-phone:focus-within { outline:3px solid var(--vf-active); outline-offset:3px; }
+
+/* Consistent mobile readability and primary-action hierarchy on every step. */
+@media(max-width:760px) {
+ .volunteerFormTheme .v3-field > label,
+ .volunteerFormTheme .v3-tool:not(.v3-custom-tool) label,
+ .volunteerFormTheme .v3-shell legend,
+ .volunteerFormTheme .v3-photo b { font-size:16px; }
+ .volunteerFormTheme .v3-main nav button,
+ .volunteerFormTheme .v3-content button,
+ .volunteerFormTheme .v3-actions button,
+ .volunteerFormTheme .v3-choices label,
+ .volunteerFormTheme .v3-check,
+ .volunteerFormTheme .v3-disclosure summary,
+ .volunteerFormTheme .v3-context summary,
+ .volunteerFormTheme .vf-brand-header a { min-height:48px; }
+ .volunteerFormTheme .v3-actions { display:flex; flex-direction:column; align-items:stretch; }
+ .volunteerFormTheme .v3-actions > .v3-primary { order:0; width:100%; margin:0; font-size:16px; }
+ .volunteerFormTheme .v3-actions > button:not(.v3-primary) { order:1; align-self:flex-start; }
+ .volunteerFormTheme .v3-actions > span { order:2; }
+}
+/* Long choices are easier to scan in a vertical list. */
+.volunteerFormTheme .v3-segments:has(span:not(:empty)) { align-items:stretch; }
+.volunteerFormTheme #v3-experienceStatus .v3-segments,
+.volunteerFormTheme #v3-evidenceVisibility .v3-segments { flex-direction:column; }
+.volunteerFormTheme #v3-experienceStatus .v3-segments label,
+.volunteerFormTheme #v3-evidenceVisibility .v3-segments label { flex-basis:auto; }
