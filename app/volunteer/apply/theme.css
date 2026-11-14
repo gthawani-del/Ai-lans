@@ -219,7 +219,7 @@
  .volunteerFormTheme .v3-commitments h2 { font-size:18px; margin:0 0 8px; }
  .volunteerFormTheme .v3-commitments p { margin:8px 0; font-size:14px; }
  .volunteerFormTheme .v3-commitments ul { padding:0; }
- .volunteerFormTheme .v3-commitments li { margin:8px 0; }
+ .volunteerFormTheme .v3-commitments li { margin:0; padding:5px 0; }
  .volunteerFormTheme .v3-review { margin-bottom:16px; }
  .volunteerFormTheme .v3-review dt { font-size:14px; }
  .volunteerFormTheme .v3-actions { gap:8px; padding-top:12px; }
