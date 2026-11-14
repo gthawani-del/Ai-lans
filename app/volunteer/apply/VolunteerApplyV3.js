@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { UserRound } from "lucide-react";
+import { UserRound, Camera } from "lucide-react";
 import {
   getSupabaseBrowserClient,
   SUPABASE_URL,
@@ -353,10 +353,22 @@ export default function VolunteerApplyV3({ config }) {
               : "I agree to the use of my application and photo for volunteer selection, photo review and workshop coordination."}
         </span>
       </label>
+    ) : r.enum && r.enum.length <= 3 ? (
+      <fieldset id={id} tabIndex={-1} aria-describedby={id + "-help"} aria-invalid={!!err}>
+        <legend>{r.label} {!r.required && "(optional)"}</legend>
+        <div className="v3-segments">
+          {r.enum.map(value => <label key={value}>
+            <input type="radio" name={r.key} value={value} checked={data[r.key] === value}
+              aria-required={!!r.required} aria-invalid={!!err} aria-describedby={id + "-help"}
+              onChange={() => set(r.key, value)} />
+            <span>{value}</span>
+          </label>)}
+        </div>
+      </fieldset>
     ) : r.array ? (
       <fieldset id={id} tabIndex={-1} aria-invalid={!!err} aria-describedby={id + "-help"}>
         <legend>
-          {r.label} {r.required ? "*" : "(optional)"}
+          {r.label} {r.required ? "" : "(optional)"}
         </legend>
         <div className="v3-choices">
           {r.array.map((x) => (
@@ -383,7 +395,7 @@ export default function VolunteerApplyV3({ config }) {
     ) : (
       <>
         <label htmlFor={id}>
-          {r.label} {r.required ? "*" : "(optional)"}
+          {r.label} {r.required ? "" : "(optional)"}
         </label>
         {r.enum ? (
           <select
@@ -396,6 +408,18 @@ export default function VolunteerApplyV3({ config }) {
               <option key={x}>{x}</option>
             ))}
           </select>
+        ) : r.key === "phone" ? (
+          <div className="v3-phone">
+            <span aria-hidden="true">+91</span>
+            <input {...common} type="tel" inputMode="tel" autoComplete="tel-national"
+              aria-label="Indian mobile number, country code +91" maxLength={24}
+              value={(data.phone || "").replace(/^(?:\+91|0091)\s*/, "")}
+              onChange={e => {
+                const value = e.target.value.replace(/^(?:\+91|0091)[\s-]*/, "");
+                const digits = value.replace(/\D/g, "");
+                set("phone", digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : value);
+              }} placeholder="e.g., 98765 43210" />
+          </div>
         ) : r.max >= 500 ? (
           <textarea
             {...common}
@@ -446,11 +470,12 @@ export default function VolunteerApplyV3({ config }) {
             }
             value={data[r.key] || ""}
             onChange={(e) => set(r.key, e.target.value)}
+            spellCheck={r.url || ["email", "postcode"].includes(r.key) ? false : undefined}
             placeholder={
               r.url
                 ? "https://"
-                : r.key === "phone"
-                  ? "+91 98765 43210"
+                : r.key === "email" ? "e.g., name@example.com"
+                : r.key === "postcode" ? "e.g., 400001"
                   : undefined
             }
           />
@@ -460,7 +485,7 @@ export default function VolunteerApplyV3({ config }) {
     return (
       <div
         className={
-          "v3-field " + (r.array || r.boolean || r.max >= 500 ? "wide" : "")
+          "v3-field " + (r.array || r.boolean || r.max >= 500 || (r.enum && r.enum.length <= 3) ? "wide" : "")
         }
         key={r.key}
       >
@@ -469,16 +494,14 @@ export default function VolunteerApplyV3({ config }) {
           {err ||
             (r.max >= 500
               ? `${(data[r.key] || "").length}/${r.max} characters${r.min ? ` · minimum ${r.min}` : ""}`
-              : r.key === "phone"
-                ? "Indian mobile number; +91 is added when omitted."
-                : r.url
+              : r.url
                   ? "Use the platform shown in the label; HTTPS links only."
                   : "")}
         </small>
       </div>
     );
   }
-  const optionalDetails = ["addressStreetArea", "addressBuilding", "linkedin", "github"];
+  const optionalDetails = ["gender", "genderOther", "addressStreetArea", "addressBuilding", "linkedin", "github"];
   function fields(s) {
     return rules
       .filter(
@@ -487,6 +510,10 @@ export default function VolunteerApplyV3({ config }) {
           !optionalDetails.includes(r.key) &&
           !["commitmentAgreed", "accurate", "consent"].includes(r.key),
       )
+      .sort((a, b) => {
+        const position = r => r.key === "postcode" ? rules.findIndex(x => x.key === "city") : r.key === "city" ? rules.findIndex(x => x.key === "postcode") : rules.indexOf(r);
+        return position(a) - position(b);
+      })
       .map(field);
   }
   if (!ready)
@@ -543,7 +570,7 @@ export default function VolunteerApplyV3({ config }) {
             {titles[step]}
           </h1>
           <p>
-            Fields marked * are required.
+            All fields are required unless marked optional.
           </p>
           <nav aria-label="Application progress">
             {titles.map((t, i) => (
@@ -595,11 +622,14 @@ export default function VolunteerApplyV3({ config }) {
               <div className="v3-photo" id="v3-photoApproved" tabIndex={-1}>
                 {photoUrl ? <img src={photoUrl} alt="Your photo preview" /> : <div className="vf-photo-placeholder" aria-hidden="true"><UserRound size={42} strokeWidth={1.4} /></div>}
                 <div>
-                  <label htmlFor="v3-photo-file"><b>Profile photo *</b></label>
+                  <b>Profile photo</b>
                   <p>
                     For identification and team review. Only you should appear;
                     no inappropriate images.
                   </p>
+                  <label className="v3-upload" htmlFor="v3-photo-file">
+                    <Camera size={20} aria-hidden="true" />
+                    <span>{photoBusy ? "Uploading photo…" : photoUrl ? "Change photo" : "Add your photo"}</span>
                   <input
                     ref={fileInput}
                     id="v3-photo-file"
@@ -611,6 +641,7 @@ export default function VolunteerApplyV3({ config }) {
                     onChange={upload}
                     disabled={photoBusy}
                   />
+                  </label>
                   <small id="v3-photo-help">
                     JPG, PNG or WebP · up to 5 MB · minimum 240 × 240 pixels
                   </small>
@@ -635,16 +666,18 @@ export default function VolunteerApplyV3({ config }) {
               </div>
               <div className="v3-grid">{fields(0)}</div>
               <details className="v3-disclosure" open={optionalDetails.some(k => errors[k]) || undefined}>
-                <summary>Address & profile links <span>(optional)</span></summary>
+                <summary>More about you <span>(optional)</span></summary>
+                <p>Gender, address and profile links.</p>
                 <div className="v3-grid">{rules.filter(r => optionalDetails.includes(r.key)).map(field)}</div>
               </details>
             </>
           )}
           {step === 1 && (
             <>
+              <h2 className="v3-group-title">Your interests & strengths</h2>
               <div className="v3-grid">{fields(1)}</div>
               <fieldset id="v3-stack" tabIndex={-1} aria-describedby={errors.stack ? "v3-stack-error" : undefined}>
-                <legend>Your tools *</legend>
+                <legend>Your tools</legend>
                 <p>
                   New to it: not used yet · Used it: tried with guidance ·
                   Comfortable: work independently · Built with it: delivered
@@ -757,7 +790,7 @@ export default function VolunteerApplyV3({ config }) {
               <div className="v3-grid">{fields(2)}</div>
               {data.experienceStatus === "Some experience" && (
                 <fieldset id="v3-involvement" tabIndex={-1} aria-describedby={errors.involvement ? "v3-involvement-error" : undefined}>
-                  <legend>Your involvement *</legend>
+                  <legend>Your involvement</legend>
                   {(data.contributionAreas || []).map((x) => (
                     <div className="v3-tool" key={x}>
                       <label
@@ -796,6 +829,7 @@ export default function VolunteerApplyV3({ config }) {
           )}
           {step === 3 && (
             <>
+              <h2 className="v3-group-title">Education & languages</h2>
               <div className="v3-grid">{fields(3)}</div>
               <section className="v3-commitments">
                 <h2>Your volunteer commitments</h2>
@@ -861,14 +895,14 @@ export default function VolunteerApplyV3({ config }) {
             </>
           )}
         </div>
-        <footer className="v3-actions">
-          <button
+        <footer className={`v3-actions ${step === 0 ? "v3-first-actions" : ""}`}>
+          {step > 0 && <button
             type="button"
             disabled={step === 0 || busy || photoBusy}
             onClick={() => changeStep(step - 1)}
           >
             ← Back
-          </button>
+          </button>}
           <span>
             {saveState}
             {saveState.startsWith("Save failed") && (
