@@ -1,0 +1,32 @@
+name: Volunteer regression checks
+on:
+  pull_request:
+    paths: ['app/volunteer/**', 'app/api/volunteer/**', 'lib/volunteer-v3.mjs', 'lib/bounded-request.mjs', 'tests/**', '.github/workflows/volunteer-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  volunteer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          npm run dev > /tmp/volunteer-next.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/volunteer/apply > /dev/null; then break; fi
+            sleep 2
+          done
+          node tests/volunteer-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: volunteer-browser-evidence
+          path: test-results/

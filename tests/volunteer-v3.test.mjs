@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   initial,
+  errorStep,
   validate,
   normalize,
   tools,
@@ -146,4 +147,50 @@ test('each commitment is acknowledged, with no implicit migration from blanket a
   assert.ok(errors.commitmentChecks||errors.commitmentAgreed);
  }
  assert.deepEqual(validate({...beginner,commitmentChecks:[...commitments].reverse()}),{});
+});
+
+test('all remaining Other paths enforce and discard their dependent answers', () => {
+ for (const [parent, value, child] of [
+  ['gender','Other','genderOther'],['usefulSkills',['Other'],'usefulOther'],
+  ['languages',['Other'],'languagesOther'],['projectType','Other','projectTypeOther']
+ ]) {
+  const base=parent==='projectType'?technical:beginner;
+  assert.ok(validate({...base,[parent]:value,[child]:''})[child]);
+  assert.equal(validate({...base,[parent]:value,[child]:'Specific example'})[child],undefined);
+  assert.equal(normalize({...base,[child]:'Stale answer'})[child],'');
+ }
+});
+test('contact boundaries and hostile URL formats are rejected',()=>{
+ for(const phone of ['+91987654321','+9198765432100','+915876543210','98765abc10']) assert.ok(validate({...beginner,phone}).phone);
+ for(const postcode of ['000000','4000010','4000a1']) assert.ok(validate({...beginner,postcode}).postcode);
+ for(const email of ['a b@example.com','a@@example.com','a@b','a'.repeat(255)+'@example.com']) assert.ok(validate({...beginner,email}).email);
+ for(const url of ['http://github.com/a/b','https://github.com/a','https://github.com.evil.example/a/b','https://user:password@github.com/a/b']) assert.equal(urlValid(url,'repository'),false);
+});
+test('education timeframe is explicit and conditional',()=>{
+ const d={...beginner,csGraduate:'Yes',graduationStatus:'Graduated',graduationYear:'2025',certificateStatus:'Received'};
+ const rule='csGraduated2024To2026';
+ assert.ok(validate(d)[rule],'CS timeframe response must be required');
+ assert.deepEqual(validate({...d,[rule]:'Yes'}),{});
+ assert.deepEqual(validate({...beginner,[rule]:'Yes'}),{});
+ assert.equal(normalize({...beginner,[rule]:'Yes'})[rule],'');
+});
+
+test('normalization drops unsolicited payload data and handles malformed dependencies',()=>{
+ const d=normalize({...beginner,admin:true,consentRecordedAt:'forged',customTools:[{name:'Example',level:'Used it',secret:'discard'}]});
+ assert.equal(d.admin,undefined); assert.equal(d.consentRecordedAt,undefined);
+ assert.equal(d.customTools[0].secret,undefined);
+ assert.doesNotThrow(()=>validate({...technical,contributionAreas:'Frontend'}));
+ assert.ok(validate({...technical,contributionAreas:'Frontend'}).contributionAreas);
+});
+test('validation errors route to their actual form section',()=>{
+ for(const [key,step] of Object.entries({name:0,stack:1,customTools:1,involvement:2,commitmentChecks:3,photoApproved:4,consent:4})) assert.equal(errorStep(key),step);
+});
+
+test('upload body limit checks streamed bytes without trusting Content-Length',async()=>{
+ const {boundedBody}=await import('../lib/bounded-request.mjs');
+ const req=(bytes,headers={})=>new Request('https://example.test',{method:'POST',body:new Uint8Array(bytes),headers,duplex:'half'});
+ assert.equal((await boundedBody(req(4),4)).length,4);
+ await assert.rejects(boundedBody(req(5),4),RangeError);
+ await assert.rejects(boundedBody(req(5,{'content-length':'1'}),4),RangeError);
+ await assert.rejects(boundedBody(req(1,{'content-length':'10'}),4),RangeError);
 });
