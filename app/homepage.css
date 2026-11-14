@@ -1,4 +1,4 @@
-/* Color-only overrides scoped to the homepage. Typography stays in the existing stylesheets. */
+/* Homepage palette. Approved mobile typography/layout refinements follow below. */
 .homepage {
   --home-ink: #071c2c;
   --home-teal: #006d71;
@@ -50,4 +50,66 @@
   .homepage nav.open { border-color: var(--home-line); }
   .homepage nav.open a { color: var(--home-ink)!important; }
   .homepage .earlyContent { background: linear-gradient(180deg,rgba(237,248,246,.99) 0%,rgba(237,248,246,.96) 45%,rgba(237,248,246,.55) 66%,rgba(237,248,246,0) 78%); }
+}
+
+/* Mobile refinement approved after the color-only pass. Desktop type retained. */
+.homepage .hero { grid-template-columns:minmax(0,35fr) minmax(0,65fr); }
+.homepage .heroStatement { text-transform:none; font-stretch:normal; letter-spacing:-.025em; }
+.homepage .menu { color:var(--home-teal); }
+.homepage .heroAction { gap:12px; }
+.homepage .heroAction .heroSecondary { border:0; text-decoration:underline; text-underline-offset:4px; }
+.homepage .videoCard { background:var(--home-deep); }
+.homepage .personVisual img { object-position:center 55%; }
+.homepage .mvpVisual img { object-position:center; }
+.homepage section[id] { scroll-margin-top:76px; }
+@media(max-width:800px) {
+  .homepage header { height:72px; padding:0 20px; border-bottom:1px solid var(--home-line); }
+  .homepage .headerLogo { width:154px; }
+  .homepage nav.open { top:72px; padding:8px 20px; }
+  .homepage .hero { display:block; padding:28px 20px 32px; min-height:0; }
+  .homepage .heroCopy { padding:0; }
+  .homepage .heroLogoHeading { display:none; }
+  .homepage .heroPresentedBy { margin:0 0 20px; gap:12px; }
+  .homepage .heroPresentedBy .eliv8Brand { font-size:11px; }
+  .homepage .heroPresentedBy>span { font-size:10px; letter-spacing:.14em; }
+  .homepage .heroStatement { font-size:clamp(28px,7.5vw,40px)!important; line-height:1.13!important; margin:0 0 18px!important; letter-spacing:-.03em; }
+  .homepage .heroStatement br { display:none; }
+  .homepage .heroStatement { max-width:18ch!important; text-wrap:balance; }
+  .homepage .heroDescription { font-size:16px!important; line-height:1.6!important; max-width:38ch!important; }
+  .homepage .meta { margin:22px 0 18px; gap:20px; font-size:11px; flex-wrap:wrap; }
+  .homepage .heroAction { display:flex; flex-direction:column; align-items:stretch; gap:4px; }
+  .homepage .heroAction>a { font-size:14px; min-height:48px; padding:12px 16px!important; border-radius:8px; }
+  .homepage .heroAction .heroSecondary { align-self:center; padding:10px 16px!important; background:transparent; min-height:44px; }
+  .homepage .videoCard { margin-top:24px; min-height:0; border:1px solid var(--home-line); border-radius:14px; background:#fff; box-shadow:none; }
+  .homepage .videoPoster { position:static; display:block; width:100%; height:auto; aspect-ratio:4/3; object-fit:cover; object-position:center 58%; }
+  .homepage .videoOverlay,.homepage .videoTopline { display:none; }
+  .homepage .videoLabel { position:static; padding:18px; color:var(--home-ink); gap:8px; }
+  .homepage .videoLabel small { font-size:10px; color:var(--home-teal); letter-spacing:.12em; }
+  .homepage .videoLabel b { font-size:22px; line-height:1.2; }
+  .homepage .videoLabel span { font-size:14px; line-height:1.5; color:#52646b; max-width:none; }
+  .homepage .transform { padding:32px 20px; }
+  .homepage .transformIntro h2 { font-size:30px; line-height:1.1; }
+  .homepage .transformIntro p { font-size:16px; line-height:1.6; margin-bottom:24px; }
+  .homepage .transform article { min-height:210px; height:auto; grid-template-columns:minmax(0,55fr) minmax(0,45fr); }
+  .homepage .transform article>div:first-child { padding:20px 16px; }
+  .homepage .transform h3 { font-size:12px; line-height:1.4; margin:0 0 16px; }
+  .homepage .transform article p { font-size:14px!important; line-height:1.45; margin:10px 0; }
+  .homepage .personVisual,.homepage .mvpVisual { min-width:0; }
+  .homepage .personVisual img,.homepage .mvpVisual img { position:absolute; inset:0; }
+  .homepage .faq { padding:32px 20px; }
+  .homepage .faq h2 { font-size:28px; margin:0 0 20px; }
+  .homepage .faq details { font-size:16px; line-height:1.6; padding:12px 0; }
+  .homepage .faq summary { min-height:48px; padding:4px 24px 4px 0; position:relative; }
+  .homepage .faq summary::after { content:'+'; position:absolute; right:0; color:var(--home-teal); }
+  .homepage .faq details[open] summary::after { content:'−'; }
+  .homepage .faq details p { margin:8px 0 12px; color:#52646b; }
+  .homepage .early { margin:0 20px 28px!important; min-height:0!important; display:flex!important; flex-direction:column-reverse; }
+  .homepage .earlyContent { min-height:0; padding:24px; background:var(--home-soft); }
+  .homepage .earlyContent h2 { font-size:23px; line-height:1.2; }
+  .homepage .earlyContent>p { font-size:15px; line-height:1.6; }
+  .homepage .earlyContent>div>b { display:none; }
+  .homepage .earlyBackdrop { position:relative!important; width:100%!important; height:180px!important; object-position:72% center; }
+  .homepage footer { padding:8px 20px 28px; justify-content:flex-start; gap:16px; }
+  .homepage footer small { font-size:12px; line-height:1.5; }
+  .homepage section[id] { scroll-margin-top:80px; }
 }
