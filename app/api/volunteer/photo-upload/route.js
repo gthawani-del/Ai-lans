@@ -1,3 +1,5 @@
+import { boundedBody } from "../../../../lib/bounded-request.mjs";
+import { normalize } from "../../../../lib/volunteer-v3.mjs";
 import sharp from "sharp";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -17,7 +19,13 @@ function fail(message, status = 500) {
 
 export async function POST(request) {
   try {
-    const form = await request.formData();
+    let form;
+    try {
+      const body = await boundedBody(request, 6 * 1024 * 1024);
+      form = await new Response(body, {headers:{"Content-Type":request.headers.get("content-type") || ""}}).formData();
+    } catch (error) {
+      return fail(error instanceof RangeError ? "Maximum request size is 6 MB." : "Invalid upload request.", error instanceof RangeError ? 413 : 400);
+    }
     const file = form.get("file");
     const suppliedId = String(form.get("id") || "").trim();
     const resumeToken = String(form.get("token") || "").trim();
@@ -56,7 +64,11 @@ export async function POST(request) {
     }
     let payload = {};
     try {
-      payload = JSON.parse(String(form.get("payload") || "{}"));
+      const raw = String(form.get("payload") || "{}");
+      if (Buffer.byteLength(raw) > 50000) return fail("Application payload is too large.", 413);
+      payload = JSON.parse(raw);
+      if (!payload || Array.isArray(payload) || typeof payload !== "object") return fail("Invalid application payload.", 400);
+      payload = normalize(payload);
     } catch {
       return fail("Invalid application payload.", 400);
     }
@@ -76,7 +88,7 @@ export async function POST(request) {
         p_token: resumeToken,
       });
       if (error)
-        return fail("Could not start the application: " + error.message, 502);
+        return fail("Could not start the application. Please retry.", 502);
       appId = data?.id || "";
       if (!appId) return fail("Could not start the application.", 502);
     }
@@ -94,7 +106,7 @@ export async function POST(request) {
       .from("volunteer-photos")
       .upload(path, safeBytes, { contentType: "image/webp", upsert: false });
     if (uploadError)
-      return fail("Photo storage failed: " + uploadError.message, 502);
+      return fail("Photo storage failed. Please retry.", 502);
 
     const { error: registerError } = await sb.rpc(
       "register_volunteer_photo_upload",
@@ -109,13 +121,13 @@ export async function POST(request) {
       },
     );
     if (registerError)
-      return fail("Photo registration failed: " + registerError.message, 502);
+      return fail("Photo registration failed. Please retry.", 502);
 
     return Response.json(
       { ok: true, id: appId, token: resumeToken, path },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (error) {
-    return fail(error?.message || "Photo upload failed.", 500);
+    return fail("Photo upload failed. Please retry.", 500);
   }
 }
