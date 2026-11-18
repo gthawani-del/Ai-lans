@@ -1,55 +1,19 @@
 'use client';
 
-import {useEffect,useState} from 'react';
+import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {LockKeyhole,Mail,ShieldCheck,Eye,EyeOff} from 'lucide-react';
-import {getSupabaseBrowserClient} from '../../../lib/supabase-browser';
-
-const SESSION_START_KEY='ai_lab_bo_session_start';
-const LAST_ACTIVITY_KEY='ai_lab_bo_last_activity';
-const INACTIVITY_MS=30*60*1000;
-const ABSOLUTE_SESSION_MS=8*60*60*1000;
-
-function sessionClockValid(){
-  const now=Date.now();
-  const started=Number(localStorage.getItem(SESSION_START_KEY)||0);
-  const last=Number(localStorage.getItem(LAST_ACTIVITY_KEY)||0);
-  return !!started&&!!last&&now-last<INACTIVITY_MS&&now-started<ABSOLUTE_SESSION_MS;
-}
-function startSessionClock(){
-  const now=String(Date.now());
-  localStorage.setItem(SESSION_START_KEY,now);
-  localStorage.setItem(LAST_ACTIVITY_KEY,now);
-}
-function clearSessionClock(){
-  localStorage.removeItem(SESSION_START_KEY);
-  localStorage.removeItem(LAST_ACTIVITY_KEY);
-}
+import {useAdminSession} from '../AdminSessionContext';
+import {startAdminSessionClock,endAdminSession} from '../../../lib/backoffice-session';
 
 export default function BackofficeLogin(){
   const router=useRouter();
-  const supabase=getSupabaseBrowserClient();
+  const {supabase,ready,session}=useAdminSession();
   const [email,setEmail]=useState('');
   const [password,setPassword]=useState('');
   const [showPassword,setShowPassword]=useState(false);
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
-
-  useEffect(()=>{
-    let mounted=true;
-    supabase.auth.getSession().then(async({data})=>{
-      const session=data.session;
-      if(!mounted||!session)return;
-      if(!sessionClockValid()){
-        clearSessionClock();
-        await supabase.auth.signOut();
-        return;
-      }
-      const {data:profile}=await supabase.from('backoffice_users').select('role,is_active').eq('user_id',session.user.id).maybeSingle();
-      if(profile?.is_active)router.replace('/backoffice');
-    });
-    return()=>{mounted=false};
-  },[router,supabase]);
 
   async function submit(event){
     event.preventDefault();
@@ -59,12 +23,14 @@ export default function BackofficeLogin(){
       const {data,error:signInError}=await supabase.auth.signInWithPassword({email:email.trim().toLowerCase(),password});
       if(signInError)throw new Error('Invalid email or password.');
       const {data:profile,error:profileError}=await supabase.from('backoffice_users').select('role,is_active').eq('user_id',data.user.id).maybeSingle();
-      if(profileError||!profile?.is_active){await supabase.auth.signOut();clearSessionClock();throw new Error('This account does not have back-office access.');}
-      startSessionClock();
+      if(profileError||!profile?.is_active){await endAdminSession(supabase);throw new Error('This account does not have back-office access.');}
+      startAdminSessionClock();
       router.replace('/backoffice');
     }catch(err){setError(err instanceof Error?err.message:'Could not sign in.');}
     finally{setBusy(false)}
   }
+
+  if(!ready||session)return <main className="boBoot" role="status">Checking administrator access…</main>;
 
   return <main className="boLoginPage"><section className="boLoginCard"><div className="boLoginBrand"><img src="/brand/weareailabs-home.webp" alt="weareailabs"/><span>Organiser Back Office</span></div><div className="boLoginIntro"><span className="boLoginIcon"><ShieldCheck size={22}/></span><div><h1>Super Admin</h1><p>Sign in to manage attendees, analysis, allocations and workshop operations.</p></div></div><form onSubmit={submit}><label htmlFor="admin-email">Email</label><div className="boLoginField"><Mail size={17}/><input id="admin-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} required/></div><label htmlFor="admin-password">Password</label><div className="boLoginField"><LockKeyhole size={17}/><input id="admin-password" type={showPassword?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/><button type="button" className="boPasswordToggle" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?'Hide password':'Show password'} aria-pressed={showPassword} title={showPassword?'Hide password':'Show password'}>{showPassword?<EyeOff size={19} aria-hidden="true"/>:<Eye size={19} aria-hidden="true"/>}</button></div>{error&&<p className="boLoginError" role="alert">{error}</p>}<button type="submit" disabled={busy}>{busy?'Signing in…':'Sign in'}</button></form><small>For security, sessions expire after 30 minutes of inactivity or 8 hours maximum.</small></section></main>;
 }
