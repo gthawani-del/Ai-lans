@@ -6,9 +6,9 @@ import {getCountries,getCountryCallingCode,isValidPhoneNumber} from "npm:libphon
 const WORKSHOP_KEY='ai-lab-mumbai-2026';
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const headers={...cors,"Content-Type":"application/json"};
-const roles=['CXO / Executive','Founder / Co-founder','Senior Professional','Entrepreneur','Consultant','Other'];
+const roles=['CXO / Executive','Founder / Co-founder','Senior Professional','Entrepreneur','Consultant','Other','Founder / business owner','CXO / executive','Senior manager / business leader','Professional / individual contributor','Independent professional'];
 const aiTools=['ChatGPT','Claude','Gemini','Copilot','Notion AI','Midjourney','DALL-E','Other'];
-const aiLevels=['Beginner','Intermediate','Advanced','Expert'];
+const aiLevels=['Beginner','Intermediate','Advanced','Expert','No hands-on experience','I use AI occasionally','I use AI regularly','I build AI workflows or prototypes','Advanced / specialist'];
 const industries=['Technology','Financial Services','Professional Services','Retail / Consumer','Healthcare','Manufacturing','Media / Marketing','Education','Real Estate','Hospitality / Travel','Sports / Gaming','Government / Public Sector','Non-profit','Other'];
 const functionalAreas=['Leadership / Strategy','Sales / Business Development','Marketing','Finance','Operations','HR / People','Technology / Product','Legal / Compliance','Consulting','Other'];
 const experienceRanges=['0–2','3–5','6–10','11–15','15+','16+'];
@@ -45,6 +45,13 @@ const schema=z.object({
  other_ai_tool:z.string().trim().max(120).optional().nullable(),
  mvp_preferences:z.array(z.string().trim().min(1).max(100)).min(1).max(2).refine(v=>new Set(v).size===v.length,"MVP preferences must be unique"),
  other_mvp_idea:z.string().trim().max(300).optional().nullable(),
+ current_title:z.string().trim().max(100).optional().nullable(),
+ business_problem:z.string().trim().max(700).optional().nullable(),
+ target_user:z.string().trim().max(90).optional().nullable(),
+ data_sources:z.array(z.string().trim().max(90)).max(9).optional().default([]),
+ success_outcome:z.string().trim().max(90).optional().nullable(),
+ success_detail:z.string().trim().max(300).optional().nullable(),
+ attendance_availability:z.string().trim().max(100).optional().nullable(),
  consent:z.literal(true),
  form_version:z.string().trim().max(40).optional(),
  _website:z.string().max(0).optional()
@@ -59,6 +66,17 @@ const schema=z.object({
  }else{
    try{if(!isValidPhoneNumber(phone,countryCode as any))ctx.addIssue({code:z.ZodIssueCode.custom,path:['phone'],message:`Enter a valid ${d.country} phone number`});}
    catch{ctx.addIssue({code:z.ZodIssueCode.custom,path:['phone'],message:`Enter a valid ${d.country} phone number`});}
+ }
+ if(d.form_version==='one_page_apply_20261118'){
+   const targetUsers=['Sales team','Finance team','HR team','Operations team','Marketing team','Customers','Senior management','Other','Not sure yet'];
+   const dataSources=['Excel / spreadsheets','PDFs','Email','CRM','Website','Internal documents','Accounting / finance data','Other','Not sure yet'];
+   const outcomes=['Save time','Reduce manual work','Reduce errors','Improve response speed','Improve visibility','Increase sales','Other'];
+   const attendance=['Yes, I can attend both days','I need the dates before confirming','I need travel support','No, I cannot attend both days'];
+   if((d.business_problem||'').length<15)ctx.addIssue({code:z.ZodIssueCode.custom,path:['business_problem'],message:'Describe the business problem in at least 15 characters'});
+   if(!targetUsers.includes(d.target_user||''))ctx.addIssue({code:z.ZodIssueCode.custom,path:['target_user'],message:'Select the intended user'});
+   if(!d.data_sources.length||new Set(d.data_sources).size!==d.data_sources.length||d.data_sources.some(s=>!dataSources.includes(s))||(d.data_sources.includes('Not sure yet')&&d.data_sources.length>1))ctx.addIssue({code:z.ZodIssueCode.custom,path:['data_sources'],message:'Choose valid information sources, or Not sure yet'});
+   if(!outcomes.includes(d.success_outcome||''))ctx.addIssue({code:z.ZodIssueCode.custom,path:['success_outcome'],message:'Choose the desired outcome'});
+   if(!attendance.includes(d.attendance_availability||''))ctx.addIssue({code:z.ZodIssueCode.custom,path:['attendance_availability'],message:'Confirm two-day workshop availability'});
  }
  if(d.form_version?.startsWith('one_page')){
   if(d.ai_tools.includes('Other')&&!d.other_ai_tool?.trim())ctx.addIssue({code:z.ZodIssueCode.custom,path:['other_ai_tool'],message:'Tell us which other AI tool you use'});
@@ -83,7 +101,7 @@ Deno.serve(async(req:Request)=>{
   const {data:existing,error:ee}=await s.from('attendee_registrations').select('id,payment_status,status,payment_reference').eq('workshop_key',WORKSHOP_KEY).ilike('email',email).maybeSingle();
   if(ee)throw ee;
   if(existing?.payment_status==='paid')return new Response(JSON.stringify({ok:true,id:existing.id,already_paid:true,payment_reference:existing.payment_reference}),{headers});
-  const payload:any={workshop_key:WORKSHOP_KEY,full_name:b.full_name,email,phone:digitsOnly(b.phone),phone_country_code:normaliseDial(b.phone_country_code),city:b.city,country:b.country,age_band:b.age_band||null,career_role:b.career_role,company_organisation:b.company_organisation,industry:b.industry,years_experience:b.years_experience,functional_area:b.functional_area,ai_experience_level:b.ai_experience_level,ai_tools:b.ai_tools,other_ai_tool:b.other_ai_tool||null,other_mvp_idea:b.other_mvp_idea||null,form_version:b.form_version||(paymentFlow?'one_page_v3':'legacy_v1'),status:paymentFlow?'application_complete':'submitted',consent:true,submitted_at:now,updated_at:now};
+  const payload:any={workshop_key:WORKSHOP_KEY,full_name:b.full_name,email,phone:digitsOnly(b.phone),phone_country_code:normaliseDial(b.phone_country_code),city:b.city,country:b.country,age_band:b.age_band||null,career_role:b.career_role,company_organisation:b.company_organisation,industry:b.industry,years_experience:b.years_experience,functional_area:b.functional_area,ai_experience_level:b.ai_experience_level,ai_tools:b.ai_tools,other_ai_tool:b.other_ai_tool||null,other_mvp_idea:b.other_mvp_idea||null,current_title:b.current_title||null,business_problem:b.business_problem||null,target_user:b.target_user||null,data_sources:b.data_sources||[],success_outcome:b.success_outcome||null,success_detail:b.success_detail||null,attendance_availability:b.attendance_availability||null,form_version:b.form_version||(paymentFlow?'one_page_v3':'legacy_v1'),status:paymentFlow?'application_complete':'submitted',consent:true,submitted_at:now,updated_at:now};
   if(paymentFlow){payload.application_completed_at=now;payload.reviewed_at=now;payload.payment_status='not_started';}
   let attendee:any;
   if(existing?.id){const {data,error}=await s.from('attendee_registrations').update(payload).eq('id',existing.id).select('id').single();if(error)throw error;attendee=data;}
