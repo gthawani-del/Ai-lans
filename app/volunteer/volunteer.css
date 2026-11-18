@@ -109,3 +109,10 @@
 .vh-practical p{font-size:15px;line-height:1.6;margin:10px 0;color:var(--vh-muted)}
 .vh-practical strong{color:var(--vh-ink)}
 @media(max-width:700px){.vh-practical{padding:20px;margin:8px 0}.vh-practical h2{font-size:22px}}
+
+/* Language proficiency controls shown only for selected participant languages. */
+.volunteerHome .v3-language-ratings,.v3-language-ratings{margin:14px 0 5px;padding:15px;border:1px solid #d3e2d9;border-radius:9px;display:grid;gap:11px;min-width:0}
+.v3-language-ratings p{font-size:13px;line-height:1.55;margin:0;color:#55695e}
+.v3-language-rating{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,190px);gap:12px;align-items:center;font-size:14px}
+.v3-language-rating select{min-height:44px;width:100%;border:1px solid #b9d3c5;border-radius:7px;background:white;color:#153f2c;padding:9px 12px;font:inherit}
+@media(max-width:550px){.v3-language-rating{grid-template-columns:1fr;gap:5px}.v3-language-ratings{padding:12px}}
