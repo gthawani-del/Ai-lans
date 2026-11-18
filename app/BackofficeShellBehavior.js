@@ -3,6 +3,7 @@
 import {useEffect} from 'react';
 import {usePathname,useRouter} from 'next/navigation';
 import {getSupabaseBrowserClient} from '../lib/supabase-browser';
+import {adminSessionClockValid,recordAdminActivity,endAdminSession,SESSION_START_KEY,LAST_ACTIVITY_KEY} from '../lib/backoffice-session';
 
 const ROUTES={
   'Dashboard':'/backoffice',
@@ -19,11 +20,6 @@ const ROUTES={
   'Audit Log':'/backoffice/audit-log'
 };
 
-const SESSION_START_KEY='ai_lab_bo_session_start';
-const LAST_ACTIVITY_KEY='ai_lab_bo_last_activity';
-const INACTIVITY_MS=30*60*1000;
-const ABSOLUTE_SESSION_MS=8*60*60*1000;
-
 export default function BackofficeShellBehavior(){
   const pathname=usePathname();
   const router=useRouter();
@@ -37,38 +33,25 @@ export default function BackofficeShellBehavior(){
 
     Object.values(ROUTES).forEach(route=>router.prefetch(route));
 
-    const clearMarkers=()=>{
-      localStorage.removeItem(SESSION_START_KEY);
-      localStorage.removeItem(LAST_ACTIVITY_KEY);
-    };
-
     const expireSession=async()=>{
       if(signingOut)return;
       signingOut=true;
-      clearMarkers();
-      await supabase.auth.signOut();
-      router.replace('/backoffice/login?reason=expired');
-    };
-
-    const sessionExpired=()=>{
-      const now=Date.now();
-      const started=Number(localStorage.getItem(SESSION_START_KEY)||0);
-      const last=Number(localStorage.getItem(LAST_ACTIVITY_KEY)||0);
-      if(!started||!last)return true;
-      return now-last>=INACTIVITY_MS||now-started>=ABSOLUTE_SESSION_MS;
+      try{await endAdminSession(supabase)}
+      finally{router.replace('/backoffice/login?reason=expired')}
     };
 
     const validateSessionClock=async()=>{
       const {data}=await supabase.auth.getSession();
-      if(!data.session)return;
-      if(sessionExpired())expireSession();
+      if(data.session&&!adminSessionClockValid())await expireSession();
     };
 
     const recordActivity=()=>{
+      if(signingOut)return;
       const now=Date.now();
+      if(!adminSessionClockValid(now)){void expireSession();return}
       if(now-lastWrite<10000)return;
       lastWrite=now;
-      localStorage.setItem(LAST_ACTIVITY_KEY,String(now));
+      recordAdminActivity(now);
     };
 
     const enhance=()=>{
@@ -76,7 +59,7 @@ export default function BackofficeShellBehavior(){
       if(brand){
         brand.removeAttribute('href');
         brand.removeAttribute('target');
-        brand.setAttribute('aria-label','AI Lab Back Office');
+        brand.setAttribute('aria-label','weareailabs Back Office');
         brand.setAttribute('tabindex','-1');
       }
 
@@ -105,15 +88,20 @@ export default function BackofficeShellBehavior(){
 
     const activityEvents=['pointerdown','keydown','scroll','touchstart'];
     activityEvents.forEach(name=>window.addEventListener(name,recordActivity,{passive:true}));
-    const timer=window.setInterval(()=>{if(sessionExpired())expireSession()},60000);
-    const onVisibility=()=>{if(document.visibilityState==='visible'&&sessionExpired())expireSession()};
+    const timer=window.setInterval(()=>{if(!adminSessionClockValid())void expireSession()},60000);
+    const onVisibility=()=>{if(document.visibilityState==='visible')void validateSessionClock()};
     document.addEventListener('visibilitychange',onVisibility);
+    const onStorage=event=>{
+      if((event.key===SESSION_START_KEY||event.key===LAST_ACTIVITY_KEY)&&!adminSessionClockValid())void expireSession();
+    };
+    window.addEventListener('storage',onStorage);
 
     return()=>{
       observer.disconnect();
       activityEvents.forEach(name=>window.removeEventListener(name,recordActivity));
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange',onVisibility);
+      window.removeEventListener('storage',onStorage);
     };
   },[pathname,router]);
 
