@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ExternalLink, Save, Share2 } from 'lucide-react';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '../../lib/supabase-browser';
 import { SOCIAL_PROFILE_DEFAULTS, SOCIAL_PLATFORM_LABELS } from '../../lib/site-social-profiles';
+import SocialBrandIcon from '../../components/SocialBrandIcon';
 import './social-profiles.css';
 
 const API = `${SUPABASE_URL}/functions/v1/social-profile-settings-admin`;
@@ -70,7 +71,7 @@ export default function SocialProfilesSettings({ session, role }) {
     <div className="boPanelHead"><div><h2><Share2 size={18} aria-hidden="true"/> Social Profiles</h2><p>Manage the public social icons and profile URLs used across the website.</p></div></div>
     <div className="boSocialIntro"><b>Public display</b><span>Only enabled profiles with a valid HTTPS URL appear. Changes are recorded in the admin audit log. {role !== 'super_admin' ? 'Only a Super Admin can edit these settings.' : ''}</span></div>
     {loading ? <p className="boSocialState">Loading social profile settings…</p> : profiles.map(profile => <div className="boSocialRow" key={profile.platform}>
-      <div className="boSocialIdentity"><strong>{platformNames[profile.platform]}</strong><small>{profile.platform === 'x' ? 'Formerly Twitter' : 'Profile link'}</small></div>
+      <div className="boSocialIdentity"><span className={`socialIconTile socialIconTile--${profile.platform}`}><SocialBrandIcon platform={profile.platform}/></span><div><strong>{platformNames[profile.platform]}</strong><small>{profile.platform === 'x' ? 'Formerly Twitter' : 'Profile link'}</small></div></div>
       <label><span>Handle</span><input disabled={role !== 'super_admin'} value={profile.handle || ''} maxLength={120} placeholder="Add account handle" onChange={event => update(profile.platform, 'handle', event.target.value)}/></label>
       <label className="boSocialUrl"><span>Profile URL</span><input disabled={role !== 'super_admin'} type="url" value={profile.profile_url || ''} placeholder={`https://${profile.platform}.com/...`} onChange={event => update(profile.platform, 'profile_url', event.target.value)}/></label>
       <label className="boSocialOrder"><span>Order</span><select disabled={role !== 'super_admin'} value={profile.display_order} onChange={event => update(profile.platform, 'display_order', Number(event.target.value))}>{[1,2,3,4,5,6].map(order => <option key={order} value={order}>{order}</option>)}</select></label>

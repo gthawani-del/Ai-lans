@@ -27,7 +27,7 @@
 .socialLinks a.socialIcon--whatsapp { background:#25d366; }
 .socialLinks a:hover { filter:brightness(.9); transform:translateY(-1px); }
 .socialLinks a.socialIcon--x:hover { color:#111; }
-.socialLinks svg { display:block; color:inherit; }
+.socialLinks svg { display:block; width:22px; height:22px; color:inherit; }
 .socialLinks a:focus-visible {
   outline: 3px solid #006d71;
   outline-offset: 3px;

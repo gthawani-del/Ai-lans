@@ -152,6 +152,7 @@
 .boV2 .boSidebar{background:#103d34;color:#f5fff9}
 .boV2 .boBrand{border-bottom-color:#ffffff26}
 .boV2 .boBrand img{width:142px;max-width:65%;height:auto;object-fit:contain}
+.boV2 .boBrandName{font-size:17px;font-weight:800;letter-spacing:-.045em;color:#fff;white-space:nowrap}
 .boV2 .boBrand span{color:#d0e4d8;border-left-color:#ffffff39}
 .boV2 .boNavGroup>b{color:#a9d2c0}
 .boV2 .boNavItem{color:#d1e7db}
@@ -182,7 +183,7 @@
 .boV2 .boIconControl:hover,.boV2 .boProfileControl:hover{background:#e9f3ed}
 .boV2 .boNavGroup .boNavItem:focus-visible,.boV2 .boTopActions>a:focus-visible{outline-color:#5fbd92}
 .boV2 .boBrand:focus-visible{outline:2px solid #8fd2aa;outline-offset:3px}
-@media(max-width:780px){.boV2 .boBrand img{width:132px}.boV2 .boSidebar{background:#103d34}}
+@media(max-width:780px){.boV2 .boBrand img{width:132px}.boV2 .boBrandName{font-size:17px}.boV2 .boSidebar{background:#103d34}}
 /* Preserve dark-mode controls while shifting purple highlights into green. */
 .boV2[data-theme="dark"]{--bo-brand:#72c49d;--bo-brand-soft:#1c3e32;color:#e4f4ea}
 .boV2[data-theme="dark"] .boSidebar{background:#0e322b}
