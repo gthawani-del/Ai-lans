@@ -7,6 +7,7 @@ import Link from 'next/link';
 import {Activity,AlertCircle,BarChart3,CheckCircle2,ChevronDown,ClipboardList,Database,FileClock,FileText,GripVertical,Home,LayoutDashboard,LogOut,Minus,Moon,Plus,RefreshCw,Search,Settings2,Sun,Table2,TriangleAlert,Users,UserRoundCheck,WalletCards,XCircle} from 'lucide-react';
 import {SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL} from '../../lib/supabase-browser';
 import {useAdminSession} from './AdminSessionContext';
+import PrivacyRetentionWorkspace from './PrivacyRetentionWorkspace';
 
 const API=`${SUPABASE_URL}/functions/v1/backoffice-section-data`;
 const VOLUNTEER_API=`${SUPABASE_URL}/functions/v1/volunteer-admin-data`;
@@ -19,9 +20,9 @@ const NAV=[
  ['Workshop',[['Table Assignment','/backoffice/workshop-table-assignment',Table2],['Volunteers','/backoffice/workshop-volunteers',Users],['Reports','/backoffice/workshop-reports',BarChart3]]],
  ['Pages',[['Home Page','/backoffice/page-home',Home],['Attendee Form','/backoffice/page-attendee-form',FileText],['Volunteer Form','/backoffice/page-volunteer-form',FileText]]],
  ['Configuration',[['MVP Options','/backoffice/mvp-options',Settings2],['Settings','/backoffice/settings',Settings2]]],
- ['System',[['Data Quality','/backoffice/data-quality',Database],['Audit Log','/backoffice/audit-log',FileClock],['System Health','/backoffice/system-health',Activity]]]
+ ['System',[['Data Quality','/backoffice/data-quality',Database],['Audit Log','/backoffice/audit-log',FileClock],['Privacy & Retention','/backoffice/privacy-retention',Database],['System Health','/backoffice/system-health',Activity]]]
 ];
-const TITLES={'page-home':'Home Page Content','page-attendee-form':'Attendee Form Content','page-volunteer-form':'Volunteer Form Content',attention:'Attention Queue',analysis:'Analysis',attendees:'Attendees','mvp-demand':'MVP Demand','table-allocation':'Table Allocation',volunteers:'Volunteers','volunteer-analysis':'Volunteer Analysis','workshop-table-assignment':'Workshop Table Assignment','workshop-volunteers':'Workshop Volunteers','workshop-reports':'Workshop Reports','volunteer-reports':'Volunteer Reports',payments:'Payments','mvp-options':'MVP Options',settings:'Settings','data-quality':'Data Quality','audit-log':'Audit Log','system-health':'System Health'};
+const TITLES={'page-home':'Home Page Content','page-attendee-form':'Attendee Form Content','page-volunteer-form':'Volunteer Form Content',attention:'Attention Queue',analysis:'Analysis',attendees:'Attendees','mvp-demand':'MVP Demand','table-allocation':'Table Allocation',volunteers:'Volunteers','volunteer-analysis':'Volunteer Analysis','workshop-table-assignment':'Workshop Table Assignment','workshop-volunteers':'Workshop Volunteers','workshop-reports':'Workshop Reports','volunteer-reports':'Volunteer Reports',payments:'Payments','mvp-options':'MVP Options',settings:'Settings','data-quality':'Data Quality','audit-log':'Audit Log','privacy-retention':'Privacy & Retention','system-health':'System Health'};
 
 function agoRange(days){const d=new Date();d.setDate(d.getDate()-days+1);d.setHours(0,0,0,0);return d.getTime()}
 function fmt(v){return v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'}
@@ -84,6 +85,7 @@ function renderSection(section,c){const {attendees,paid,demand,data,loading,fmt,
  if(section==='payments')return <DataTable rows={attendees} cols={[['full_name','Attendee'],['email','Email'],['payment_status','Status'],['payment_reference','Reference'],['paid_at','Paid on']]}/>;
  if(section==='mvp-options')return <MvpOptionsManager options={data?.mvp_options||[]} supabase={c.supabase} workshop="ai-lab-mumbai-2026" onChange={options=>c.setData(d=>({...d,mvp_options:options}))}/>;
  if(section==='settings'){const s=data?.settings||{},vs=c.volunteerSettings;return <>{vs&&<VolunteerSettings settings={vs} supabase={c.supabase} onPublished={c.setVolunteerSettings}/>}<TableAssignmentSettings settings={s} supabase={c.supabase} workshop="ai-lab-mumbai-2026" onSaved={next=>c.setData(d=>({...d,settings:next}))}/></>}
+ if(section==='privacy-retention')return <PrivacyRetentionWorkspace supabase={c.supabase} profile={c.profile}/>;
  if(section==='data-quality')return <DataQualityWorkspace attendees={data?.attendees||[]}/>;
  if(section==='audit-log')return <AuditLogWorkspace rows={data?.audit||[]} range={c.range||'30d'} fmt={fmt}/>;
  if(section==='system-health')return <SystemHealthWorkspace supabase={c.supabase}/>;
