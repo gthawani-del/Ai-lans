@@ -46,7 +46,7 @@ export default function BackofficeSection({section}){
  useEffect(()=>{load()},[session]);
  useEffect(()=>{if(!session||!['volunteers','volunteer-analysis','workshop-table-assignment','workshop-volunteers','workshop-reports','volunteer-reports'].includes(section))return;(async()=>{try{const r=await fetch(VOLUNTEER_API,{headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});const j=await r.json();if(r.ok)setVolunteers(j.applications||[])}catch{}})()},[session,section]);
  useEffect(()=>{if(section!=='volunteers')return;setVolunteerStatus(searchParams.get('status')||'all')},[section,searchParams]);
- const attendees=useMemo(()=>{let rows=data?.attendees||[];if(range!=='all'){const cutoff=agoRange(range==='7d'?7:30);rows=rows.filter(x=>new Date(x.submitted_at||0).getTime()>=cutoff)}const q=query.trim().toLowerCase();if(q)rows=rows.filter(x=>[x.full_name,x.email,x.phone,x.company_organisation,x.city,x.industry,x.functional_area].some(v=>String(v||'').toLowerCase().includes(q)));return rows},[data,range,query]);
+ const attendees=useMemo(()=>{let rows=data?.attendees||[];if(range!=='all'){const cutoff=agoRange(range==='7d'?7:30);rows=rows.filter(x=>new Date(x.submitted_at||0).getTime()>=cutoff)}const q=query.trim().toLowerCase();if(q)rows=rows.filter(x=>[x.full_name,x.email,x.phone,x.company_organisation,x.city,x.state_region,x.state_mapping_status,x.industry,x.functional_area,x.business_problem,x.target_user].some(v=>String(v||'').toLowerCase().includes(q)));return rows},[data,range,query]);
  useEffect(()=>{if(!session||section!=='settings')return;(async()=>{try{const r=await fetch(VOLUNTEER_SETTINGS_API,{headers:{Authorization:`Bearer ${session.access_token}`,apikey:SUPABASE_PUBLISHABLE_KEY}});const j=await r.json();if(r.ok)setVolunteerSettings(j)}catch{}})()},[session,section]);
  const title=TITLES[section]||'Back Office';
  const paid=attendees.filter(x=>x.payment_status==='paid');
@@ -72,7 +72,7 @@ function Card({title,value,meta}){return <article className="boStat"><div><span>
 function renderSection(section,c){const {attendees,paid,demand,data,loading,fmt,volunteers=[]}=c;if(['page-home','page-attendee-form','page-volunteer-form'].includes(section))return <PageContentSettings section={section}/>;if(loading&&!data)return <SectionSkeleton section={section}/>;
  if(section==='attention'){const unpaid=attendees.filter(x=>x.payment_status!=='paid');const unallocated=paid.filter(x=>!x.table);return <><div className="boStats boStats3"><Card title="Unpaid / Pending" value={unpaid.length} meta="requires follow-up"/><Card title="Paid but unallocated" value={unallocated.length} meta="allocation required"/><Card title="Data issues" value={(data?.data_quality?.missing_company||0)+(data?.data_quality?.missing_function||0)} meta="profile completeness"/></div><div className="boPanel boSimpleList">{unallocated.map(a=><div key={a.id}><b>{a.full_name}</b><span>Paid · no table assigned</span></div>)}{!unallocated.length&&<p>No allocation exceptions in this scope.</p>}</div></>}
  if(section==='analysis'){const group=(key)=>{const m=new Map();attendees.forEach(a=>m.set(a[key]||'Not specified',(m.get(a[key]||'Not specified')||0)+1));return [...m.entries()].sort((a,b)=>b[1]-a[1])};return <div className="boAnalysisGrid"><Breakdown title="AI readiness" rows={group('ai_experience_level')} total={attendees.length}/><Breakdown title="Industry" rows={group('industry')} total={attendees.length}/><Breakdown title="Function" rows={group('functional_area')} total={attendees.length}/><Breakdown title="Experience" rows={group('years_experience')} total={attendees.length}/></div>}
- if(section==='attendees')return <DataTable rows={attendees} cols={[['full_name','Name'],['company_organisation','Company'],['career_role','Role'],['ai_experience_level','AI Level'],['payment_status','Payment'],['table','Table']]}/>;
+ if(section==='attendees')return <AttendeeDirectory {...c}/>;
  if(section==='mvp-demand')return <div className="boPanel"><div className="boRuleNote"><b>Weighting rule</b><span>Preference 1 = {data?.settings?.mvp_first_choice_weight||2} points. Preference 2 = {data?.settings?.mvp_second_choice_weight||1} point. Weighted score = P1×weight + P2×weight.</span></div><table className="boDataTable"><thead><tr><th>MVP</th><th>P1</th><th>P2</th><th>Weighted score</th></tr></thead><tbody>{demand.map(x=><tr key={x.title}><td>{x.title}</td><td>{x.first}</td><td>{x.second}</td><td><b>{x.score}</b></td></tr>)}</tbody></table></div>;
  if(section==='table-allocation'){const tables=data?.tables||[];return <><div className="boPanel boRuleNote"><b>Weighted allocation</b><span>The saved 100% weighting model is used for MVP preference, AI readiness, job-function mix and experience-level mix. Existing/manual assignments are preserved and remaining paid attendees are placed into available capacity.</span><button className="boPrimaryBtn" onClick={async()=>{if(!confirm('Generate assignments for currently unassigned paid attendees? Existing assignments will be preserved.'))return;const ses=(await c.supabase.auth.getSession()).data.session;const r=await fetch(API+'?workshop_key=ai-lab-mumbai-2026',{method:'POST',headers:{Authorization:'Bearer '+ses.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:JSON.stringify({action:'generate_allocation'})});const out=await r.json();if(!r.ok){alert(out.error||'Allocation failed');return}alert(out.assigned+' attendees assigned. '+out.remaining+' remain unassigned.');window.location.reload()}}>Generate allocation</button></div><div className="boTableCards">{tables.length?tables.map(t=><article className="boPanel" key={t.id}><span>TABLE {t.table_number}</span><h3>{t.label||t.mvp_options?.title||'Unlabelled table'}</h3><p>Status: {t.status}</p></article>):<div className="boPanel"><h3>No tables configured</h3><p>Create workshop tables before generating attendee assignments.</p></div>}</div></>}
  if(section==='volunteers')return <VolunteerWorkspace {...c}/>;
@@ -241,6 +241,78 @@ function SystemHealthWorkspace({supabase}){
   <p className="boHealthChecked">{health?.checked_at?'Live checks last run '+new Date(health.checked_at).toLocaleString('en-IN'):loading?'Running live checks…':'Live checks not available.'}</p>
  </div>
 }
+
+const STATE_CHOICES=["Andaman and Nicobar Islands","Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chandigarh","Chhattisgarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jammu and Kashmir","Jharkhand","Karnataka","Kerala","Ladakh","Lakshadweep","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Puducherry","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal"];
+function AttendeeDirectory({attendees=[],data,setData,profile,supabase}){
+ const [regionFilter,setRegionFilter]=useState('all');
+ const [mappingFilter,setMappingFilter]=useState('all');
+ const [selectedId,setSelectedId]=useState(null);
+ const [choice,setChoice]=useState('');
+ const [saving,setSaving]=useState(false);
+ const [notice,setNotice]=useState('');
+ const canEdit=['super_admin','operations'].includes(profile?.role);
+ const filtered=attendees.filter(a=>(regionFilter==='all'||(a.state_region||'Not mapped')===regionFilter)&&(mappingFilter==='all'||a.state_mapping_status===mappingFilter));
+ const selected=(data?.attendees||[]).find(a=>a.id===selectedId);
+ const states=[...new Set(attendees.map(a=>a.state_region||'Not mapped'))].sort();
+ const counts=attendees.reduce((m,a)=>{const s=a.state_region||'Not mapped';m.set(s,(m.get(s)||0)+1);return m},new Map());
+ const labelStatus=s=>({matched:'Matched',manual:'Manually set',needs_review:'Needs review',not_mapped:'Not mapped'}[s]||'Not mapped');
+ function open(row){setSelectedId(row.id);setChoice(row.state_region||'');setNotice('')}
+ async function saveState(reset=false){
+   if(!selected||saving||!canEdit)return;
+   setSaving(true);setNotice('');
+   try{
+     const {data:s}=await supabase.auth.getSession();
+     if(!s.session)throw new Error('Please sign in again');
+     const response=await fetch(API+'?workshop_key=ai-lab-mumbai-2026',{
+       method:'POST',headers:{Authorization:'Bearer '+s.session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},
+       body:JSON.stringify({action:'update_attendee_region',attendee_id:selected.id,state_region:reset?'':choice})
+     });
+     const j=await response.json();
+     if(!response.ok)throw new Error(j.error||'Could not update state');
+     setData(prev=>{
+       const next={...prev,attendees:(prev?.attendees||[]).map(a=>a.id===selected.id?{...a,...j.attendee}:a)};
+       try{sessionStorage.setItem('ai-lab-admin-data',JSON.stringify(next))}catch{}
+       return next;
+     });
+     setChoice(j.attendee.state_region||'');
+     setNotice('State mapping saved.');
+   }catch(e){setNotice(e?.message||'Could not save.')}
+   finally{setSaving(false)}
+ }
+ return <div className="boAttendeeWorkspace">
+   <div className="boPanel boAttendeeLocationSummary"><div><b>State-wise applications</b><p>Derived from city and country. Ambiguous or unmatched locations are not guessed.</p></div>
+    <div className="boAttendeeRegionStats">{[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([s,n])=><span key={s}>{s}: <b>{n}</b></span>)}</div>
+   </div>
+   <div className="boAttendeeFilters">
+     <label>State / region <select value={regionFilter} onChange={e=>setRegionFilter(e.target.value)}><option value="all">All states</option>{states.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
+     <label>Mapping status <select value={mappingFilter} onChange={e=>setMappingFilter(e.target.value)}><option value="all">All statuses</option>{['matched','manual','needs_review','not_mapped'].map(s=><option key={s} value={s}>{labelStatus(s)}</option>)}</select></label>
+     <span>{filtered.length} applications</span>
+   </div>
+   <div className="boPanel boTableWrap"><table className="boDataTable"><thead><tr><th>Attendee</th><th>City</th><th>State / region</th><th>Mapping</th><th>Role</th><th>Payment</th><th>Details</th></tr></thead><tbody>
+     {filtered.map(a=><tr key={a.id}><td><strong>{a.full_name||'—'}</strong><small>{a.email}</small></td><td>{a.city||'—'}<small>{a.country||''}</small></td><td>{a.state_region||'Not mapped'}</td><td>{labelStatus(a.state_mapping_status)}</td><td>{a.career_role||'—'}</td><td>{a.payment_status||'—'}</td><td><button type="button" className="boAttendeeOpen" onClick={()=>open(a)}>View / edit</button></td></tr>)}
+   </tbody></table>{!filtered.length&&<p>No attendee records match these filters.</p>}</div>
+   {selected&&<section className="boPanel boAttendeeDetails">
+      <div className="boPanelHead"><div><h2>{selected.full_name}</h2><p>{selected.email} · {selected.city}, {selected.country}</p></div><button type="button" onClick={()=>setSelectedId(null)} aria-label="Close attendee details">Close</button></div>
+      <dl className="boAttendeeDetailsGrid">
+       {[
+         ['Role',selected.career_role],['Designation',selected.current_title],['Organisation',selected.company_organisation],
+         ['Industry',selected.industry],['Primary function',selected.functional_area],['Total experience',selected.years_experience],
+         ['AI familiarity',selected.ai_experience_level],['Business problem',selected.business_problem],
+         ['Intended user',selected.target_user],['Information sources',(selected.data_sources||[]).join(', ')],
+         ['Desired outcome',selected.success_outcome],['Outcome detail',selected.success_detail],
+         ['Two-day availability',selected.attendance_availability],
+         ['Primary / backup areas',(selected.mvp_preferences||[]).map(p=>p.title||p.slug).join(' · ')]
+       ].map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v||'Not provided'}</dd></div>)}
+      </dl>
+      <div className="boAttendeeCorrection"><b>City-to-state mapping</b><p>Original city: {selected.city||'—'}. Current mapping: {selected.state_region||'Not mapped'} ({labelStatus(selected.state_mapping_status)}).</p>
+       {canEdit&&String(selected.country||'').toLowerCase()==='india'&&<div className="boAttendeeCorrectionControls"><label>Select verified Indian state or UT <select value={choice} onChange={e=>setChoice(e.target.value)}><option value="">Choose state / UT</option>{STATE_CHOICES.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
+        <button type="button" disabled={saving||!choice} onClick={()=>saveState(false)}>{saving?'Saving…':'Save state'}</button><button type="button" disabled={saving} onClick={()=>saveState(true)}>Reset to automatic</button></div>}
+       {notice&&<p role="status">{notice}</p>}
+      </div>
+   </section>}
+ </div>;
+}
+
 function DataTable({rows,cols}){return <div className="boPanel boTableWrap"><table className="boDataTable"><thead><tr>{cols.map(c=><th key={c[0]}>{c[1]}</th>)}</tr></thead><tbody>{rows.map(r=><tr key={r.id}>{cols.map(([k])=><td key={k}>{k==='table'?(r.table?`Table ${r.table.table_number}`:'Unassigned'):k==='paid_at'?fmt(r[k]):String(r[k]??'—')}</td>)}</tr>)}</tbody></table>{!rows.length&&<p>No records match the current filters.</p>}</div>}
 function Breakdown({title,rows,total}){return <article className="boPanel"><h2>{title}</h2><div className="boBreakdown">{rows.slice(0,8).map(([label,count])=><div key={label}><span>{label}<b>{count}</b></span><i><em style={{width:`${total?Math.round(count/total*100):0}%`}}/></i></div>)}</div></article>}
 function Setting({label,value}){return <article className="boPanel boSetting"><span>{label}</span><strong>{String(value??'—')}</strong></article>}
