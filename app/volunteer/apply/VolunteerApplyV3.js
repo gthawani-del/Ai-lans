@@ -522,6 +522,17 @@ export default function VolunteerApplyV3({ config }) {
         key={r.key}
       >
         {control}
+        {r.key==="languages"&&Array.isArray(data.languages)&&data.languages.length>0&&<div className="v3-language-ratings">
+          <p>How comfortably can you communicate with participants in each language? English is not currently a mandatory language.</p>
+          {data.languages.map(lang=><label key={lang} className="v3-language-rating">
+            <span>{lang==="Other"?(data.languagesOther||"Other language"):lang}</span>
+            <select aria-label={`${lang} proficiency`} value={data.languageProficiency?.[lang]||""} onChange={e=>set("languageProficiency",{...(data.languageProficiency||{}),[lang]:e.target.value})}>
+              <option value="">Select proficiency</option>
+              {["Fluent","Comfortable","Basic"].map(v=><option key={v} value={v}>{v}</option>)}
+            </select>
+          </label>)}
+          {errors.languageProficiency&&<small className="v3-error" role="alert">{errors.languageProficiency}</small>}
+        </div>}
         <small id={id + "-help"} className={err ? "v3-error" : ""}>
           {err ||
             (r.max >= 500
