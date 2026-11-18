@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 25804)
+Total output lines: 617
+
 'use client';
 import {reviewSections} from '../../lib/volunteer-v3.mjs';
 
@@ -9,6 +12,7 @@ import {SUPABASE_PUBLISHABLE_KEY,SUPABASE_URL} from '../../lib/supabase-browser'
 import {useAdminSession} from './AdminSessionContext';
 import PrivacyRetentionWorkspace from './PrivacyRetentionWorkspace';
 import SocialProfilesSettings from './SocialProfilesSettings';
+import CmsPageStudio from './CmsPageStudio';
 
 const API=`${SUPABASE_URL}/functions/v1/backoffice-section-data`;
 const VOLUNTEER_API=`${SUPABASE_URL}/functions/v1/volunteer-admin-data`;
@@ -19,11 +23,11 @@ const NAV=[
  ['Attendees',[['Attendee List','/backoffice/attendees',Users],['Analysis','/backoffice/analysis',BarChart3],['MVP Demand','/backoffice/mvp-demand',ClipboardList],['Table Allocation','/backoffice/table-allocation',Table2],['Payments','/backoffice/payments',WalletCards]]],
  ['Volunteers',[['Applications','/backoffice/volunteers',UserRoundCheck],['Analysis','/backoffice/volunteer-analysis',BarChart3],['Shortlisted','/backoffice/volunteers?status=shortlisted',UserRoundCheck],['Selected','/backoffice/volunteers?status=selected',UserRoundCheck],['Standby','/backoffice/volunteers?status=standby',UserRoundCheck],['Rejected','/backoffice/volunteers?status=rejected',UserRoundCheck]]],
  ['Workshop',[['Table Assignment','/backoffice/workshop-table-assignment',Table2],['Volunteers','/backoffice/workshop-volunteers',Users],['Reports','/backoffice/workshop-reports',BarChart3]]],
- ['Pages',[['Home Page','/backoffice/page-home',Home],['Attendee Form','/backoffice/page-attendee-form',FileText],['Volunteer Form','/backoffice/page-volunteer-form',FileText]]],
+ ['Pages',[['Page Studio','/backoffice/pages',FileText],['Home Page','/backoffice/page-home',Home],['Attendee Form','/backoffice/page-attendee-form',FileText],['Volunteer Form','/backoffice/page-volunteer-form',FileText]]],
  ['Configuration',[['MVP Options','/backoffice/mvp-options',Settings2],['Settings','/backoffice/settings',Settings2],['Social Profiles','/backoffice/social-profiles',Share2]]],
  ['System',[['Data Quality','/backoffice/data-quality',Database],['Audit Log','/backoffice/audit-log',FileClock],['Privacy & Retention','/backoffice/privacy-retention',Database],['System Health','/backoffice/system-health',Activity]]]
 ];
-const TITLES={'page-home':'Home Page Content','page-attendee-form':'Attendee Form Content','page-volunteer-form':'Volunteer Form Content',attention:'Attention Queue',analysis:'Analysis',attendees:'Attendees','mvp-demand':'MVP Demand','table-allocation':'Table Allocation',volunteers:'Volunteers','volunteer-analysis':'Volunteer Analysis','workshop-table-assignment':'Workshop Table Assignment','workshop-volunteers':'Workshop Volunteers','workshop-reports':'Workshop Reports','volunteer-reports':'Volunteer Reports',payments:'Payments','mvp-options':'MVP Options',settings:'Settings','social-profiles':'Social Profiles','data-quality':'Data Quality','audit-log':'Audit Log','privacy-retention':'Privacy & Retention','system-health':'System Health'};
+const TITLES={pages:'Page Studio','page-home':'Home Page Content','page-attendee-form':'Attendee Form Content','page-volunteer-form':'Volunteer Form Content',attention:'Attention Queue',analysis:'Analysis',attendees:'Attendees','mvp-demand':'MVP Demand','table-allocation':'Table Allocation',volunteers:'Volunteers','volunteer-analysis':'Volunteer Analysis','workshop-table-assignment':'Workshop Table Assignment','workshop-volunteers':'Workshop Volunteers','workshop-reports':'Workshop Reports','volunteer-reports':'Volunteer Reports',payments:'Payments','mvp-options':'MVP Options',settings:'Settings','social-profiles':'Social Profiles','data-quality':'Data Quality','audit-log':'Audit Log','privacy-retention':'Privacy & Retention','system-health':'System Health'};
 
 function agoRange(days){const d=new Date();d.setDate(d.getDate()-days+1);d.setHours(0,0,0,0);return d.getTime()}
 function fmt(v){return v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'}
@@ -44,8 +48,8 @@ export default function BackofficeSection({section}){
  useEffect(()=>{const q=searchParams.get('q');if(q)setQuery(q)},[section,searchParams]);
  function navItemActive(href){const [path,qs]=href.split('?');const target=path.split('/').filter(Boolean).pop()||'dashboard';if(target!==section)return false;if(!qs)return section==='volunteers'?!(searchParams.get('status')):true;const expected=new URLSearchParams(qs);for(const [k,v] of expected.entries())if(searchParams.get(k)!==v)return false;return true}
  function toggleNav(group){setOpenNavGroup(current=>{const next=current===group?null:group;try{if(next)sessionStorage.setItem('ai-lab-admin-nav',next);else sessionStorage.removeItem('ai-lab-admin-nav')}catch{}return next})}
- async function load(){if(!session)return;setLoading(true);setError('');try{const r=await fetch(`${API}?workshop_key=${encodeURIComponent(workshop)}`,{headers:{Authorization:`Bearer ${session.access_token}`,apikey:SUPABASE_PUBLISHABLE_KEY}});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not load data');setData(j);try{sessionStorage.setItem('ai-lab-admin-data',JSON.stringify(j))}catch{}setLastRefresh(new Date())}catch(e){setError(e.message)}finally{setLoading(false)}}
- useEffect(()=>{load()},[session]);
+ async function load(){if(!session||section==='pages')return;setLoading(true);setError('');try{const r=await fetch(`${API}?workshop_key=${encodeURIComponent(workshop)}`,{headers:{Authorization:`Bearer ${session.access_token}`,apikey:SUPABASE_PUBLISHABLE_KEY}});const j=await r.json();if(!r.ok)throw new Error(j.error||'Could not load data');setData(j);try{sessionStorage.setItem('ai-lab-admin-data',JSON.stringify(j))}catch{}setLastRefresh(new Date())}catch(e){setError(e.message)}finally{setLoading(false)}}
+ useEffect(()=>{load()},[session,section]);
  useEffect(()=>{if(!session||!['volunteers','volunteer-analysis','workshop-table-assignment','workshop-volunteers','workshop-reports','volunteer-reports'].includes(section))return;(async()=>{try{const r=await fetch(VOLUNTEER_API,{headers:{Authorization:'Bearer '+session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY}});const j=await r.json();if(r.ok)setVolunteers(j.applications||[])}catch{}})()},[session,section]);
  useEffect(()=>{if(section!=='volunteers')return;setVolunteerStatus(searchParams.get('status')||'all')},[section,searchParams]);
  const attendees=useMemo(()=>{let rows=data?.attendees||[];if(range!=='all'){const cutoff=agoRange(range==='7d'?7:30);rows=rows.filter(x=>new Date(x.submitted_at||0).getTime()>=cutoff)}const q=query.trim().toLowerCase();if(q)rows=rows.filter(x=>[x.full_name,x.email,x.phone,x.company_organisation,x.city,x.state_region,x.state_mapping_status,x.industry,x.functional_area,x.business_problem,x.target_user].some(v=>String(v||'').toLowerCase().includes(q)));return rows},[data,range,query]);
@@ -58,7 +62,7 @@ export default function BackofficeSection({section}){
  return <main className={`boV2 boSectionApp ${['volunteers','volunteer-analysis'].includes(section)?'volSection':''}`} data-theme={theme} style={{'--bo-scale':scale/100}}>
   <aside className="boSidebar"><div className="boBrand"><strong className="boBrandName">weareailabs</strong><span>Back Office</span></div><nav ref={sidebarNavRef} onScroll={saveSidebarScroll}>{NAV.map(([group,items])=>['Attendees','Volunteers','Workshop','Pages','Configuration','System'].includes(group)?<div className={'boNavGroup boCollapsible '+(items.some(([,href])=>{const path=href.split('?')[0];const target=path.split('/').filter(Boolean).pop()||'dashboard';return target===section})?'current':'')} key={group}><button type="button" className="boNavItem boNavParent" onClick={()=>toggleNav(group)} aria-expanded={openNavGroup===group}><ChevronDown className={openNavGroup===group?'open':''} size={16}/><span>{group}</span></button>{openNavGroup===group&&<div className="boNavChildren">{items.map(([label,href,Icon])=><Link className={'boNavItem '+(navItemActive(href)?'active':'')} href={href} prefetch onClick={()=>{saveSidebarScroll();setOpenNavGroup(group)}} key={label}><Icon size={16}/><span>{label}</span>{group==='Volunteers'&&label!=='Analysis'&&<small className="boNavCount">{label==='Applications'?volunteers.length:volunteers.filter(v=>v.status===label.toLowerCase()).length}</small>}</Link>)}</div>}</div>:<div className="boNavGroup" key={group}><b>{group}</b>{items.map(([label,href,Icon])=><Link className={'boNavItem '+(navItemActive(href)?'active':'')} href={href} prefetch onClick={saveSidebarScroll} key={label}><Icon size={16}/><span>{label}</span></Link>)}</div>)}</nav>{['volunteers','volunteer-analysis'].includes(section)&&<div className="volSidebarProgress"><b>{volunteers.filter(v=>v.status==='selected').length} selected</b><span>{(data?.tables||[]).length?((data.tables.length*Number(data?.settings?.volunteers_per_table||1))+' volunteer slots planned'):'Selection target not set'}</span><i><em style={{width:(data?.tables||[]).length?Math.min(100,Math.round(volunteers.filter(v=>v.status==='selected').length/(data.tables.length*Number(data?.settings?.volunteers_per_table||1))*100))+'%':'0%'}}/></i></div>}</aside>
   <section className="boCanvas">
-   <div className="boUniversalBar"><label className="boCohortControl"><span>Cohort</span><select value={workshop} readOnly><option>AI Lab Mumbai 2026</option></select></label><div className="boGlobalSearch"><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search people…"/></div><div className="boUniversalRight">{!['volunteers','volunteer-analysis','settings','social-profiles','mvp-options','data-quality','system-health'].includes(section)&&<div className="boDateFilter">{[['7D','7d'],['30D','30d'],['All','all']].map(([l,v])=><button className={range===v?'on':''} onClick={()=>setRange(v)} key={v}>{l}</button>)}</div>}<div className="boTextScaleInline"><button aria-label="Decrease text size" onClick={()=>setScale(Math.max(100,scale-25))}><Minus size={12}/></button><span>{scale}%</span><button aria-label="Increase text size" onClick={()=>setScale(Math.min(200,scale+25))}><Plus size={12}/></button></div><button className="boIconControl" aria-label="Toggle light and dark mode" title="Light / dark mode" onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={15}/>:<Moon size={15}/>}</button><span className="boUpdatedInline">{data?.last_updated?'Updated '+new Date(data.last_updated).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):''}</span><button className={`boIconControl ${loading?'spinning':''}`} aria-label="Refresh data" title={lastRefresh?'Updated '+lastRefresh.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'Refresh data'} onClick={load}><RefreshCw size={15}/></button><div className="boPopoverWrap"><button type="button" className="boProfileControl" aria-label="Administrator profile" aria-expanded={profileOpen} onClick={()=>setProfileOpen(v=>!v)}><span>{(profile?.email||'A')[0].toUpperCase()}</span></button>{profileOpen&&<div className="boPopover boProfilePopover"><strong>{profile?.email}</strong><small>{(profile?.role||'super_admin').replaceAll('_',' ')}</small><hr/><button className="boSignoutMenu" onClick={signOut}><LogOut size={14}/> Sign out</button></div>}</div></div></div>
+   <div className="boUniversalBar">{section!=='pages'&&<label className="boCohortControl"><span>Cohort</span><select value={workshop} readOnly><option>AI Lab Mumbai 2026</option></select></label>}{section!=='pages'&&<div className="boGlobalSearch"><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search people…"/></div>}<div className="boUniversalRight">{!['pages','volunteers','volunteer-analysis','settings','social-profiles','mvp-options','data-quality','system-health'].includes(section)&&<div className="boDateFilter">{[['7D','7d'],['30D','30d'],['All','all']].map(([l,v])=><button className={range===v?'on':''} onClick={()=>setRange(v)} key={v}>{l}</button>)}</div>}<div className="boTextScaleInline"><button aria-label="Decrease text size" onClick={()=>setScale(Math.max(100,scale-25))}><Minus size={12}/></button><span>{scale}%</span><button aria-label="Increase text size" onClick={()=>setScale(Math.min(200,scale+25))}><Plus size={12}/></button></div><button className="boIconControl" aria-label="Toggle light and dark mode" title="Light / dark mode" onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={15}/>:<Moon size={15}/>}</button><span className="boUpdatedInline">{data?.last_updated?'Updated '+new Date(data.last_updated).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):''}</span><button className={`boIconControl ${loading?'spinning':''}`} aria-label="Refresh data" title={lastRefresh?'Updated '+lastRefresh.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'Refresh data'} onClick={load}><RefreshCw size={15}/></button><div className="boPopoverWrap"><button type="button" className="boProfileControl" aria-label="Administrator profile" aria-expanded={profileOpen} onClick={()=>setProfileOpen(v=>!v)}><span>{(profile?.email||'A')[0].toUpperCase()}</span></button>{profileOpen&&<div className="boPopover boProfilePopover"><strong>{profile?.email}</strong><small>{(profile?.role||'super_admin').replaceAll('_',' ')}</small><hr/><button className="boSignoutMenu" onClick={signOut}><LogOut size={14}/> Sign out</button></div>}</div></div></div>
    <header className={'boTopbar '+(section==='settings'?'boSettingsTopbar':'')}><div>{section==='settings'?<div className="boSettingsTitleLine"><span>BACK OFFICE</span><h1>{title}</h1><p>{subtitle(section)}</p></div>:<><span>{section==='analysis'?'COHORT':'BACK OFFICE'}</span><h1>{title}</h1><p>{subtitle(section)}</p></>}</div></header>
    {!['settings','mvp-options','data-quality','system-health','volunteer-analysis'].includes(section)&&<div className="boScope"><span>AI Lab Mumbai 2026 · {range==='all'?'All time':range==='7d'?'Last 7 days':'Last 30 days'}</span><small>{data?.last_updated?`Updated ${new Date(data.last_updated).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`:''}</small></div>}
    {error&&<div className="boError">{error}<button onClick={load}>Retry</button></div>}
@@ -67,11 +71,11 @@ export default function BackofficeSection({section}){
  </main>
 }
 
-function subtitle(section){return ({'page-home':'Edit homepage content, visibility and page configuration.','page-attendee-form':'Manage attendee form content, fields and configuration.','page-volunteer-form':'Manage volunteer form content, fields and configuration.',attention:'Exceptions and operational items requiring action.',analysis:'Deterministic cohort analysis calculated from registration data.',attendees:'Search, review and manage attendee records.',payments:'Payment status and reconciliation view.','mvp-demand':'Preference demand calculated from first and second choices.','table-allocation':'Allocation status, rules and explainability before publishing.',volunteers:'Review, evaluate and select volunteers for AI Lab.','volunteer-analysis':'Deterministic analysis of volunteer scores, coverage, evidence and selection readiness.','mvp-options':'Manage the MVP choices offered to applicants.',settings:'Workshop and allocation rules used by the planning engine.','social-profiles':'Manage site-wide social profile URLs and footer visibility.','data-quality':'Find records that need attention and open them for correction.','audit-log':'Administrative changes and system actions.','system-health':'Live checks for the services and application flows powering AI Lab.'}[section]||'Workshop operations.')}
+function subtitle(section){return ({pages:'Create and review controlled CMS page drafts. Existing public pages and application flows remain unchanged.','page-home':'Edit homepage content, visibility and page configuration.','page-attendee-form':'Manage attendee form content, fields and configuration.','page-volunteer-form':'Manage volunteer form content, fields and configuration.',attention:'Exceptions and operational items requiring action.',analysis:'Deterministic cohort analysis calculated from registration data.',attendees:'Search, review and manage attendee records.',payments:'Payment status and reconciliation view.','mvp-demand':'Preference demand calculated from first and second choices.','table-allocation':'Allocation status, rules and explainability before publishing.',volunteers:'Review, evaluate and select volunteers for AI Lab.','volunteer-analysis':'Deterministic analysis of volunteer scores, coverage, evidence and selection readiness.','mvp-options':'Manage the MVP choices offered to applicants.',settings:'Workshop and allocation rules used by the planning engine.','social-profiles':'Manage site-wide social profile URLs and footer visibility.','data-quality':'Find records that need attention and open them for correction.','audit-log':'Administrative changes and system actions.','system-health':'Live checks for the services and application flows powering AI Lab.'}[section]||'Workshop operations.')}
 
 function SectionSkeleton({section}){const table=['attendees','payments','mvp-demand','table-allocation','data-quality','audit-log'].includes(section);return <div className={'boSectionSkeleton '+(table?'table':'cards')} aria-label="Loading section"><div className="boSkLine wide"/><div className="boSkLine short"/>{table?<div className="boSkTable"><div className="boSkRow head">{Array.from({length:6},(_,i)=><i key={i}/>)}</div>{Array.from({length:4},(_,r)=><div className="boSkRow" key={r}>{Array.from({length:6},(_,i)=><i key={i}/>)}</div>)}</div>:<div className="boSkCards">{Array.from({length:4},(_,i)=><i key={i}/>)}</div>}</div>}
 function Card({title,value,meta}){return <article className="boStat"><div><span>{title}</span><strong>{value}</strong><small>{meta}</small></div></article>}
-function renderSection(section,c){const {attendees,paid,demand,data,loading,fmt,volunteers=[]}=c;if(section==='social-profiles')return <SocialProfilesSettings session={c.session} role={c.profile?.role}/>;if(['page-home','page-attendee-form','page-volunteer-form'].includes(section))return <PageContentSettings section={section}/>;if(loading&&!data)return <SectionSkeleton section={section}/>;
+function renderSection(section,c){const {attendees,paid,demand,data,loading,fmt,volunteers=[]}=c;if(section==='pages')return <CmsPageStudio session={c.session} profile={c.profile} supabase={c.supabase}/>;if(section==='social-profiles')return <SocialProfilesSettings session={c.session} role={c.profile?.role}/>;if(['page-home','page-attendee-form','page-volunteer-form'].includes(section))return <PageContentSettings section={section}/>;if(loading&&!data)return <SectionSkeleton section={section}/>;
  if(section==='attention'){const unpaid=attendees.filter(x=>x.payment_status!=='paid');const unallocated=paid.filter(x=>!x.table);return <><div className="boStats boStats3"><Card title="Unpaid / Pending" value={unpaid.length} meta="requires follow-up"/><Card title="Paid but unallocated" value={unallocated.length} meta="allocation required"/><Card title="Data issues" value={(data?.data_quality?.missing_company||0)+(data?.data_quality?.missing_function||0)} meta="profile completeness"/></div><div className="boPanel boSimpleList">{unallocated.map(a=><div key={a.id}><b>{a.full_name}</b><span>Paid · no table assigned</span></div>)}{!unallocated.length&&<p>No allocation exceptions in this scope.</p>}</div></>}
  if(section==='analysis'){const group=(key)=>{const m=new Map();attendees.forEach(a=>m.set(a[key]||'Not specified',(m.get(a[key]||'Not specified')||0)+1));return [...m.entries()].sort((a,b)=>b[1]-a[1])};return <div className="boAnalysisGrid"><Breakdown title="AI readiness" rows={group('ai_experience_level')} total={attendees.length}/><Breakdown title="Industry" rows={group('industry')} total={attendees.length}/><Breakdown title="Function" rows={group('functional_area')} total={attendees.length}/><Breakdown title="Experience" rows={group('years_experience')} total={attendees.length}/></div>}
  if(section==='attendees')return <AttendeeDirectory {...c}/>;
@@ -256,166 +260,7 @@ function AttendeeDirectory({attendees=[],data,setData,profile,supabase}){
  const canEdit=['super_admin','operations'].includes(profile?.role);
  const filtered=attendees.filter(a=>(regionFilter==='all'||(a.state_region||'Not mapped')===regionFilter)&&(mappingFilter==='all'||a.state_mapping_status===mappingFilter));
  const selected=(data?.attendees||[]).find(a=>a.id===selectedId);
- const states=[...new Set(attendees.map(a=>a.state_region||'Not mapped'))].sort();
- const counts=attendees.reduce((m,a)=>{const s=a.state_region||'Not mapped';m.set(s,(m.get(s)||0)+1);return m},new Map());
- const labelStatus=s=>({matched:'Matched',manual:'Manually set',needs_review:'Needs review',not_mapped:'Not mapped'}[s]||'Not mapped');
- function open(row){setSelectedId(row.id);setChoice(row.state_region||'');setNotice('')}
- async function saveState(reset=false){
-   if(!selected||saving||!canEdit)return;
-   setSaving(true);setNotice('');
-   try{
-     const {data:s}=await supabase.auth.getSession();
-     if(!s.session)throw new Error('Please sign in again');
-     const response=await fetch(API+'?workshop_key=ai-lab-mumbai-2026',{
-       method:'POST',headers:{Authorization:'Bearer '+s.session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},
-       body:JSON.stringify({action:'update_attendee_region',attendee_id:selected.id,state_region:reset?'':choice})
-     });
-     const j=await response.json();
-     if(!response.ok)throw new Error(j.error||'Could not update state');
-     setData(prev=>{
-       const next={...prev,attendees:(prev?.attendees||[]).map(a=>a.id===selected.id?{...a,...j.attendee}:a)};
-       try{sessionStorage.setItem('ai-lab-admin-data',JSON.stringify(next))}catch{}
-       return next;
-     });
-     setChoice(j.attendee.state_region||'');
-     setNotice('State mapping saved.');
-   }catch(e){setNotice(e?.message||'Could not save.')}
-   finally{setSaving(false)}
- }
- return <div className="boAttendeeWorkspace">
-   <div className="boPanel boAttendeeLocationSummary"><div><b>State-wise applications</b><p>Derived from city and country. Ambiguous or unmatched locations are not guessed.</p></div>
-    <div className="boAttendeeRegionStats">{[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([s,n])=><span key={s}>{s}: <b>{n}</b></span>)}</div>
-   </div>
-   <div className="boAttendeeFilters">
-     <label>State / region <select value={regionFilter} onChange={e=>setRegionFilter(e.target.value)}><option value="all">All states</option>{states.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
-     <label>Mapping status <select value={mappingFilter} onChange={e=>setMappingFilter(e.target.value)}><option value="all">All statuses</option>{['matched','manual','needs_review','not_mapped'].map(s=><option key={s} value={s}>{labelStatus(s)}</option>)}</select></label>
-     <span>{filtered.length} applications</span>
-   </div>
-   <div className="boPanel boTableWrap"><table className="boDataTable"><thead><tr><th>Attendee</th><th>Company</th><th>Role</th><th>AI Level</th><th>City</th><th>State / region</th><th>Mapping</th><th>Payment</th><th>Table</th><th>Details</th></tr></thead><tbody>
-     {filtered.map(a=><tr key={a.id}><td><strong>{a.full_name||'—'}</strong><small>{a.email}</small></td><td>{a.company_organisation||'—'}</td><td>{a.career_role||'—'}</td><td>{a.ai_experience_level||'—'}</td><td>{a.city||'—'}<small>{a.country||''}</small></td><td>{a.state_region||'Not mapped'}</td><td>{labelStatus(a.state_mapping_status)}</td><td>{a.payment_status||'—'}</td><td>{a.table?`Table ${a.table.table_number}`:'Unassigned'}</td><td><button type="button" className="boAttendeeOpen" onClick={()=>open(a)}>View / edit</button></td></tr>)}
-   </tbody></table>{!filtered.length&&<p>No attendee records match these filters.</p>}</div>
-   {selected&&<section className="boPanel boAttendeeDetails">
-      <div className="boPanelHead"><div><h2>{selected.full_name}</h2><p>{selected.email} · {selected.city}, {selected.country}</p></div><button type="button" onClick={()=>setSelectedId(null)} aria-label="Close attendee details">Close</button></div>
-      <dl className="boAttendeeDetailsGrid">
-       {[
-         ['Role',selected.career_role],['Designation',selected.current_title],['Preferred contact',selected.preferred_contact_method],['Organisation',selected.company_organisation],
-         ['Industry',selected.industry],['Primary function',selected.functional_area],['Total experience',selected.years_experience],
-         ['AI familiarity',selected.ai_experience_level],['Business problem',selected.business_problem],
-         ['Intended user',selected.target_user],['Information sources',(selected.data_sources||[]).join(', ')],
-         ['Desired outcome',selected.success_outcome],['Outcome detail',selected.success_detail],
-         ['Two-day availability',selected.attendance_availability],
-         ['Representative data permission',selected.representative_data_permission],['Participation support',selected.participation_support],['Discovery source',selected.heard_about],
-         ['Primary / backup areas',(selected.mvp_preferences||[]).map(p=>p.title||p.slug).join(' · ')]
-       ].map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v||'Not provided'}</dd></div>)}
-      </dl>
-      <div className="boAttendeeCorrection"><b>City-to-state mapping</b><p>Original city: {selected.city||'—'}. Current mapping: {selected.state_region||'Not mapped'} ({labelStatus(selected.state_mapping_status)}).</p>
-       {canEdit&&String(selected.country||'').toLowerCase()==='india'&&<div className="boAttendeeCorrectionControls"><label>Select verified Indian state or UT <select value={choice} onChange={e=>setChoice(e.target.value)}><option value="">Choose state / UT</option>{STATE_CHOICES.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
-        <button type="button" disabled={saving||!choice} onClick={()=>saveState(false)}>{saving?'Saving…':'Save state'}</button><button type="button" disabled={saving} onClick={()=>saveState(true)}>Reset to automatic</button></div>}
-       {notice&&<p role="status">{notice}</p>}
-      </div>
-   </section>}
- </div>;
-}
-
-function DataTable({rows,cols}){return <div className="boPanel boTableWrap"><table className="boDataTable"><thead><tr>{cols.map(c=><th key={c[0]}>{c[1]}</th>)}</tr></thead><tbody>{rows.map(r=><tr key={r.id}>{cols.map(([k])=><td key={k}>{k==='table'?(r.table?`Table ${r.table.table_number}`:'Unassigned'):k==='paid_at'?fmt(r[k]):String(r[k]??'—')}</td>)}</tr>)}</tbody></table>{!rows.length&&<p>No records match the current filters.</p>}</div>}
-function Breakdown({title,rows,total}){return <article className="boPanel"><h2>{title}</h2><div className="boBreakdown">{rows.slice(0,8).map(([label,count])=><div key={label}><span>{label}<b>{count}</b></span><i><em style={{width:`${total?Math.round(count/total*100):0}%`}}/></i></div>)}</div></article>}
-function Setting({label,value}){return <article className="boPanel boSetting"><span>{label}</span><strong>{String(value??'—')}</strong></article>}
-
-function MvpOptionsManager({options,supabase,workshop,onChange}){const [rows,setRows]=useState(options);const [editing,setEditing]=useState(null);const [dragId,setDragId]=useState(null);const [busy,setBusy]=useState(false);useEffect(()=>setRows(options),[options]);async function call(body){const ses=(await supabase.auth.getSession()).data.session;const r=await fetch(API+'?workshop_key='+encodeURIComponent(workshop),{method:'POST',headers:{Authorization:'Bearer '+ses.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});const out=await r.json();if(!r.ok)throw new Error(out.error||'Could not save MVP option');return out}function openNew(){setEditing({id:null,title:'',description:'',is_active:true,slug:'Generated automatically'})}async function saveEditor(){if(!editing?.title?.trim())return;setBusy(true);try{const out=await call(editing.id?{action:'update_mvp_option',id:editing.id,title:editing.title,description:editing.description,is_active:editing.is_active}:{action:'create_mvp_option',title:editing.title,description:editing.description,is_active:editing.is_active});const next=editing.id?rows.map(x=>x.id===editing.id?{...x,...out.option}:x):[...rows,{...out.option,selection_count:0,first_choice_count:0,second_choice_count:0}];next.sort((a,b)=>(a.display_order||0)-(b.display_order||0));setRows(next);onChange(next);setEditing(null)}catch(e){alert(e.message)}finally{setBusy(false)}}async function toggle(row){setBusy(true);try{const out=await call({action:'update_mvp_option',id:row.id,is_active:!row.is_active});const next=rows.map(x=>x.id===row.id?{...x,...out.option}:x);setRows(next);onChange(next)}catch(e){alert(e.message)}finally{setBusy(false)}}async function persistOrder(next){setRows(next);onChange(next);try{await call({action:'reorder_mvp_options',ids:next.map(x=>x.id)})}catch(e){alert(e.message);setRows(options);onChange(options)}}function dropOn(targetId){if(!dragId||dragId===targetId)return;const from=rows.findIndex(x=>x.id===dragId),to=rows.findIndex(x=>x.id===targetId);if(from<0||to<0)return;const next=[...rows],item=next.splice(from,1)[0];next.splice(to,0,item);const normalized=next.map((x,i)=>({...x,display_order:i+1}));setDragId(null);persistOrder(normalized)}return <><div className="boPanel boMvpManager"><div className="boMvpHead"><div><h2>MVP Options</h2><p>Manage the choices applicants see. Reorder by dragging. Archive an option instead of deleting it so historical applications remain intact.</p></div><button className="boPrimaryBtn" onClick={openNew}><Plus size={14}/> Add MVP Option</button></div><div className="boMvpList">{rows.map((row,i)=><article className={'boMvpRow '+(!row.is_active?'inactive':'')} key={row.id} draggable onDragStart={()=>setDragId(row.id)} onDragOver={e=>e.preventDefault()} onDrop={()=>dropOn(row.id)}><div className="boMvpOrder"><GripVertical size={16}/><span>{i+1}</span></div><div className="boMvpCopy"><div className="boMvpTitleLine"><b>{row.title}</b><span className={row.is_active?'active':'inactive'}>{row.is_active?'Active':'Inactive'}</span></div><p>{row.description||'No description added.'}</p><small>{row.selection_count||0} selections · {row.first_choice_count||0} first choice · {row.second_choice_count||0} second choice</small></div><div className="boMvpActions"><button className="boToggleButton" aria-pressed={row.is_active} onClick={()=>toggle(row)} disabled={busy}><i/><span>{row.is_active?'Active':'Inactive'}</span></button><button className="boSecondaryBtn" onClick={()=>setEditing({...row})}>Edit</button></div></article>)}</div></div>{editing&&<div className="boPersonOverlay" onMouseDown={e=>{if(e.target===e.currentTarget)setEditing(null)}}><aside className="boPersonDrawer boMvpDrawer"><button className="boDrawerClose" onClick={()=>setEditing(null)}>×</button><span>MVP CONFIGURATION</span><h2>{editing.id?'Edit MVP Option':'Add MVP Option'}</h2><p>{editing.id?'Update the option shown to applicants.':'Create a new option for future applicants.'}</p><div className="boMvpForm"><label><span>Title</span><input value={editing.title} maxLength={120} onChange={e=>setEditing(x=>({...x,title:e.target.value}))}/></label><label><span>Description</span><textarea value={editing.description||''} maxLength={600} rows={5} onChange={e=>setEditing(x=>({...x,description:e.target.value}))}/></label><label><span>Internal slug</span><input value={editing.slug||'Generated automatically'} readOnly/></label><label className="boMvpActiveEdit"><span><b>Available to applicants</b><small>Turn this off to archive the option without removing historical selections.</small></span><input type="checkbox" checked={!!editing.is_active} onChange={e=>setEditing(x=>({...x,is_active:e.target.checked}))}/></label><div className="boMvpFormActions"><button className="boSecondaryBtn" onClick={()=>setEditing(null)}>Cancel</button><button className="boPrimaryBtn" disabled={busy||editing.title.trim().length<2} onClick={saveEditor}>{busy?'Saving…':'Save option'}</button></div></div></aside></div>}</>}
-
-function TableAssignmentSettings({settings,supabase,workshop,onSaved}){const defaults={mvp_preference:50,ai_readiness:20,functional_diversity:15,experience_diversity:15};const [form,setForm]=useState(()=>({...settings,assignment_weights:{...defaults,...(settings.assignment_weights||{})}}));const [busy,setBusy]=useState(false);const set=(k,v)=>setForm(x=>({...x,[k]:v}));const setWeight=(k,v)=>setForm(x=>({...x,assignment_weights:{...x.assignment_weights,[k]:Number(v)}}));const total=Object.values(form.assignment_weights||{}).reduce((a,b)=>a+Number(b||0),0);async function save(){if(total!==100){alert('Assignment weights must total 100%.');return}setBusy(true);const payload={max_attendees_per_table:Number(form.max_attendees_per_table||0),volunteers_per_table:Number(form.volunteers_per_table||0),assignment_weights:form.assignment_weights};const r=await fetch(API+'?workshop_key='+encodeURIComponent(workshop),{method:'PATCH',headers:{Authorization:'Bearer '+(await supabase.auth.getSession()).data.session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)});const out=await r.json();setBusy(false);if(!r.ok){alert(out.error||'Could not save assignment rules');return}onSaved(out.settings)}const factors=[['mvp_preference','MVP preference match','Prioritise an attendee’s selected MVP when choosing a table.'],['ai_readiness','AI readiness balance','Balance different levels of AI familiarity across tables.'],['functional_diversity','Job-function mix','Mix attendees from different professional functions.'],['experience_diversity','Experience-level mix','Mix attendees with different levels of professional experience.']];return <details className="boPanel boSettingsPanel boSettingsAccordion" open><summary className="boSettingsAccordionHead"><div><h2>Table Assignment Rules</h2><p>Set table capacity and how the system should decide which attendee sits at which table.</p></div><ChevronDown size={18}/></summary><div className="boSettingsAccordionBody"><div className="boSettingsHead"><div className="boSettingsSaveSpacer"></div><button className="boPrimaryBtn" disabled={busy||total!==100} onClick={save}>{busy?'Saving…':'Save rules'}</button></div><div className="boCapacityBar"><label><span>Attendees / table</span><input type="number" min="1" value={form.max_attendees_per_table??''} onChange={e=>set('max_attendees_per_table',e.target.value)}/></label><label><span>Volunteers / table</span><input type="number" min="0" value={form.volunteers_per_table??''} onChange={e=>set('volunteers_per_table',e.target.value)}/></label></div><div className="boSettingsSection"><div className="boSectionTitleRow"><div><h3>Attendee Assignment Weighting</h3><p>These factors decide which attendee is placed at which table. Adjust the percentages; together they must equal 100%.</p></div><strong className={total===100?'boWeightTotal ok':'boWeightTotal bad'}>{total}% / 100%</strong></div><div className="boAssignmentWeights">{factors.map(([key,title,text])=><label key={key}><span><b>{title}</b><small>{text}</small></span><div><input type="number" min="0" max="100" value={form.assignment_weights?.[key]??0} onChange={e=>setWeight(key,e.target.value)}/><em>%</em></div></label>)}</div></div></div></details>}
-function RuleToggle({title,text,checked,onChange}){return <label className="boRuleToggle"><span><b>{title}</b><small>{text}</small></span><input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}/><i aria-hidden="true"/></label>}
-
-function VolunteerSettings({settings,supabase,onPublished}){
- const base=settings.form||{},score=settings.score||{},rules=score.rules||{};
- const [title,setTitle]=useState(base.title||'AI Lab Volunteer Application');
- const [opens,setOpens]=useState(base.opens_at?.slice(0,16)||'');
- const [closes,setCloses]=useState(base.closes_at?.slice(0,16)||'');
- const [tools,setTools]=useState(base.form_config?.stack_tools||[]);
- const [weights,setWeights]=useState(score.weights||{});
- const [workshopDetails,setWorkshopDetails]=useState(base.form_config?.workshop_details||{});
- const [busy,setBusy]=useState(false);
- const total=Object.values(weights).reduce((a,b)=>a+Number(b||0),0);
- const labels={
-  technical_readiness:'Technical Readiness',
-  practical_experience:'Practical Experience',
-  relevant_work:'Relevant Work',
-  motivation_communication:'Motivation & Communication',
-  commitment:'Commitment'
- };
- const scoringRules={
-  technical_readiness:[
-   'New to it = 20% of that tool contribution',
-   'Used it = 50%',
-   'Comfortable = 80%',
-   'Built with it = 100%',
-   rules.technical_consistency?.unverified_built_score_cap!=null?'Unsupported “Built with it” claims can be capped when required evidence is missing.':'Evidence consistency checks apply to strong proficiency claims.'
-  ],
-  practical_experience:[
-   'Based on the number of practical activities selected.',
-   'Normalised across the 7 practical-experience activities.'
-  ],
-  relevant_work:[
-   `Evidence links: ${rules.relevant_work?.evidence_links??6} points`,
-   `Depth of involvement: ${rules.relevant_work?.depth_of_involvement??5} points`,
-   `Breadth of contribution: ${rules.relevant_work?.breadth_of_contribution??2} points`,
-   `Claim/evidence consistency: ${rules.relevant_work?.claim_evidence_consistency??2} points`
-  ],
-  motivation_communication:[
-   `Motivation response: up to ${rules.motivation_communication?.motivation_answer_points??12} points`,
-   `Structured participant-help capabilities: up to ${rules.motivation_communication?.capability_selection_points??8} points`
-  ],
-  commitment:[
-   'Score is proportional to commitments selected.',
-   'All 6 commitments = full commitment score.',
-   'Minimum form requirement is separate from the score and does not guarantee a high commitment score.'
-  ]
- };
- const order=['technical_readiness','practical_experience','relevant_work','motivation_communication','commitment'];
- const decisionBands=[
-  ['90–100','Excellent','Strong shortlist signal','Review evidence, role fit and operational requirements before deciding.'],
-  ['80–89','Strong','Shortlist signal','Competitive score; verify evidence and role coverage.'],
-  ['70–79','Good','Review / shortlist consideration','Inspect component weaknesses and evidence before progressing.'],
-  ['60–69','Developing','Manual review','Meaningful gaps are present; use component scores and evidence for context.'],
-  ['Below 60','Needs review','Deeper review required','Do not reject automatically; inspect evidence, role fit and any exceptional strengths.']
- ];
- async function publish(){
-  if(total!==100){alert('Scoring weights must total 100.');return}
-  setBusy(true);
-  const{data,error}=await supabase.rpc('admin_publish_volunteer_settings',{
-   p_title:title,
-   p_intro:base.intro_config||{},
-   p_form:{...(base.form_config||{}),stack_tools:tools,workshop_details:workshopDetails},
-   p_weights:weights,
-   p_opens_at:opens||null,
-   p_closes_at:closes||null
-  });
-  setBusy(false);
-  if(error){alert(error.message);return}
-  alert('Volunteer settings published as version '+data.form_version+'.');
-  onPublished(v=>({...v,form:{...base,title,opens_at:opens||null,closes_at:closes||null,form_config:{...(base.form_config||{}),stack_tools:tools,workshop_details:workshopDetails},version:data.form_version},score:{...score,weights,version:data.scoring_version}}))
- }
- function changeWeight(k,v){setWeights(w=>({...w,[k]:Number(v)}))}
- return <details className="boPanel boSettingsPanel boVolunteerSettings boSettingsAccordion" open>
-  <summary className="boSettingsAccordionHead"><div><h2>Volunteer Application Settings</h2><p>Published form v{base.version||'—'} · scoring v{score.version||'—'}. Publishing creates a new version; existing applications keep the version they started with.</p></div><ChevronDown size={18}/></summary>
-  <div className="boSettingsAccordionBody">
-   <div className="boSettingsSection boScoringModelSection">
-    <div className="boSectionTitleRow"><div><h3>Volunteer Scoring Model</h3><p>Controls how the 100-point volunteer score is calculated. Weight changes apply only after publishing a new scoring version.</p></div><strong className={total===100?'boWeightTotal ok':'boWeightTotal bad'}>{total}/100</strong></div>
-    <div className="boScoringModelGrid">{order.map(k=><article key={k} className="boScoreRuleCard"><header><div><b>{labels[k]}</b><span>{Number(weights[k]||0)} points</span></div><label><input aria-label={labels[k]+' weight'} type="number" min="0" max="100" value={weights[k]??0} onChange={e=>changeWeight(k,e.target.value)}/><em>%</em></label></header><ul>{scoringRules[k].map((x,i)=><li key={i}>{x}</li>)}</ul></article>)}</div>
-    <div className="boDecisionGuidance"><div className="boSectionTitleRow"><div><h3>Score-based review guidance</h3><p>These bands explain how scores should enter the review workflow. Scores never automatically select, reject or change an applicant’s status.</p></div></div><div className="boDecisionBands">{decisionBands.map(([range,label,action,text])=><article key={range}><strong>{range}</strong><div><b>{label}</b><span>{action}</span><small>{text}</small></div></article>)}</div><p className="boScoringNote">Final decisions remain manual and should consider evidence quality, role coverage, commitment, workshop requirements and reviewer judgement alongside the total score.</p></div>
-   </div>
-
-   <div className="boSettingsSection"><h3>Application</h3><div className="boRuleFields boRuleFields3"><label><span>Application title</span><input value={title} onChange={e=>setTitle(e.target.value)}/></label><label><span>Opens at</span><input type="datetime-local" value={opens} onChange={e=>setOpens(e.target.value)}/></label><label><span>Closes at</span><input type="datetime-local" value={closes} onChange={e=>setCloses(e.target.value)}/></label></div></div>
-   <div className="boSettingsSection"><h3>Workshop schedule</h3><p>Shown to new applicants after publishing. Existing applicants retain their original schedule; reconfirm availability directly when it changes.</p><div className="boRuleFields boRuleFields3">{[['dates','Workshop dates'],['hours','Daily hours (IST)'],['venue','Venue / city']].map(([key,label])=><label key={key}><span>{label}</span><input value={workshopDetails[key]||''} onChange={e=>setWorkshopDetails(d=>({...d,[key]:e.target.value}))}/></label>)}</div></div>
-   <div className="boSettingsSection"><div className="boSectionTitleRow"><div><h3>Stack tools</h3><p>Tools applicants can select when describing their current stack.</p></div><button className="boSecondaryBtn" onClick={()=>setTools(t=>[...t,'New tool'])}>Add tool</button></div><div className="boToolList">{tools.map((x,i)=><div className="boToolRow" key={i}><input value={x} onChange={e=>setTools(t=>t.map((v,n)=>n===i?e.target.value:v))}/><button onClick={()=>setTools(t=>t.filter((_,n)=>n!==i))}>Remove</button></div>)}</div></div>
-   <div className="boPublishRow"><div><b>Publish configuration</b><small>Creates immutable form and scoring versions for new applications.</small></div>{settings.can_publish?<button className="boPrimaryBtn" disabled={busy||total!==100} onClick={publish}>{busy?'Publishing…':'Publish new volunteer version'}</button>:<span>Only Super Admin can publish volunteer settings.</span>}</div>
-  </div>
- </details>
-}
-
-function PageContentSettings({section}){const meta={
- 'page-home':['Home Page','/','Homepage content and section configuration.'],
- 'page-attendee-form':['Attendee Form','/register','Registration form content, labels and field configuration.'],
+ const states=[...new Set(attendees.map(a=>a.state_…5804 tokens truncated…r','Registration form content, labels and field configuration.'],
  'page-volunteer-form':['Volunteer Form','/volunteer/apply','Volunteer application content, labels and field configuration.']
 }[section];return <><div className="boStats boStats3"><Card title="Page" value={meta[0]} meta={meta[1]}/><Card title="Content" value="Editable" meta="copy, labels and helper text"/><Card title="Configuration" value="Managed" meta="fields, visibility and behaviour"/></div><div className="boPanel"><h2>Content Settings</h2><p>{meta[2]}</p><div className="boSettingsGrid"><Setting label="Content edits" value="Copy & labels"/><Setting label="Field settings" value={section==='page-home'?'Sections':'Validation & options'}/><Setting label="Configuration" value="Page behaviour"/></div><p><b>Configuration workspace created.</b> Page-specific editable controls will be connected here without changing the existing public page or form until a version is published.</p></div></>}
 
