@@ -43,6 +43,17 @@ Deno.serve(async request=>{
       return response(403,{error:"Invalid application session"},origin);
     }
     if(app.status!=="draft")return response(409,{error:"Photo changes are unavailable after submission"},origin);
+    if(body?.operation==="cleanup_previous"){
+      const previous=String(body?.previous_path||"");
+      if(!/^pending\/[0-9a-f-]{36}-[0-9a-f]{32}\.webp$/i.test(previous)||!previous.startsWith("pending/"+id+"-")){
+        return response(400,{error:"Invalid previous photo path"},origin);
+      }
+      if(previous===app.photo_path)return response(409,{error:"Current photo cannot be cleaned up"},origin);
+      const {error:cleanupError}=await supabase.storage.from("volunteer-photos").remove([previous]);
+      if(cleanupError)throw cleanupError;
+      return response(200,{ok:true},origin);
+    }
+    if(body?.operation&&body.operation!=="remove")return response(400,{error:"Invalid operation"},origin);
     if(app.photo_path){
       if(!String(app.photo_path).startsWith("pending/"+id+"-")){
         return response(409,{error:"Photo location requires manual review"},origin);
