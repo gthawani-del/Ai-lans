@@ -297,12 +297,13 @@ function AttendeeDirectory({attendees=[],data,setData,profile,supabase}){
       <div className="boPanelHead"><div><h2>{selected.full_name}</h2><p>{selected.email} · {selected.city}, {selected.country}</p></div><button type="button" onClick={()=>setSelectedId(null)} aria-label="Close attendee details">Close</button></div>
       <dl className="boAttendeeDetailsGrid">
        {[
-         ['Role',selected.career_role],['Designation',selected.current_title],['Organisation',selected.company_organisation],
+         ['Role',selected.career_role],['Designation',selected.current_title],['Preferred contact',selected.preferred_contact_method],['Organisation',selected.company_organisation],
          ['Industry',selected.industry],['Primary function',selected.functional_area],['Total experience',selected.years_experience],
          ['AI familiarity',selected.ai_experience_level],['Business problem',selected.business_problem],
          ['Intended user',selected.target_user],['Information sources',(selected.data_sources||[]).join(', ')],
          ['Desired outcome',selected.success_outcome],['Outcome detail',selected.success_detail],
          ['Two-day availability',selected.attendance_availability],
+         ['Representative data permission',selected.representative_data_permission],['Participation support',selected.participation_support],['Discovery source',selected.heard_about],
          ['Primary / backup areas',(selected.mvp_preferences||[]).map(p=>p.title||p.slug).join(' · ')]
        ].map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v||'Not provided'}</dd></div>)}
       </dl>
