@@ -10,6 +10,6 @@ import './backoffice/backoffice-controls.css';
 import './backoffice/sidebar-hotfix.css';
 import './backoffice/backoffice-sections.css';
 import BackofficeShellBehavior from './BackofficeShellBehavior';
-export const metadata={title:'weareailabs | ELIV8 LYF',description:'A hands-on AI business workshop for founders, CXOs and business owners. Mumbai — coming soon.',robots:{index:true,follow:true},openGraph:{title:'weareailabs | ELIV8 LYF',description:'Stop learning about AI. Start building with it.',type:'website',locale:'en_IN'}};
+export const metadata={metadataBase:new URL('https://weareailabs.com'),title:'weareailabs | ELIV8 LYF',description:'A hands-on AI business workshop for founders, CXOs and business owners. Mumbai — coming soon.',robots:{index:true,follow:true},openGraph:{title:'weareailabs | ELIV8 LYF',description:'Stop learning about AI. Start building with it.',type:'website',locale:'en_IN',siteName:'weareailabs'},twitter:{card:'summary_large_image',title:'weareailabs | ELIV8 LYF',description:'Stop learning about AI. Start building with it.'}};
 export const viewport={width:'device-width',initialScale:1};
 export default function RootLayout({children}){return <html lang="en"><body>{children}<BackofficeShellBehavior/></body></html>}

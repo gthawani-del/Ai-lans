@@ -7,6 +7,7 @@
   -webkit-text-size-adjust:100%; text-size-adjust:100%; font-synthesis:none;
   font:400 16px/1.5 var(--vf-sans),Arial,sans-serif;
 }
+.vf-social-footer { display:flex; justify-content:center; padding:14px 24px 28px; border-top:1px solid var(--vf-line); background:#fff; }
 .volunteerFormTheme * { box-sizing:border-box; }
 .volunteerFormTheme .vf-brand-header { display:flex; position:relative; top:auto; width:100%; max-width:none; height:auto; min-height:104px; padding:14px 36px; margin:0; justify-content:space-between; align-items:center; gap:24px; background:white; border-bottom:1px solid var(--vf-line); }
 .vf-brand-header img { display:block; width:170px; height:auto; }

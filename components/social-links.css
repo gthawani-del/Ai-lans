@@ -1,0 +1,33 @@
+.socialLinks {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.socialLinks a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  color: #006d71;
+  border: 1px solid #dfe6e8;
+  border-radius: 50%;
+  background: #fff;
+  text-decoration: none!important;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease;
+}
+.socialLinks a:hover {
+  color: #fff;
+  border-color: #006d71;
+  background: #006d71;
+}
+.socialLinks a:focus-visible {
+  outline: 3px solid #006d71;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .socialLinks a { transition: none; }
+}

@@ -139,7 +139,9 @@
 }
 
 .homepage footer { flex-wrap:wrap; }
+.homepage .homeFooterLinks { display:flex; align-items:center; gap:16px; }
 .homepage .privacyLink { color:var(--home-teal); text-decoration:underline; display:inline-flex; align-items:center; min-height:44px; font-size:14px; }
+@media(max-width:800px){.homepage .homeFooterLinks{width:100%;justify-content:flex-start;flex-wrap:wrap}}
 
 /* Keep the active Overview link on the same baseline as its siblings. The
    global navigation rule adds a large top padding to the first link, which

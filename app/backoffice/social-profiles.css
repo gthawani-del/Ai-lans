@@ -1,0 +1,28 @@
+.boSocialProfiles .boPanelHead h2 { display:flex; align-items:center; gap:9px; }
+.boSocialProfiles .boPanelHead h2 svg { color:#007d79; }
+.boSocialIntro { display:flex; align-items:center; gap:12px; padding:12px 14px; margin:4px 0 16px; border:1px solid var(--bo-line,#dbe4e5); border-radius:8px; background:var(--bo-soft,#f5f8f7); font-size:13px; }
+.boSocialIntro span,.boSocialActions p { color:var(--bo-muted,#627786); }
+.boSocialRow { display:grid; grid-template-columns:130px minmax(120px,.7fr) minmax(220px,1.5fr) 76px 76px 34px; gap:12px; align-items:end; padding:14px 0; border-bottom:1px solid var(--bo-line,#dbe4e5); }
+.boSocialIdentity { align-self:center; display:flex; flex-direction:column; gap:4px; }
+.boSocialIdentity small { color:var(--bo-muted,#627786); font-size:11px; }
+.boSocialRow label { display:grid; gap:6px; min-width:0; font-size:11px; font-weight:650; }
+.boSocialRow label>span { color:var(--bo-muted,#627786); }
+.boSocialRow input:not([type=checkbox]),.boSocialRow select { width:100%; min-width:0; height:40px; padding:0 10px; border:1px solid var(--bo-line,#dbe4e5); border-radius:6px; background:var(--bo-surface,#fff); color:var(--bo-ink,#071c2c); font:inherit; font-size:13px; }
+.boSocialToggle { min-height:40px; display:flex!important; align-items:center; justify-content:flex-start; gap:8px!important; }
+.boSocialToggle input { width:17px; height:17px; accent-color:#007d79; }
+.boSocialRow input:disabled,.boSocialRow select:disabled { opacity:.8; cursor:not-allowed; }
+.boSocialPreview { width:34px; height:40px; display:grid; place-items:center; color:#007d79; }
+.boSocialActions { display:flex; justify-content:space-between; align-items:center; gap:20px; padding-top:18px; }
+.boSocialActions p { max-width:600px; margin:0; font-size:12px; line-height:1.5; }
+.boSocialActions button { display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
+.boSocialState,.boSocialError,.boSocialNotice { font-size:13px; }
+.boSocialError { color:#b42318; }
+.boSocialNotice { color:#16744a; }
+@media(max-width:800px) {
+  .boSocialRow { grid-template-columns:minmax(0,1fr) 76px; gap:10px 14px; }
+  .boSocialIdentity { grid-column:1/-1; }
+  .boSocialUrl { grid-column:1/-1; }
+  .boSocialPreview { display:none; }
+  .boSocialActions { align-items:stretch; flex-direction:column; }
+  .boSocialActions button { justify-content:center; min-height:44px; }
+}

@@ -1,4 +1,5 @@
 import styles from './privacy.module.css';
+import SocialLinks from '../../components/SocialLinks';
 
 export const metadata = {
   title: 'Privacy policy | weareailabs',
@@ -43,6 +44,6 @@ export default function PrivacyPage() {
       <section><h2>11. Updates</h2><p>We will update this page when our practices change and show the effective date. Where a new purpose requires additional permission, updating this policy alone will not substitute for asking you.</p></section>
       <a className={styles.back} href="/register">Go to attendee application →</a>
     </main>
-    <footer className={styles.footer}><a href="/">Home</a><a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a></footer>
+    <footer className={styles.footer}><a href="/">Home</a><a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a><SocialLinks/></footer>
   </div>;
 }

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import './theme.css';
+import SocialLinks from '../../../components/SocialLinks';
 
 export const metadata = { title: 'Volunteer application | weareailabs', description: 'Apply to support weareailabs participants with technical, creative or operational skills.', robots: { index: false, follow: false } };
 
@@ -12,5 +13,6 @@ export default function VolunteerApplicationLayout({ children }) {
       <Link href="/volunteer">← Volunteer benefits</Link>
     </header>
     <div id="volunteer-application">{children}</div>
+    <footer className="vf-social-footer"><SocialLinks/></footer>
   </div>;
 }

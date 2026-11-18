@@ -22,6 +22,7 @@ import {
   roles,targetUsers,dataSources,successOutcomes,attendanceOptions,contactMethods,representativeDataOptions,discoverySources,aiLevelExamples,
 } from '../../lib/forms/attendee-options';
 import {getPhoneCountry,normalizeNationalPhone,phoneCountries} from '../../lib/forms/phone-country';
+import SocialLinks from '../../components/SocialLinks';
 
 const API='https://zvmmgkspdgbfcqmnizga.supabase.co/functions/v1';
 const DRAFT_KEY='ai-lab-attendee-draft';
@@ -219,5 +220,5 @@ export default function RegistrationCheckoutV3(){
 
 
           <div className="trust onePageTrust"><span className="shield"><UiIcon name="shield" size={25}/></span><span><b>Your application information</b><small>Used for application review and workshop coordination.</small></span><span className="cloud"><UiIcon name="cloud" size={25}/></span><span><b>{saveState}</b><small>Your unfinished draft stays on this device.</small></span></div>
-        </form></section><footer className="regFooter"><b><AILabMark small/></b><p><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a> · <a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a></p></footer></div></main>;
+        </form></section><footer className="regFooter"><b><AILabMark small/></b><p><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a> · <a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a></p><SocialLinks/></footer></div></main>;
 }

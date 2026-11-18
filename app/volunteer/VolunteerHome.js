@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { ArrowRight, ArrowUpRight, Users, Lightbulb, Share2, Laptop, Award, Layers, X } from 'lucide-react';
+import SocialLinks from '../../components/SocialLinks';
 
 const logo = '/brand/weareailabs-volunteer.webp';
 const benefits = [
@@ -57,7 +58,7 @@ export default function VolunteerHome() {
         <Link className="vh-button" href="/volunteer/apply">Start your application <ArrowRight size={20} aria-hidden="true" /></Link>
       </section>
     </main>
-    <footer className="vh-footer"><Link href="/">weareailabs</Link><p>Explore. Learn. Create. Together.</p></footer>
+    <footer className="vh-footer"><div className="vh-footer-brand"><Link href="/">weareailabs</Link><p>Explore. Learn. Create. Together.</p></div><SocialLinks/></footer>
     <dialog className="vh-dialog" ref={about} aria-labelledby="about-heading" onClick={event => { if (event.target === event.currentTarget) about.current?.close(); }}>
       <div className="vh-dialog-content">
         <button className="vh-close" aria-label="Close about weareailabs" onClick={() => about.current?.close()}><X size={22} /></button>
