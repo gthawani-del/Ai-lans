@@ -73,3 +73,9 @@
 .registrationCheckout .attendeeChoiceRow input{width:17px;height:17px;flex:0 0 auto}
 .registrationCheckout .independentShortcut{display:block;background:transparent;border:0;padding:8px 0;text-align:left;color:var(--at-teal,#075b5e);font-weight:600;font-size:.85rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 @media(max-width:700px){.registrationCheckout .attendeeProblemRow,.registrationCheckout .attendeeChoiceRow{grid-template-columns:minmax(0,1fr)}.registrationCheckout .attendeeProblemGroup{gap:14px}.registrationCheckout .attendeeSources{padding:12px}}
+
+/* Accessible, explanatory AI-experience choices */
+.registrationCheckout .aiLevelGroup button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:4px;min-height:68px;white-space:normal}
+.registrationCheckout .aiLevelGroup .aiLevelLabel{font-size:1em;font-weight:700;line-height:1.35}
+.registrationCheckout .aiLevelGroup .aiLevelExample{font-size:.86em;line-height:1.45;opacity:.83;font-weight:400;white-space:normal}
+@media(max-width:700px){.registrationCheckout .aiLevelGroup button{width:100%;min-height:64px;padding:12px 14px}}
