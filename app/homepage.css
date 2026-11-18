@@ -19,6 +19,7 @@
 .homepage .eliv8Brand .brandEight { color: var(--home-teal)!important; }
 .homepage .heroDescription,
 .homepage header nav a { color: #1a3345; }
+.homepage header nav { align-items: center; }
 .homepage .heroPresentedBy>span,
 .homepage .formStatus,
 .homepage .ask small { color: #52646b; }
@@ -73,6 +74,7 @@
     left:0;
     z-index:30;
     flex-direction:column;
+    align-items:stretch;
     gap:0;
     padding:8px 20px;
     border-bottom:1px solid var(--home-line);
