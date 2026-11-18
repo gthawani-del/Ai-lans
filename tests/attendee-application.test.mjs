@@ -10,7 +10,7 @@ test('application submits once without creating a payment session', async () => 
   });
   assert.equal(calls.length,1);
   assert.ok(calls[0].url.endsWith('/submit-attendee-registration'));
-  assert.equal(calls[0].body.form_version,'one_page_apply_20261114');
+  assert.equal(calls[0].body.form_version,'one_page_apply_20261118');
   assert.deepEqual(result,{full_name:'QA Applicant',reference:'test-reference',existing:false});
 });
 test('failed or malformed responses cannot become acknowledgements',async()=>{
@@ -22,4 +22,17 @@ test('existing paid record is reported as existing, not a new confirmed booking'
   const result=await submitAttendeeApplication({full_name:'QA Applicant'}, {endpoint:'https://example.invalid',fetcher:async()=>({ok:true,json:async()=>({ok:true,id:'existing',already_paid:true})})});
   assert.equal(result.existing,true);
   assert.equal(result.reference,'existing');
+});
+
+test('workshop planning fields are forwarded in the attendee payload',async()=>{
+ const captured=[];
+ const form={full_name:'QA Applicant',business_problem:'Our team manually checks hundreds of records each week.',
+  target_user:'Operations team',data_sources:['Excel / spreadsheets'],
+  success_outcome:'Save time',attendance_availability:'I need the dates before confirming',
+  mvp_preferences:['invoice-assistant'],consent:true};
+ await submitAttendeeApplication(form,{endpoint:'https://example.invalid',
+  fetcher:async(_url,opts)=>{captured.push(JSON.parse(opts.body));return{ok:true,json:async()=>({ok:true,id:'test-reference'})}}});
+ assert.equal(captured[0].business_problem,form.business_problem);
+ assert.deepEqual(captured[0].data_sources,form.data_sources);
+ assert.equal(captured[0].attendance_availability,form.attendance_availability);
 });
