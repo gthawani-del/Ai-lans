@@ -1,4 +1,7 @@
 .volunteerHome {
+  /* System-font stacks avoid a network dependency during production builds. */
+  --volunteer-sans: Arial, Helvetica, sans-serif;
+  --volunteer-serif: Georgia, 'Times New Roman', serif;
   --vh-canvas: #f7f8f5;
   --vh-surface: #fff;
   --vh-ink: #0b1720;
