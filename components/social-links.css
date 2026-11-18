@@ -10,20 +10,24 @@
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  color: #006d71;
-  border: 1px solid #dfe6e8;
-  border-radius: 50%;
-  background: #fff;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  background: #006d71;
   text-decoration: none!important;
   font-size: 14px;
   font-weight: 600;
-  transition: color .15s ease, background-color .15s ease, border-color .15s ease;
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease, filter .15s ease, transform .15s ease;
 }
-.socialLinks a:hover {
-  color: #fff;
-  border-color: #006d71;
-  background: #006d71;
-}
+.socialLinks a.socialIcon--linkedin { background:#0a66c2; }
+.socialLinks a.socialIcon--youtube { background:#ff0000; }
+.socialLinks a.socialIcon--x { color:#111; border:1px solid #d9d9d9; background:#fff; }
+.socialLinks a.socialIcon--instagram { background:linear-gradient(135deg,#833ab4 0%,#e1306c 52%,#f77737 100%); }
+.socialLinks a.socialIcon--facebook { background:#1877f2; }
+.socialLinks a.socialIcon--whatsapp { background:#25d366; }
+.socialLinks a:hover { filter:brightness(.9); transform:translateY(-1px); }
+.socialLinks a.socialIcon--x:hover { color:#111; }
+.socialLinks svg { display:block; color:inherit; }
 .socialLinks a:focus-visible {
   outline: 3px solid #006d71;
   outline-offset: 3px;

@@ -73,12 +73,12 @@ export default function SocialProfilesSettings({ session, role }) {
       <div className="boSocialIdentity"><strong>{platformNames[profile.platform]}</strong><small>{profile.platform === 'x' ? 'Formerly Twitter' : 'Profile link'}</small></div>
       <label><span>Handle</span><input disabled={role !== 'super_admin'} value={profile.handle || ''} maxLength={120} placeholder="Add account handle" onChange={event => update(profile.platform, 'handle', event.target.value)}/></label>
       <label className="boSocialUrl"><span>Profile URL</span><input disabled={role !== 'super_admin'} type="url" value={profile.profile_url || ''} placeholder={`https://${profile.platform}.com/...`} onChange={event => update(profile.platform, 'profile_url', event.target.value)}/></label>
-      <label className="boSocialOrder"><span>Order</span><select disabled={role !== 'super_admin'} value={profile.display_order} onChange={event => update(profile.platform, 'display_order', Number(event.target.value))}>{[1,2,3,4,5].map(order => <option key={order} value={order}>{order}</option>)}</select></label>
+      <label className="boSocialOrder"><span>Order</span><select disabled={role !== 'super_admin'} value={profile.display_order} onChange={event => update(profile.platform, 'display_order', Number(event.target.value))}>{[1,2,3,4,5,6].map(order => <option key={order} value={order}>{order}</option>)}</select></label>
       <label className="boSocialToggle"><input disabled={role !== 'super_admin'} type="checkbox" checked={profile.is_enabled} onChange={event => update(profile.platform, 'is_enabled', event.target.checked)}/><span>Show</span></label>
       {profile.is_enabled && profile.profile_url && <a className="boSocialPreview" href={profile.profile_url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${platformNames[profile.platform]} profile`}><ExternalLink size={15}/></a>}
     </div>)}
     {error && <p className="boSocialError" role="alert">{error}</p>}
     {notice && <p className="boSocialNotice" role="status">{notice}</p>}
-    <div className="boSocialActions"><p>Facebook and YouTube are prefilled. Instagram, X and LinkedIn are stored but hidden until you add their URLs and enable them.</p>{role === 'super_admin' && <button className="boPrimaryBtn" disabled={loading || busy || !changed} onClick={save}><Save size={15}/>{busy ? 'Saving…' : 'Save social profiles'}</button>}</div>
+    <div className="boSocialActions"><p>Facebook and YouTube are prefilled. Instagram, X, LinkedIn and WhatsApp stay hidden until you add their URLs and enable them.</p>{role === 'super_admin' && <button className="boPrimaryBtn" disabled={loading || busy || !changed} onClick={save}><Save size={15}/>{busy ? 'Saving…' : 'Save social profiles'}</button>}</div>
   </section>;
 }

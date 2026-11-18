@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const allowedOrigins = new Set(["https://weareailabs.com", "https://www.weareailabs.com"]);
-const platforms = ["facebook", "youtube", "instagram", "x", "linkedin"] as const;
+const platforms = ["facebook", "youtube", "instagram", "x", "linkedin", "whatsapp"] as const;
 type Platform = typeof platforms[number];
 const allowedHosts: Record<Platform, string[]> = {
   facebook: ["facebook.com", "www.facebook.com"],
@@ -10,6 +10,7 @@ const allowedHosts: Record<Platform, string[]> = {
   instagram: ["instagram.com", "www.instagram.com"],
   x: ["x.com", "www.x.com", "twitter.com", "www.twitter.com"],
   linkedin: ["linkedin.com", "www.linkedin.com"],
+  whatsapp: ["wa.me", "whatsapp.com", "www.whatsapp.com", "api.whatsapp.com"],
 };
 
 function headers(origin: string | null) {
@@ -77,12 +78,12 @@ Deno.serve(async (req: Request) => {
     const raw = await req.text();
     if (raw.length > 8000) return reply(req, 413, { error: "Request too large" });
     const body = JSON.parse(raw);
-    if (!Array.isArray(body?.profiles) || body.profiles.length !== platforms.length) return reply(req, 400, { error: "Submit all five social profiles" });
+    if (!Array.isArray(body?.profiles) || body.profiles.length !== platforms.length) return reply(req, 400, { error: "Submit all six social profiles" });
     const profiles = body.profiles.map(cleanProfile);
     const ids = new Set(profiles.map((profile: { platform: string }) => profile.platform));
     const orders = new Set(profiles.map((profile: { display_order: number }) => profile.display_order));
-    if (ids.size !== platforms.length || platforms.some(platform => !ids.has(platform)) || orders.size !== platforms.length || profiles.some((profile: { display_order: number }) => !Number.isInteger(profile.display_order) || profile.display_order < 1 || profile.display_order > 5)) {
-      return reply(req, 400, { error: "Use each platform once and a unique order from 1 to 5" });
+    if (ids.size !== platforms.length || platforms.some(platform => !ids.has(platform)) || orders.size !== platforms.length || profiles.some((profile: { display_order: number }) => !Number.isInteger(profile.display_order) || profile.display_order < 1 || profile.display_order > 6)) {
+      return reply(req, 400, { error: "Use each platform once and a unique order from 1 to 6" });
     }
 
     const { error: saveError } = await db.from("site_social_profiles").upsert(
