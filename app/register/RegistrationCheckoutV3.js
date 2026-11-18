@@ -108,7 +108,25 @@ function SmartPhoneField({values,setValue,register,error}){
 }
 
 function SuccessScreen({success,theme,textScale}){
-  return <main className="paymentSuccessPage" data-theme={theme} data-text-scale={textScale} style={{fontSize:`${textScale}%`}}><div className="successContent" aria-live="polite"><small>weareailabs</small><h1>{success.existing?'Application already on file':'Application received'}</h1><p className="successLead">{success.existing?'We found an existing registration for this email. Contact the team if you need to update it.':'Your application has been saved for the workshop team to review.'} No payment has been taken by this form and this acknowledgement does not confirm a workshop place.</p><div className="successMeta"><div><span>Attendee</span><b>{success.full_name}</b></div><div><span>Workshop</span><b>Mumbai · dates and venue to be confirmed</b></div><div><span>Application reference</span><b style={{overflowWrap:'anywhere'}}>{success.reference}</b></div></div><p>The team will contact you about next steps. Any payment invitation will be sent separately once details are confirmed.</p><p>Questions or changes? <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a></p><a href="/" className="successReturn">Return to weareailabs →</a><p><a href="/privacy">Privacy policy</a></p></div></main>;
+  return <main className="paymentSuccessPage" data-theme={theme} data-text-scale={textScale} style={{fontSize:`${textScale}%`}}>
+    <div className="successContent" aria-live="polite">
+      <small>weareailabs</small>
+      <h1>{success.existing?'Application already on file':'Application received'}</h1>
+      <p className="successLead">{success.existing?'We found an existing registration for this email. Contact the team if you need to update it.':'Your application has been saved for the workshop team to review.'} No payment has been taken by this form, and this acknowledgement does not confirm a workshop place.</p>
+      <div className="successMeta">
+        <div><span>Attendee</span><b>{success.full_name}</b></div>
+        {success.email&&<div><span>Application email</span><b style={{overflowWrap:'anywhere'}}>{success.email}</b></div>}
+        <div><span>Workshop</span><b>Mumbai · dates and venue to be confirmed</b></div>
+        <div><span>Application reference</span><b style={{overflowWrap:'anywhere'}}>{success.reference}</b></div>
+      </div>
+      <h2>What happens next?</h2>
+      <p>The workshop team will review your application and contact you using your supplied details about the next steps, workshop schedule and participation decision. No response date has been announced.</p>
+      <p>If a payment is required later, the team will share the details separately before asking you to pay.</p>
+      <p>Please do not submit another application. To correct or update your answers, contact <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a> and include your application reference.</p>
+      <a href="/" className="successReturn">Return to weareailabs →</a>
+      <p><a href="/privacy">Privacy policy</a></p>
+    </div>
+  </main>;
 }
 
 export default function RegistrationCheckoutV3(){
