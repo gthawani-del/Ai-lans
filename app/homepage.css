@@ -116,3 +116,18 @@
 
 .homepage footer { flex-wrap:wrap; }
 .homepage .privacyLink { color:var(--home-teal); text-decoration:underline; display:inline-flex; align-items:center; min-height:44px; font-size:14px; }
+
+/* Workshop logistics are concise and clearly separate knowns from unconfirmed details. */
+.homepage .workshopDetails{padding:clamp(36px,5vw,88px) clamp(20px,6vw,100px);background:#f7f9f5;color:#173e30}
+.homepage .workshopDetailsHeading{max-width:720px;margin:0 0 30px}
+.homepage .workshopDetailsHeading>span{display:block;font-size:11px;font-weight:750;letter-spacing:.12em;color:#386d53}
+.homepage .workshopDetails h2{font-size:clamp(32px,4vw,56px);line-height:1.1;letter-spacing:-.035em;margin:10px 0 14px;color:#173e30}
+.homepage .workshopDetailsHeading p{font-size:clamp(16px,1.5vw,19px);line-height:1.6;margin:0;color:#53685b}
+.homepage .workshopFacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid #c9d8cd}
+.homepage .workshopFacts>div{padding:24px 22px 25px 0;border-bottom:1px solid #c9d8cd;min-width:0}
+.homepage .workshopFacts strong{display:block;font-size:16px;color:#174b38;line-height:1.4;margin-bottom:10px}
+.homepage .workshopFacts p{font-size:15px;line-height:1.65;color:#53685b;margin:0}
+.homepage .workshopDetailsApply{display:inline-flex;align-items:center;gap:15px;min-height:44px;margin-top:24px;padding:12px 19px;background:#165c46;color:white!important;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px}
+.homepage .workshopDetailsApply:focus-visible{outline:3px solid #2c8b65;outline-offset:3px}
+@media(max-width:950px){.homepage .workshopFacts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.homepage .workshopFacts{grid-template-columns:1fr}.homepage .workshopFacts>div{padding:19px 0}.homepage .workshopDetails{padding:40px 20px}.homepage .workshopDetailsHeading{margin-bottom:20px}.homepage .workshopDetailsApply{width:100%;justify-content:center}}
