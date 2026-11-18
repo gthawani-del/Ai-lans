@@ -8,10 +8,10 @@ import { ArrowRight, ArrowUpRight, Users, Lightbulb, Share2, Laptop, Award, Laye
 const logo = '/brand/weareailabs-volunteer.webp';
 const benefits = [
   { title: 'Direct access', Icon: Users, copy: 'Work alongside founders, CXOs and business leaders.' },
-  { title: 'Get seen', Icon: Lightbulb, copy: 'Show how you think, solve problems and contribute.' },
+  { title: 'Demonstrate your thinking', Icon: Lightbulb, copy: 'Practise solving real problems with peers. No publicity or endorsement is promised.' },
   { title: 'Build your network', Icon: Share2, copy: 'Connect with people building real businesses.' },
   { title: 'Work on real MVPs', Icon: Laptop, copy: 'Help turn ideas into working AI products.' },
-  { title: 'Prove your ability', Icon: Award, copy: 'Gain practical experience you can demonstrate.' },
+  { title: 'Grow your practical skills', Icon: Award, copy: 'Develop experience supporting real workshop tasks. Certificates and references are not guaranteed.' },
   { title: 'Sharpen your stack', Icon: Layers, copy: 'Build with AI tools, GitHub, Vercel and Supabase.' },
 ];
 
@@ -48,9 +48,9 @@ export default function VolunteerHome() {
       </section>
       <section className="vh-practical" aria-labelledby="volunteer-expectations">
         <h2 id="volunteer-expectations">Before you apply</h2>
-        <p><strong>What you will do:</strong> Support participants in your chosen contribution track: technical building, AI workflows, product analysis, UX, research, teaching or workshop operations. We match responsibilities to demonstrated skills.</p>
-        <p><strong>Commitment:</strong> Two in-person workshop days in Mumbai, plus any confirmed orientation. Exact dates, hours and venue will be provided before attendance is finalized. Tell us if you need travel support or a laptop.</p>
-        <p><strong>Terms:</strong> Any compensation, expenses, meals, certificates or references will be clarified by the team before selection. Application alone does not guarantee these benefits or employment. Keep participant business information confidential.</p>
+        <p><strong>What you will do:</strong> Support participants in your chosen contribution track: technical building and troubleshooting, AI workflows, product analysis, UX, research/documentation, teaching/facilitation or workshop operations. Depending on assignment, you may explain tasks, support beginners, debug problems, document work, assist logistics or escalate issues to the workshop team. Beginners are welcome in suitable tracks; advanced technical skills are not a universal requirement.</p>
+        <p><strong>Commitment:</strong> Plan for both full in-person workshop days in Mumbai. Orientation or pre-work may be required; dates, daily hours and venue are not yet confirmed. Tell us if you need travel support or a laptop. Your availability will be reconfirmed after the schedule is published.</p>
+        <p><strong>Support and benefits:</strong> Paid/unpaid status, travel or accommodation reimbursement, meals, certificates and references have not yet been confirmed. Details will be clarified before selection. Volunteering does not guarantee employment, publicity or endorsement.</p><p><strong>Privacy and staffing:</strong> Participants may discuss sensitive business problems. Do not copy, retain or reuse participant information. Ask the workshop team before handling any confidential data. The number of participants supported by each volunteer and the final track responsibilities will be announced before the event.</p>
       </section>
       <section className="vh-action" aria-labelledby="action-heading">
         <div><h2 id="action-heading">You help participants build. You grow while doing it.</h2><p>Workshop dates, hours and venue will be confirmed.</p></div>
