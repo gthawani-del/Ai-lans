@@ -40,6 +40,8 @@ export default function PrivacyRetentionWorkspace({supabase,profile}){
  useEffect(()=>{if(canManage)reload()},[canManage,reload]);
  const cases=data?.requests||[];
  const reports=data?.reports||[];
+ const admins=data?.admins||[];
+ const ownerName=id=>admins.find(a=>a.user_id===id)?.email||'Unassigned';
  const latest=reports[0]||null;
  const overdue=data?.overdue_drafts||[];
  const active=cases.filter(c=>!['completed','rejected'].includes(c.status)).length;
@@ -47,7 +49,7 @@ export default function PrivacyRetentionWorkspace({supabase,profile}){
  const monthRows=useMemo(()=>reports.slice(0,12),[reports]);
  function openCase(c){
    setSelectedId(c.id);
-   setEdit({status:c.status,verification_status:c.verification_status,legal_hold:!!c.legal_hold,
+   setEdit({status:c.status,verification_status:c.verification_status,assigned_to:c.assigned_to||c.created_by,legal_hold:!!c.legal_hold,
      handling_note:c.handling_note||'',resolution_note:c.resolution_note||''});
    setConfirmDeletion(false);setError('');setMessage('');
  }
@@ -98,13 +100,14 @@ export default function PrivacyRetentionWorkspace({supabase,profile}){
          <label className="wide">Internal handling note (no sensitive documents)<textarea rows={2} maxLength={1500} value={form.handling_note} onChange={e=>setForm(v=>({...v,handling_note:e.target.value}))}/></label>
          <div className="wide"><button type="submit" disabled={busy}>{busy?'Saving…':'Save request'}</button></div>
        </form>}
-       <div className="boTableWrap"><table className="boDataTable"><thead><tr><th>Received</th><th>Applicant</th><th>Request</th><th>Verification</th><th>Status</th><th></th></tr></thead><tbody>
-         {cases.map(c=><tr key={c.id}><td>{date(c.created_at)}</td><td>{c.applicant_email}</td><td>{c.request_type}</td><td>{c.verification_status}</td><td>{c.status}</td><td><button type="button" onClick={()=>openCase(c)}>Review</button></td></tr>)}
+       <div className="boTableWrap"><table className="boDataTable"><thead><tr><th>Received</th><th>Applicant</th><th>Request</th><th>Owner</th><th>Verification</th><th>Status</th><th></th></tr></thead><tbody>
+         {cases.map(c=><tr key={c.id}><td>{date(c.created_at)}</td><td>{c.applicant_email}</td><td>{c.request_type}</td><td>{ownerName(c.assigned_to||c.created_by)}</td><td>{c.verification_status}</td><td>{c.status}</td><td><button type="button" onClick={()=>openCase(c)}>Review</button></td></tr>)}
        </tbody></table>{!cases.length&&<p>No privacy requests recorded yet.</p>}</div>
      </section>
      {selected&&edit&&<section className="boPanel">
        <div className="boPrivacyTitle"><div><h3>Request review</h3><p>{selected.request_type} · {selected.applicant_email} · {selected.application_type}</p></div><button type="button" onClick={()=>{setSelectedId('');setEdit(null)}}>Close</button></div>
        <form className="boPrivacyForm" onSubmit={saveCase}>
+         <label>Responsible administrator<select disabled={['completed','rejected'].includes(selected.status)} value={edit.assigned_to||''} onChange={e=>setEdit(v=>({...v,assigned_to:e.target.value}))}>{admins.map(a=><option value={a.user_id} key={a.user_id}>{a.email}</option>)}</select></label>
          <label>Status<select disabled={['completed','rejected'].includes(selected.status)} value={edit.status} onChange={e=>setEdit(v=>({...v,status:e.target.value}))}>{STATUSES.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
          <label>Identity verification<select disabled={['completed','rejected'].includes(selected.status)} value={edit.verification_status} onChange={e=>setEdit(v=>({...v,verification_status:e.target.value}))}>{VERIFICATIONS.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
          <label className="boPrivacyCheckbox"><input type="checkbox" disabled={['completed','rejected'].includes(selected.status)} checked={edit.legal_hold} onChange={e=>setEdit(v=>({...v,legal_hold:e.target.checked}))}/> Legal hold / retention exception</label>
