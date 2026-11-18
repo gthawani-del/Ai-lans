@@ -11,7 +11,7 @@ test('application submits once without creating a payment session', async () => 
   assert.equal(calls.length,1);
   assert.ok(calls[0].url.endsWith('/submit-attendee-registration'));
   assert.equal(calls[0].body.form_version,'one_page_apply_20261118');
-  assert.deepEqual(result,{full_name:'QA Applicant',reference:'test-reference',existing:false});
+  assert.deepEqual(result,{full_name:'QA Applicant',email:'',reference:'test-reference',existing:false});
 });
 test('failed or malformed responses cannot become acknowledgements',async()=>{
   for (const response of [{ok:false,json:async()=>({error:'Invalid application'})},{ok:true,json:async()=>({ok:true})},{ok:true,json:async()=>{throw new Error('invalid json')}}]) {
@@ -35,4 +35,14 @@ test('workshop planning fields are forwarded in the attendee payload',async()=>{
  assert.equal(captured[0].business_problem,form.business_problem);
  assert.deepEqual(captured[0].data_sources,form.data_sources);
  assert.equal(captured[0].attendance_availability,form.attendance_availability);
+});
+
+test('confirmation receives the actual application email without inventing response timing',async()=>{
+ const result=await submitAttendeeApplication({full_name:'QA Applicant',email:'qa@example.test'},{
+  endpoint:'https://example.invalid',
+  fetcher:async()=>({ok:true,json:async()=>({ok:true,id:'application-123'})})
+ });
+ assert.equal(result.email,'qa@example.test');
+ assert.equal(result.reference,'application-123');
+ assert.equal(result.existing,false);
 });
