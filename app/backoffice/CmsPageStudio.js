@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Copy, Eye, FileText, Plus, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
+import { Copy, Eye, FileText, Pencil, Plus, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
+import CmsPageEditor, { PreviewSection } from './CmsPageEditor';
 
 const STATUSES = ['all', 'draft', 'in_review', 'published', 'archived'];
 const labelStatus = value => ({ in_review: 'In review', published: 'Published', archived: 'Archived', draft: 'Draft' }[value] || value);
@@ -24,6 +25,7 @@ export default function CmsPageStudio({ session, profile, supabase }) {
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [editing, setEditing] = useState(null);
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const canManage = profile?.role === 'super_admin';
 
@@ -82,6 +84,15 @@ export default function CmsPageStudio({ session, profile, supabase }) {
     } catch (cause) { setError(cause?.message || 'Could not open this draft preview.'); }
     finally { setBusy(false); }
   }
+  async function showEditor(page) {
+    setError(''); setNotice(''); setBusy(true);
+    try {
+      const { data, error: rpcError } = await supabase.rpc('cms_admin_get_page_preview', { p_page_id: page.id });
+      if (rpcError) throw rpcError;
+      setEditing(data);
+    } catch (cause) { setError(cause?.message || 'Could not open this page for editing.'); }
+    finally { setBusy(false); }
+  }
 
   return <div className="boCmsStudio">
     <section className="boPanel boCmsIntro">
@@ -102,7 +113,7 @@ export default function CmsPageStudio({ session, profile, supabase }) {
         <td>{page.template_name}<small>v{page.revision_number || 1}</small></td>
         <td><span className={`boCmsStatus boCmsStatus--${page.status}`}>{labelStatus(page.status)}</span></td>
         <td>{dateLabel(page.updated_at)}</td>
-        <td><div className="boCmsRowActions"><button type="button" onClick={()=>showPreview(page)} disabled={busy}><Eye size={14}/> Preview</button>{canManage&&<button type="button" onClick={()=>openDuplicate(page)}><Copy size={14}/> Duplicate</button>}</div></td>
+        <td><div className="boCmsRowActions">{canManage&&page.status==='draft'&&<button type="button" onClick={()=>showEditor(page)} disabled={busy}><Pencil size={14}/> Edit</button>}<button type="button" onClick={()=>showPreview(page)} disabled={busy}><Eye size={14}/> Preview</button>{canManage&&<button type="button" onClick={()=>openDuplicate(page)}><Copy size={14}/> Duplicate</button>}</div></td>
       </tr>)}</tbody></table></div>:<div className="boCmsEmpty"><FileText size={25}/><strong>{query||statusFilter!=='all'||templateFilter!=='all'?'No pages match these filters.':'No CMS pages yet.'}</strong><span>{query||statusFilter!=='all'||templateFilter!=='all'?'Clear a filter to see other pages.':'Create your first page when you are ready. Existing public pages remain unchanged.'}</span>{canManage&&!query&&statusFilter==='all'&&templateFilter==='all'&&<button className="boCmsPrimary" type="button" onClick={openCreate}><Plus size={15}/> Create your first page</button>}</div>}
     </section>}
 
@@ -121,7 +132,8 @@ export default function CmsPageStudio({ session, profile, supabase }) {
 
     {preview&&<div className="boCmsOverlay" onMouseDown={event=>{if(event.target===event.currentTarget)setPreview(null)}}><section className="boCmsPreviewDialog" role="dialog" aria-modal="true" aria-labelledby="boCmsPreviewTitle">
       <div className="boCmsPreviewBar"><div><span className="boCmsKicker">PRIVATE DRAFT PREVIEW · NOINDEX</span><b>Responsive template preview</b></div><div className="boCmsPreviewTools"><div role="group" aria-label="Preview width"><button type="button" aria-pressed={previewDevice==='desktop'} onClick={()=>setPreviewDevice('desktop')}>Desktop</button><button type="button" aria-pressed={previewDevice==='mobile'} onClick={()=>setPreviewDevice('mobile')}>Mobile</button></div><button className="boCmsClose" type="button" onClick={()=>setPreview(null)} aria-label="Close preview"><X size={17}/></button></div></div>
-      <div className={`boCmsViewport boCmsViewport--${previewDevice}`}><article className="boCmsPreviewPage"><small>{preview.template?.name} · Draft</small><h2 id="boCmsPreviewTitle">{preview.page?.title}</h2><p className="boCmsPreviewPath">/{preview.page?.slug}</p>{(preview.revision?.document?.sections||[]).length?<div className="boCmsPreviewSections">{preview.revision.document.sections.map((section,index)=><div key={section.id||index}><b>{section.type?.replaceAll('_',' ')||'Content section'}</b><span>Section editing arrives in the next milestone.</span></div>)}</div>:<p className="boCmsPreviewEmpty">This new page has no content sections yet. The live site is unchanged.</p>}</article></div>
+      <div className={`boCmsViewport boCmsViewport--${previewDevice}`}><article className="boCmsPreviewPage"><small>{preview.template?.name} · Draft</small><h2 id="boCmsPreviewTitle">{preview.page?.title}</h2><p className="boCmsPreviewPath">/{preview.page?.slug}</p>{(preview.revision?.document?.sections||[]).length?<div className="cmsLiveSections">{preview.revision.document.sections.map((section,index)=><PreviewSection key={section.id||index} section={section}/>)}</div>:<p className="boCmsPreviewEmpty">This draft has no content sections yet. Select Edit to start writing. The live site is unchanged.</p>}</article></div>
     </section></div>}
+    {editing&&<CmsPageEditor initial={editing} supabase={supabase} onClose={()=>setEditing(null)} onSaved={async()=>{await load();setNotice('Draft saved. The public page remains unchanged.');}}/>}
   </div>;
 }
