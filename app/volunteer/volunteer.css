@@ -102,3 +102,10 @@
   .vh-dialog-content { padding: 30px 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .volunteerHome .vh-button { transition: none; } }
+
+/* Volunteer role transparency */
+.vh-practical{padding:24px 28px;margin:8px 0 20px;border:1px solid var(--vh-line);border-radius:11px;background:var(--vh-surface)}
+.vh-practical h2{margin:0 0 15px;font-size:25px;color:var(--vh-ink)}
+.vh-practical p{font-size:15px;line-height:1.6;margin:10px 0;color:var(--vh-muted)}
+.vh-practical strong{color:var(--vh-ink)}
+@media(max-width:700px){.vh-practical{padding:20px;margin:8px 0}.vh-practical h2{font-size:22px}}
