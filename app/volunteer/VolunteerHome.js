@@ -46,6 +46,12 @@ export default function VolunteerHome() {
           </article>)}
         </div>
       </section>
+      <section className="vh-practical" aria-labelledby="volunteer-expectations">
+        <h2 id="volunteer-expectations">Before you apply</h2>
+        <p><strong>What you will do:</strong> Support participants in your chosen contribution track: technical building, AI workflows, product analysis, UX, research, teaching or workshop operations. We match responsibilities to demonstrated skills.</p>
+        <p><strong>Commitment:</strong> Two in-person workshop days in Mumbai, plus any confirmed orientation. Exact dates, hours and venue will be provided before attendance is finalized. Tell us if you need travel support or a laptop.</p>
+        <p><strong>Terms:</strong> Any compensation, expenses, meals, certificates or references will be clarified by the team before selection. Application alone does not guarantee these benefits or employment. Keep participant business information confidential.</p>
+      </section>
       <section className="vh-action" aria-labelledby="action-heading">
         <div><h2 id="action-heading">You help participants build. You grow while doing it.</h2><p>Workshop dates, hours and venue will be confirmed.</p></div>
         <Link className="vh-button" href="/volunteer/apply">Start your application <ArrowRight size={20} aria-hidden="true" /></Link>
