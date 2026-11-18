@@ -541,10 +541,7 @@ export default function VolunteerApplyV3({ config }) {
           !optionalDetails.includes(r.key) &&
           !["commitmentAgreed", "commitmentChecks", "accurate", "consent"].includes(r.key),
       )
-      .sort((a, b) => {
-        const position = r => r.key === "postcode" ? rules.findIndex(x => x.key === "city") : r.key === "city" ? rules.findIndex(x => x.key === "postcode") : rules.indexOf(r);
-        return position(a) - position(b);
-      })
+      .sort((a, b) => rules.indexOf(a) - rules.indexOf(b))
       .map(field);
   }
   if (!ready)
