@@ -354,3 +354,10 @@
     margin-bottom: 12px;
   }
 }
+
+/* Language proficiency for selected participant-support languages. */
+.v3-language-ratings{margin:14px 0 5px;padding:15px;border:1px solid var(--vf-border,#d3e2d9);border-radius:9px;display:grid;gap:11px;min-width:0}
+.v3-language-ratings p{font-size:13px;line-height:1.55;margin:0;color:inherit}
+.v3-language-rating{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,190px);gap:12px;align-items:center;font-size:14px}
+.v3-language-rating select{min-height:44px;width:100%;border:1px solid var(--vf-border,#b9d3c5);border-radius:7px;background:var(--vf-surface,#fff);color:inherit;padding:9px 12px;font:inherit}
+@media(max-width:550px){.v3-language-rating{grid-template-columns:1fr;gap:5px}.v3-language-ratings{padding:12px}}
