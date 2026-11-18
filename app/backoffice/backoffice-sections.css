@@ -144,3 +144,55 @@
 .boScoringNote{margin:10px 0 0;font-size:9.5px;line-height:1.45;color:#6f778b}
 @media(max-width:1200px){.boDecisionBands{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){.boScoringModelGrid,.boDecisionBands{grid-template-columns:1fr}}
+
+
+/* weareailabs back-office palette, visual only.
+   Loaded last to preserve all existing dashboard functionality and geometry. */
+.boV2{--bo-brand:#17654f;--bo-brand-strong:#104d3d;--bo-brand-soft:#e5f3eb;--bo-brand-ink:#153b30;--bo-brand-muted:#53766a;background:#f5f8f6;color:#173c30}
+.boV2 .boSidebar{background:#103d34;color:#f5fff9}
+.boV2 .boBrand{border-bottom-color:#ffffff26}
+.boV2 .boBrand img{width:142px;max-width:65%;height:auto;object-fit:contain}
+.boV2 .boBrand span{color:#d0e4d8;border-left-color:#ffffff39}
+.boV2 .boNavGroup>b{color:#a9d2c0}
+.boV2 .boNavItem{color:#d1e7db}
+.boV2 .boNavItem:hover{background:#ffffff17;color:#fff}
+.boV2 .boNavItem.active{background:#ffffff20!important;color:#fff!important}
+.boV2 .boAdmin{border-color:#ffffff28}
+.boV2 .boAdmin>small,.boV2 .boAdmin button{color:#c4ddce}
+.boV2 .boCanvas{background:#f5f8f6}
+.boV2 .boUniversalBar{background:color-mix(in srgb,#f5f8f6 94%,transparent)}
+.boV2 .boTopbar>div:first-child>span,.boV2 .boTopbar h1,.boV2 .boScope span{color:#174b3a}
+.boV2 .boTopbar p,.boV2 .boPanelHead p{color:#627b70}
+.boV2 .boStat,.boV2 .boPanel,.boV2 .boCohortControl,.boV2 .boBasisControl,.boV2 .boGlobalSearch,.boV2 .boTextScaleInline,.boV2 .boIconControl,.boV2 .boProfileControl,.boV2 .boTopActions>a{border-color:#d8e5dc}
+.boV2 .boDateFilter{background:#e8f0ea}
+.boV2 .boDateFilter button.on{color:#174b3a}
+.boV2 .boDateFilter button{color:#537267}
+.boV2 .boGlobalSearch:focus-within{border-color:#277856;box-shadow:0 0 0 3px #2778561c}
+.boV2 .boTextScaleInline input{accent-color:#17654f}
+.boV2 .boProfileControl>span{background:#e3f3e9;color:#17654f}
+.boV2 .boStat>i,.boV2 .boExplain{background:#e4f2e9;color:#17654f}
+.boV2 .boExplain{border-color:#c9e7d6}
+.boV2 .boChart{color:#287a5b}
+.boV2 .boChart .recharts-cartesian-grid line{stroke:#e1ebe4}
+.boV2 .boChart .recharts-text{fill:#6a8679}
+.boV2 .boBreakdown em{background:#287a5b}
+.boV2 .boTableCards article>span{color:#17654f}
+.boV2 .boSearchResults em{background:#e4f2e9;color:#17654f}
+.boV2 .boCustomRange>button{background:#17654f}
+.boV2 .boIconControl:hover,.boV2 .boProfileControl:hover{background:#e9f3ed}
+.boV2 .boNavGroup .boNavItem:focus-visible,.boV2 .boTopActions>a:focus-visible{outline-color:#5fbd92}
+.boV2 .boBrand:focus-visible{outline:2px solid #8fd2aa;outline-offset:3px}
+@media(max-width:780px){.boV2 .boBrand img{width:132px}.boV2 .boSidebar{background:#103d34}}
+/* Preserve dark-mode controls while shifting purple highlights into green. */
+.boV2[data-theme="dark"]{--bo-brand:#72c49d;--bo-brand-soft:#1c3e32;color:#e4f4ea}
+.boV2[data-theme="dark"] .boSidebar{background:#0e322b}
+.boV2[data-theme="dark"] .boCanvas,.boV2[data-theme="dark"]{background:#0c1714}
+.boV2[data-theme="dark"] .boUniversalBar{background:color-mix(in srgb,#0c1714 92%,transparent)}
+.boV2[data-theme="dark"] .boTopbar>div:first-child>span,.boV2[data-theme="dark"] .boTopbar h1,.boV2[data-theme="dark"] .boScope span{color:#e0f2e7}
+.boV2[data-theme="dark"] .boStat,.boV2[data-theme="dark"] .boPanel,.boV2[data-theme="dark"] .boCohortControl,.boV2[data-theme="dark"] .boBasisControl,.boV2[data-theme="dark"] .boGlobalSearch,.boV2[data-theme="dark"] .boTextScaleInline,.boV2[data-theme="dark"] .boIconControl,.boV2[data-theme="dark"] .boProfileControl{background:#172923;border-color:#315044}
+.boV2[data-theme="dark"] .boStat>i,.boV2[data-theme="dark"] .boExplain{background:#234837;color:#a1e3b9;border-color:#36654b}
+.boV2[data-theme="dark"] .boChart{color:#7ad4a4}
+.boV2[data-theme="dark"] .boBreakdown em{background:#7ad4a4}
+.boV2[data-theme="dark"] .boProfileControl>span{background:#234837;color:#a1e3b9}
+.boV2[data-theme="dark"] .boDateFilter{background:#233a2f}
+.boV2[data-theme="dark"] .boDateFilter button.on{background:#315444;color:#fff}
