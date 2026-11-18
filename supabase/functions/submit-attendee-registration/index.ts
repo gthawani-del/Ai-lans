@@ -52,6 +52,10 @@ const schema=z.object({
  success_outcome:z.string().trim().max(90).optional().nullable(),
  success_detail:z.string().trim().max(300).optional().nullable(),
  attendance_availability:z.string().trim().max(100).optional().nullable(),
+ preferred_contact_method:z.string().trim().max(30).optional().nullable(),
+ representative_data_permission:z.string().trim().max(120).optional().nullable(),
+ participation_support:z.string().trim().max(300).optional().nullable(),
+ heard_about:z.string().trim().max(80).optional().nullable(),
  consent:z.literal(true),
  form_version:z.string().trim().max(40).optional(),
  _website:z.string().max(0).optional()
@@ -67,7 +71,15 @@ const schema=z.object({
    try{if(!isValidPhoneNumber(phone,countryCode as any))ctx.addIssue({code:z.ZodIssueCode.custom,path:['phone'],message:`Enter a valid ${d.country} phone number`});}
    catch{ctx.addIssue({code:z.ZodIssueCode.custom,path:['phone'],message:`Enter a valid ${d.country} phone number`});}
  }
- if(d.form_version==='one_page_apply_20261118'){
+ if(d.form_version==='one_page_apply_20261118_v2'){
+   const methods=['Email','Phone call','WhatsApp'];
+   const permission=['Yes, I have permission to use representative or anonymised data','I can use sample or synthetic data instead','Not sure yet; I need guidance'];
+   const discovery=['Friend or colleague','LinkedIn','Instagram','WhatsApp group','Website / search','Other'];
+   if(!methods.includes(d.preferred_contact_method||''))ctx.addIssue({code:z.ZodIssueCode.custom,path:['preferred_contact_method'],message:'Select your preferred contact method'});
+   if(!permission.includes(d.representative_data_permission||''))ctx.addIssue({code:z.ZodIssueCode.custom,path:['representative_data_permission'],message:'Select what sample data you can use'});
+   if(d.heard_about&&!discovery.includes(d.heard_about))ctx.addIssue({code:z.ZodIssueCode.custom,path:['heard_about'],message:'Choose a valid discovery source'});
+ }
+ if(d.form_version==='one_page_apply_20261118'||d.form_version==='one_page_apply_20261118_v2'){
    const targetUsers=['Sales team','Finance team','HR team','Operations team','Marketing team','Customers','Senior management','Other','Not sure yet'];
    const dataSources=['Excel / spreadsheets','PDFs','Email','CRM','Website','Internal documents','Accounting / finance data','Other','Not sure yet'];
    const outcomes=['Save time','Reduce manual work','Reduce errors','Improve response speed','Improve visibility','Increase sales','Other'];
@@ -101,7 +113,7 @@ Deno.serve(async(req:Request)=>{
   const {data:existing,error:ee}=await s.from('attendee_registrations').select('id,payment_status,status,payment_reference').eq('workshop_key',WORKSHOP_KEY).ilike('email',email).maybeSingle();
   if(ee)throw ee;
   if(existing?.payment_status==='paid')return new Response(JSON.stringify({ok:true,id:existing.id,already_paid:true,payment_reference:existing.payment_reference}),{headers});
-  const payload:any={workshop_key:WORKSHOP_KEY,full_name:b.full_name,email,phone:digitsOnly(b.phone),phone_country_code:normaliseDial(b.phone_country_code),city:b.city,country:b.country,age_band:b.age_band||null,career_role:b.career_role,company_organisation:b.company_organisation,industry:b.industry,years_experience:b.years_experience,functional_area:b.functional_area,ai_experience_level:b.ai_experience_level,ai_tools:b.ai_tools,other_ai_tool:b.other_ai_tool||null,other_mvp_idea:b.other_mvp_idea||null,current_title:b.current_title||null,business_problem:b.business_problem||null,target_user:b.target_user||null,data_sources:b.data_sources||[],success_outcome:b.success_outcome||null,success_detail:b.success_detail||null,attendance_availability:b.attendance_availability||null,form_version:b.form_version||(paymentFlow?'one_page_v3':'legacy_v1'),status:paymentFlow?'application_complete':'submitted',consent:true,submitted_at:now,updated_at:now};
+  const payload:any={workshop_key:WORKSHOP_KEY,full_name:b.full_name,email,phone:digitsOnly(b.phone),phone_country_code:normaliseDial(b.phone_country_code),city:b.city,country:b.country,age_band:b.age_band||null,career_role:b.career_role,company_organisation:b.company_organisation,industry:b.industry,years_experience:b.years_experience,functional_area:b.functional_area,ai_experience_level:b.ai_experience_level,ai_tools:b.ai_tools,other_ai_tool:b.other_ai_tool||null,other_mvp_idea:b.other_mvp_idea||null,current_title:b.current_title||null,business_problem:b.business_problem||null,target_user:b.target_user||null,data_sources:b.data_sources||[],success_outcome:b.success_outcome||null,success_detail:b.success_detail||null,attendance_availability:b.attendance_availability||null,preferred_contact_method:b.preferred_contact_method||null,representative_data_permission:b.representative_data_permission||null,participation_support:b.participation_support||null,heard_about:b.heard_about||null,form_version:b.form_version||(paymentFlow?'one_page_v3':'legacy_v1'),status:paymentFlow?'application_complete':'submitted',consent:true,submitted_at:now,updated_at:now};
   if(paymentFlow){payload.application_completed_at=now;payload.reviewed_at=now;payload.payment_status='not_started';}
   let attendee:any;
   if(existing?.id){const {data,error}=await s.from('attendee_registrations').update(payload).eq('id',existing.id).select('id').single();if(error)throw error;attendee=data;}
