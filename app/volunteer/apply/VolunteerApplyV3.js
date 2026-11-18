@@ -56,7 +56,7 @@ export default function VolunteerApplyV3({ config }) {
   latest.current = data;
   const sb = getSupabaseBrowserClient();
   const tools = configuredTools(config.form_config);
-  const checkData = (d, s = null) => validate(d, s, { activeTools: tools });
+  const checkData = (d, s = null) => validate(d, s, { activeTools: tools, photo: false });
   const event = config.form_config?.workshop_details || {};
   const eventReady = !!(event.dates && event.hours && event.venue);
   const eventLabel = eventReady
@@ -69,7 +69,17 @@ export default function VolunteerApplyV3({ config }) {
         const raw = localStorage.getItem(DRAFT);
         if (raw) {
           const saved = JSON.parse(raw);
-          setData({ ...initial, ...saved.data, photoApproved: false });
+          setData({
+  ...initial,...saved.data,
+  preferredRole:({
+    "Table facilitator":"Teaching and facilitation",
+    "Technical support":"Technical builder / troubleshooting",
+    "Product / business support":"Product and business analysis",
+    "Design / UX support":"UX and design",
+    "General workshop support":"Operations and coordination"
+  })[saved.data?.preferredRole]||saved.data?.preferredRole||"",
+  commitmentChecks:[],accurate:false,consent:false,photoApproved:false
+});
           setStep(Math.min(4, Math.max(0, saved.step || 0)));
         }
         ids.current = {
@@ -295,9 +305,18 @@ export default function VolunteerApplyV3({ config }) {
     setBusy(true);
     setNotice("");
     try {
+      await queue.current.catch(() => {});
+      if (!ids.current.id) {
+        const rt=token();
+        const {data:started,error:startError}=await sb.rpc("start_volunteer_application",{
+          p_payload:{...normalize(data),currentStep:step+1},p_token:rt
+        });
+        if(startError)throw startError;
+        ids.current={id:started.id,token:rt};
+        localStorage.setItem("ai-lab-volunteer-id",started.id);
+        localStorage.setItem("ai-lab-volunteer-token",rt);
+      }
       await save(data, step);
-      if (!ids.current.id)
-        throw new Error("Upload your photo before submitting.");
       const payload = {
         ...normalize(data),
         commitmentEvent: eventReady
@@ -362,7 +381,7 @@ export default function VolunteerApplyV3({ config }) {
             ? "I have read and agree to all the commitments above."
             : r.key === "accurate"
               ? "I confirm my application is accurate."
-              : "I agree to the use of my application and photo for volunteer selection, photo review and workshop coordination."}
+              : "I agree to the use of my application for selection and coordination. Publicity requires separate consent."}
         </span>
       </label>
     ) : r.enum && r.enum.length <= 3 ? (
@@ -513,7 +532,7 @@ export default function VolunteerApplyV3({ config }) {
       </div>
     );
   }
-  const optionalDetails = ["gender", "genderOther", "addressStreetArea", "addressBuilding", "linkedin", "github"];
+  const optionalDetails = ["company"];
   function fields(s) {
     return rules
       .filter(
@@ -634,8 +653,7 @@ export default function VolunteerApplyV3({ config }) {
             <>
               <div className="v3-grid">{fields(0)}</div>
               <details className="v3-disclosure" open={optionalDetails.some(k => errors[k]) || undefined}>
-                <summary>More about you <span>(optional)</span></summary>
-                <p>Gender, address and profile links.</p>
+                <summary>Organisation details <span>(optional)</span></summary><p>No residential address or photograph is needed to apply.</p>
                 <div className="v3-grid">{rules.filter(r => optionalDetails.includes(r.key)).map(field)}</div>
               </details>
             </>
@@ -644,7 +662,8 @@ export default function VolunteerApplyV3({ config }) {
             <>
               <h2 className="v3-group-title">Your interests & strengths</h2>
               <div className="v3-grid">{fields(1)}</div>
-              <fieldset id="v3-stack" tabIndex={-1} aria-describedby={errors.stack ? "v3-stack-error" : undefined}>
+              {data.preferredRole === "Technical builder / troubleshooting" && (<div className="v3-technical-skills">
+<fieldset id="v3-stack" tabIndex={-1} aria-describedby={errors.stack ? "v3-stack-error" : undefined}>
                 <legend>Your tools</legend>
                 <p>
                   New to it: not used yet · Used it: tried with guidance ·
@@ -746,6 +765,7 @@ export default function VolunteerApplyV3({ config }) {
                   <p id="v3-customTools-error" className="v3-error">{errors.customTools}</p>
                 )}
               </fieldset>
+</div>)}
             </>
           )}
           {step === 2 && (
@@ -756,52 +776,15 @@ export default function VolunteerApplyV3({ config }) {
                 confidential documents.
               </p>
               <div className="v3-grid">{fields(2)}</div>
-              {data.experienceStatus === "Some experience" && (
-                <fieldset id="v3-involvement" tabIndex={-1} aria-describedby={errors.involvement ? "v3-involvement-error" : undefined}>
-                  <legend>Your involvement</legend>
-                  {(data.contributionAreas || []).map((x) => (
-                    <div className="v3-tool" key={x}>
-                      <label
-                        htmlFor={
-                          "depth-" + options.contributionAreas.indexOf(x)
-                        }
-                      >
-                        {x}
-                      </label>
-                      <select
-                        id={"depth-" + options.contributionAreas.indexOf(x)}
-                        aria-required="true"
-                        aria-invalid={!!errors.involvement && !data.involvement[x]}
-                        aria-describedby={errors.involvement ? "v3-involvement-error" : undefined}
-                        value={data.involvement[x] || ""}
-                        onChange={(e) =>
-                          set("involvement", {
-                            ...data.involvement,
-                            [x]: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="">Select depth</option>
-                        {options.involvement.map((l) => (
-                          <option key={l}>{l}</option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                  {errors.involvement && (
-                    <p id="v3-involvement-error" className="v3-error">{errors.involvement}</p>
-                  )}
-                </fieldset>
-              )}
-            </>
+                          </>
           )}
           {step === 3 && (
             <>
-              <h2 className="v3-group-title">Education & languages</h2>
+              <h2 className="v3-group-title">Workshop availability & commitments</h2>
               <div className="v3-grid">{fields(3)}</div>
               <section className="v3-commitments" id="v3-commitmentAgreed" tabIndex={-1}>
                 <h2>Your volunteer commitments</h2>
-                <p>All commitments are required for this role.</p>
+                <p>Confirm availability, preparation and confidentiality commitments. Final dates and support arrangements are confirmed during selection.</p>
                 <p>{eventLabel}</p>
                 {!eventReady && (
                   <p>
@@ -821,9 +804,9 @@ export default function VolunteerApplyV3({ config }) {
               <div className="v3-photo" id="v3-photoApproved" tabIndex={-1}>
                 {photoUrl ? <img src={photoUrl} alt="Your photo preview" /> : <div className="vf-photo-placeholder" aria-hidden="true"><UserRound size={42} strokeWidth={1.4} /></div>}
                 <div>
-                  <b>Profile photo</b>
+                  <b>Profile photo (optional)</b>
                   <p>
-                    For identification and team review. Only you should appear;
+                    Optional during application. Used internally after shortlisting;
                     no inappropriate images.
                   </p>
                   <label className="v3-upload" htmlFor="v3-photo-file">
@@ -832,7 +815,7 @@ export default function VolunteerApplyV3({ config }) {
                   <input
                     ref={fileInput}
                     id="v3-photo-file"
-                    aria-required="true"
+                    aria-required="false"
                     aria-invalid={!!errors.photoApproved}
                     aria-describedby={errors.photoApproved ? "v3-photo-help v3-photo-error" : "v3-photo-help"}
                     type="file"
@@ -890,8 +873,7 @@ export default function VolunteerApplyV3({ config }) {
               <section className="v3-review">
                 <h2>How we use your application</h2>
                 <p>
-                  Your answers and photo are used by the workshop team for
-                  selection, photo review and coordination. This agreement does
+                  Your application answers are used for volunteer selection and coordination. An optional photo is for internal identification, not publicity. This agreement does
                   not grant permission for publicity or marketing use. You can
                   ask the workshop team to correct or delete your application at <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a>. See our <a href="/privacy" target="_blank" rel="noopener noreferrer">privacy policy (opens in a new tab)</a>.
                 </p>
