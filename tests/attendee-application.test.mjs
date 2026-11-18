@@ -10,7 +10,7 @@ test('application submits once without creating a payment session', async () => 
   });
   assert.equal(calls.length,1);
   assert.ok(calls[0].url.endsWith('/submit-attendee-registration'));
-  assert.equal(calls[0].body.form_version,'one_page_apply_20261118');
+  assert.equal(calls[0].body.form_version,'one_page_apply_20261118_v2');
   assert.deepEqual(result,{full_name:'QA Applicant',email:'',reference:'test-reference',existing:false});
 });
 test('failed or malformed responses cannot become acknowledgements',async()=>{
@@ -45,4 +45,11 @@ test('confirmation receives the actual application email without inventing respo
  assert.equal(result.email,'qa@example.test');
  assert.equal(result.reference,'application-123');
  assert.equal(result.existing,false);
+});
+
+test('explicit contact method and representative-data permission are preserved in submission',async()=>{
+ const form={full_name:'Test Applicant',email:'qa@example.test',preferred_contact_method:'Email',representative_data_permission:'I can use sample or synthetic data instead',participation_support:'Wheelchair accessible entrance',heard_about:'LinkedIn'};
+ let posted;
+ await submitAttendeeApplication(form,{endpoint:'https://example.invalid',fetcher:async(_url,opts)=>{posted=JSON.parse(opts.body);return{ok:true,json:async()=>({ok:true,id:'qa'})}}});
+ for(const key of ['preferred_contact_method','representative_data_permission','participation_support','heard_about']) assert.equal(posted[key],form[key]);
 });
