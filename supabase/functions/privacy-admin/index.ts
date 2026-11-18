@@ -24,13 +24,14 @@ Deno.serve(async req=>{
    const {data:admin,error:roleError}=await db.from("backoffice_users").select("role,is_active").eq("user_id",auth.user.id).maybeSingle();
    if(roleError||!admin?.is_active||!permitted.includes(admin.role))return response(403,{error:"Privacy administration access denied"});
    if(req.method==="GET"){
-     const [requests,reports,drafts]=await Promise.all([
+     const [requests,reports,drafts,admins]=await Promise.all([
        db.from("privacy_requests").select("id,request_type,applicant_email,application_type,application_reference,status,verification_status,legal_hold,handling_note,resolution_note,created_by,assigned_to,created_at,updated_at,resolved_at").order("created_at",{ascending:false}).limit(200),
        db.from("privacy_retention_reports").select("id,report_month,generated_at,draft_overdue_30d,draft_total,orphan_photo_objects,photos_linked_to_overdue_drafts,open_privacy_requests").order("report_month",{ascending:false}).limit(24),
-       db.from("volunteer_applications").select("id,updated_at,photo_path").eq("status","draft").lt("updated_at",new Date(Date.now()-30*24*60*60*1000).toISOString()).order("updated_at",{ascending:true}).limit(100)
+       db.from("volunteer_applications").select("id,updated_at,photo_path").eq("status","draft").lt("updated_at",new Date(Date.now()-30*24*60*60*1000).toISOString()).order("updated_at",{ascending:true}).limit(100),
+       db.from("backoffice_users").select("user_id,email,role").eq("is_active",true).in("role",permitted)
      ]);
-     if(requests.error||reports.error||drafts.error)throw requests.error||reports.error||drafts.error;
-     return response(200,{requests:requests.data||[],reports:reports.data||[],overdue_drafts:(drafts.data||[]).map((x:any)=>({id:x.id,updated_at:x.updated_at,has_photo:!!x.photo_path})),is_admin:true});
+     if(requests.error||reports.error||drafts.error||admins.error)throw requests.error||reports.error||drafts.error||admins.error;
+     return response(200,{requests:requests.data||[],reports:reports.data||[],admins:admins.data||[],overdue_drafts:(drafts.data||[]).map((x:any)=>({id:x.id,updated_at:x.updated_at,has_photo:!!x.photo_path})),is_admin:true});
    }
    const text=await req.text();
    if(text.length>12000)return response(413,{error:"Request too large"});
@@ -42,7 +43,7 @@ Deno.serve(async req=>{
      const input={
        applicant_email:email,request_type:body.request_type,application_type:body.application_type||"unknown",
        application_reference:clean(body.application_reference,120)||null,
-       handling_note:clean(body.handling_note),created_by:auth.user.id,updated_by:auth.user.id
+       handling_note:clean(body.handling_note),created_by:auth.user.id,updated_by:auth.user.id,assigned_to:auth.user.id
      };
      const {data:created,error:insertError}=await db.from("privacy_requests").insert(input).select("id").single();
      if(insertError)throw insertError;
@@ -64,8 +65,12 @@ Deno.serve(async req=>{
      if(status==="completed"&&verification!=="verified")return response(400,{error:"Verify applicant identity before completion"});
      if(status==="completed"&&old.request_type==="deletion"&&body.deletion_confirmed!==true)return response(400,{error:"Confirm that the approved data removal was separately verified; this register does not delete records"});
      if(status==="completed"&&body.legal_hold===true&&old.request_type==="deletion")return response(400,{error:"Resolve legal hold before marking deletion complete"});
+     const assignee=clean(body.assigned_to,40);
+     if(!/^[0-9a-f-]{36}$/i.test(assignee))return response(400,{error:"Select an authorized responsible administrator"});
+     const {data:assignedAdmin}=await db.from("backoffice_users").select("user_id").eq("user_id",assignee).eq("is_active",true).in("role",permitted).maybeSingle();
+     if(!assignedAdmin)return response(400,{error:"Responsible administrator must be active and authorized"});
      const patch={
-       status,verification_status:verification,legal_hold:body.legal_hold===true,
+       status,verification_status:verification,assigned_to:assignee,legal_hold:body.legal_hold===true,
        handling_note:clean(body.handling_note),resolution_note:resolution,
        updated_at:new Date().toISOString(),updated_by:auth.user.id,
        resolved_at:["completed","rejected"].includes(status)?new Date().toISOString():null
