@@ -149,7 +149,7 @@ export default function Backoffice(){
 
   return <main className="boV2" data-theme={theme} data-density={density} style={{'--bo-scale':textScale/100}}>
     <aside className="boSidebar">
-      <a className="boBrand" href="/"><img src="https://zvmmgkspdgbfcqmnizga.supabase.co/storage/v1/object/public/ai-lab-ui/logo/AI_LAB_primary_logo_transparent.png" alt="AI Lab"/><span>Back Office</span></a>
+      <a className="boBrand" href="/"><img src="/brand/weareailabs-home.webp" alt="weareailabs"/><span>Back Office</span></a>
       <nav>
         <div className="boNavGroup"><b>Overview</b><SidebarItem icon={LayoutDashboard} label="Dashboard" active/><a className="boNavItem" href="/backoffice/attention"><AlertCircle size={16}/><span>Attention Queue</span></a></div>
         {[
