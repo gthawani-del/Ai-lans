@@ -108,7 +108,7 @@ export async function POST(request) {
     if (uploadError)
       return fail("Photo storage failed. Please retry.", 502);
 
-    const { error: registerError } = await sb.rpc(
+    const { data:registered, error: registerError } = await sb.rpc(
       "register_volunteer_photo_upload",
       {
         p_id: appId,
@@ -122,6 +122,20 @@ export async function POST(request) {
     );
     if (registerError)
       return fail("Photo registration failed. Please retry.", 502);
+
+    // The latest photo remains registered. Delete only the previously
+    // referenced object through a token-verified Supabase Storage service.
+    const previous=registered?.previous_photo_path;
+    if(previous&&previous!==path){
+      try{
+        const cleanup=await fetch(SUPABASE_URL+"/functions/v1/volunteer-photo-remove",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({id:appId,token:resumeToken,operation:"cleanup_previous",previous_path:previous})
+        });
+        if(!cleanup.ok)console.warn("Previous volunteer photo cleanup needs review",cleanup.status);
+      }catch{console.warn("Previous volunteer photo cleanup needs review")}
+    }
 
     return Response.json(
       { ok: true, id: appId, token: resumeToken, path },
