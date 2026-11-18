@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Copy, Eye, FileText, Pencil, Plus, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
+import { Archive, Clock3, Copy, Eye, FileText, Pencil, Plus, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
 import CmsPageEditor, { PreviewSection } from './CmsPageEditor';
+import CmsPageHistory from './CmsPageHistory';
 
 const STATUSES = ['all', 'draft', 'in_review', 'published', 'archived'];
 const labelStatus = value => ({ in_review: 'In review', published: 'Published', archived: 'Archived', draft: 'Draft' }[value] || value);
@@ -26,6 +27,7 @@ export default function CmsPageStudio({ session, profile, supabase }) {
   const [slugTouched, setSlugTouched] = useState(false);
   const [preview, setPreview] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [history, setHistory] = useState(null);
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const canManage = profile?.role === 'super_admin';
 
@@ -93,10 +95,29 @@ export default function CmsPageStudio({ session, profile, supabase }) {
     } catch (cause) { setError(cause?.message || 'Could not open this page for editing.'); }
     finally { setBusy(false); }
   }
+  async function showHistory(page) {
+    setError(''); setNotice(''); setBusy(true);
+    try {
+      const { data, error: rpcError } = await supabase.rpc('cms_admin_list_page_revisions', { p_page_id: page.id });
+      if (rpcError) throw rpcError;
+      setHistory({ page, revisions: Array.isArray(data) ? data : [] });
+    } catch (cause) { setError(cause?.message || 'Could not load page history.'); }
+    finally { setBusy(false); }
+  }
+  async function archivePage(page) {
+    if (!window.confirm('Archive “' + page.title + '”? A published URL will stop resolving publicly. The page and its revisions will remain in the backoffice.')) return;
+    setBusy(true); setError(''); setNotice('');
+    try {
+      const { error: rpcError } = await supabase.rpc('cms_admin_archive_page', { p_page_id: page.id });
+      if (rpcError) throw rpcError;
+      setNotice('Page archived. Its history is retained.'); await load();
+    } catch (cause) { setError(cause?.message || 'Could not archive this page.'); }
+    finally { setBusy(false); }
+  }
 
   return <div className="boCmsStudio">
     <section className="boPanel boCmsIntro">
-      <div><span className="boCmsKicker">CONTENT · PHASE 2</span><h2>Pages</h2><p>Create and review draft pages from controlled templates. Drafts do not appear on the public site.</p></div>
+      <div><span className="boCmsKicker">CONTENT · PHASE 2</span><h2>Pages</h2><p>Create pages, edit drafts, preview changes and publish approved content. Unpublished drafts stay private.</p></div>
       <div className="boCmsIntroActions"><button className="boCmsQuiet" type="button" onClick={load} disabled={loading}><RefreshCw size={15}/> Refresh</button>{canManage&&<button className="boCmsPrimary" type="button" onClick={openCreate}><Plus size={16}/> New page</button>}</div>
     </section>
     {!canManage&&<div className="boCmsAlert" role="alert">Page Studio access is restricted to active Super Admins. Your existing backoffice access is unchanged.</div>}
@@ -113,7 +134,7 @@ export default function CmsPageStudio({ session, profile, supabase }) {
         <td>{page.template_name}<small>v{page.revision_number || 1}</small></td>
         <td><span className={`boCmsStatus boCmsStatus--${page.status}`}>{labelStatus(page.status)}</span></td>
         <td>{dateLabel(page.updated_at)}</td>
-        <td><div className="boCmsRowActions">{canManage&&page.status==='draft'&&<button type="button" onClick={()=>showEditor(page)} disabled={busy}><Pencil size={14}/> Edit</button>}<button type="button" onClick={()=>showPreview(page)} disabled={busy}><Eye size={14}/> Preview</button>{canManage&&<button type="button" onClick={()=>openDuplicate(page)}><Copy size={14}/> Duplicate</button>}</div></td>
+        <td><div className="boCmsRowActions">{canManage&&['draft','published'].includes(page.status)&&<button type="button" onClick={()=>showEditor(page)} disabled={busy}><Pencil size={14}/> Edit</button>}<button type="button" onClick={()=>showPreview(page)} disabled={busy}><Eye size={14}/> Preview</button>{canManage&&<button type="button" onClick={()=>showHistory(page)} disabled={busy}><Clock3 size={14}/> History</button>}{canManage&&<button type="button" onClick={()=>openDuplicate(page)}><Copy size={14}/> Duplicate</button>}{canManage&&page.status!=='archived'&&<button type="button" onClick={()=>archivePage(page)} disabled={busy}><Archive size={14}/> Archive</button>}</div>{page.has_unpublished_changes&&<small className="boCmsPendingEdits">Unpublished edits · live version unchanged</small>}</td>
       </tr>)}</tbody></table></div>:<div className="boCmsEmpty"><FileText size={25}/><strong>{query||statusFilter!=='all'||templateFilter!=='all'?'No pages match these filters.':'No CMS pages yet.'}</strong><span>{query||statusFilter!=='all'||templateFilter!=='all'?'Clear a filter to see other pages.':'Create your first page when you are ready. Existing public pages remain unchanged.'}</span>{canManage&&!query&&statusFilter==='all'&&templateFilter==='all'&&<button className="boCmsPrimary" type="button" onClick={openCreate}><Plus size={15}/> Create your first page</button>}</div>}
     </section>}
 
@@ -131,9 +152,10 @@ export default function CmsPageStudio({ session, profile, supabase }) {
     </section></div>}
 
     {preview&&<div className="boCmsOverlay" onMouseDown={event=>{if(event.target===event.currentTarget)setPreview(null)}}><section className="boCmsPreviewDialog" role="dialog" aria-modal="true" aria-labelledby="boCmsPreviewTitle">
-      <div className="boCmsPreviewBar"><div><span className="boCmsKicker">PRIVATE DRAFT PREVIEW · NOINDEX</span><b>Responsive template preview</b></div><div className="boCmsPreviewTools"><div role="group" aria-label="Preview width"><button type="button" aria-pressed={previewDevice==='desktop'} onClick={()=>setPreviewDevice('desktop')}>Desktop</button><button type="button" aria-pressed={previewDevice==='mobile'} onClick={()=>setPreviewDevice('mobile')}>Mobile</button></div><button className="boCmsClose" type="button" onClick={()=>setPreview(null)} aria-label="Close preview"><X size={17}/></button></div></div>
+      <div className="boCmsPreviewBar"><div><span className="boCmsKicker">PAGE PREVIEW · NOINDEX</span><b>Responsive template preview</b></div><div className="boCmsPreviewTools"><div role="group" aria-label="Preview width"><button type="button" aria-pressed={previewDevice==='desktop'} onClick={()=>setPreviewDevice('desktop')}>Desktop</button><button type="button" aria-pressed={previewDevice==='mobile'} onClick={()=>setPreviewDevice('mobile')}>Mobile</button></div><button className="boCmsClose" type="button" onClick={()=>setPreview(null)} aria-label="Close preview"><X size={17}/></button></div></div>
       <div className={`boCmsViewport boCmsViewport--${previewDevice}`}><article className="boCmsPreviewPage"><small>{preview.template?.name} · Draft</small><h2 id="boCmsPreviewTitle">{preview.page?.title}</h2><p className="boCmsPreviewPath">/{preview.page?.slug}</p>{(preview.revision?.document?.sections||[]).length?<div className="cmsLiveSections">{preview.revision.document.sections.map((section,index)=><PreviewSection key={section.id||index} section={section}/>)}</div>:<p className="boCmsPreviewEmpty">This draft has no content sections yet. Select Edit to start writing. The live site is unchanged.</p>}</article></div>
     </section></div>}
-    {editing&&<CmsPageEditor initial={editing} supabase={supabase} onClose={()=>setEditing(null)} onSaved={async()=>{await load();setNotice('Draft saved. The public page remains unchanged.');}}/>}
+    {editing&&<CmsPageEditor initial={editing} supabase={supabase} onClose={()=>setEditing(null)} onSaved={async data=>{await load();setNotice(data?.page?.status==='published'?'Draft saved. The current published page remains live until you publish these edits.':'Draft saved. The public page remains unchanged.');}} onPublished={async()=>{setEditing(null);await load();setNotice('Page published. Its public URL is now live.');}}/>}
+    {history&&<CmsPageHistory entry={history} supabase={supabase} onClose={()=>setHistory(null)} onRestored={async()=>{const page=history.page;setHistory(null);await load();await showEditor(page);setNotice('A new draft was restored from the selected revision. The published version is unchanged until you publish it.');}}/>}
   </div>;
 }
