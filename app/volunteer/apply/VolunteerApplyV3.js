@@ -276,11 +276,12 @@ export default function VolunteerApplyV3({ config }) {
     if (photoBusy) return;
     setPhotoBusy(true);
     try {
-      const { error } = await sb.rpc("remove_volunteer_photo", {
-        p_id: ids.current.id,
-        p_token: ids.current.token,
+      const response=await fetch(SUPABASE_URL+"/functions/v1/volunteer-photo-remove",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({id:ids.current.id,token:ids.current.token})
       });
-      if (error) throw error;
+      if(!response.ok)throw new Error("Photo deletion failed");
       set("photoApproved", false);
       setPhotoUrl("");
     } catch {
