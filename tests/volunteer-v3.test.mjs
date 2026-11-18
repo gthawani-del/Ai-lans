@@ -11,7 +11,7 @@ const base={
   communicationExample:"I would explain the idea using a simple example and ask the participant to describe it back.",
   experienceStatus:"No prior experience yet",
   beginnerExample:"I helped organise a community activity and resolve scheduling problems.",
-  languages:["English","Hindi"],attendance:"Need confirmed dates",
+  languages:["English","Hindi"],languageProficiency:{English:"Fluent",Hindi:"Comfortable"},attendance:"Need confirmed dates",
   deviceAvailability:"I can bring a laptop",
   commitmentChecks:[...commitments],accurate:true,consent:true,
   customTools:[],stack:{},photoApproved:false
@@ -77,4 +77,14 @@ test("bounded upload checks streamed bytes rather than trusting content length",
  assert.equal((await boundedBody(req(4),4)).length,4);
  await assert.rejects(boundedBody(req(5),4),RangeError);
  await assert.rejects(boundedBody(req(5,{"content-length":"1"}),4),RangeError);
+});
+
+test("participant language proficiency is explicit and stale selections are discarded",()=>{
+  const incomplete={...base,languageProficiency:{English:"Fluent"}};
+  assert.ok(validate(incomplete,3).languageProficiency);
+  const valid={...base,languageProficiency:{English:"Comfortable",Hindi:"Basic"}};
+  assert.deepEqual(validate(valid,3),{});
+  assert.deepEqual(normalize({...valid,languages:["Hindi"]}).languageProficiency,{Hindi:"Basic"});
+  assert.deepEqual(normalize({...valid,languages:["Other"],languagesOther:"Konkani",languageProficiency:{Other:"Fluent"}}).languageProficiency,{Other:"Fluent"});
+  assert.ok(validate({...base,languages:["English"],languageProficiency:{English:"Native"}},3).languageProficiency);
 });
