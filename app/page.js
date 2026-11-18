@@ -1,7 +1,8 @@
 import HomePage from './HomePage';
 
 export const metadata = {
-  metadataBase: new URL('https://ai-lans-ggg12.vercel.app'),
+  metadataBase: new URL('https://weareailabs.com'),
+  alternates: { canonical: '/' },
   title: 'weareailabs | Hands-on AI Business Workshop',
   description: 'Turn real business problems into working AI solutions. A hands-on Mumbai workshop for founders, CXOs and business leaders. Dates to be announced.',
   openGraph: {

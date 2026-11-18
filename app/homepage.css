@@ -65,7 +65,29 @@
 @media(max-width:800px) {
   .homepage header { height:72px; padding:0 20px; border-bottom:1px solid var(--home-line); }
   .homepage .headerLogo { width:154px; }
-  .homepage nav.open { top:72px; padding:8px 20px; }
+  .homepage nav.open {
+    display:flex;
+    position:absolute;
+    top:72px;
+    right:0;
+    left:0;
+    z-index:30;
+    flex-direction:column;
+    gap:0;
+    padding:8px 20px;
+    border-bottom:1px solid var(--home-line);
+    background:#fff;
+    box-shadow:0 12px 24px #071c2c12;
+  }
+  .homepage nav.open a {
+    display:flex;
+    align-items:center;
+    min-height:48px;
+    padding:10px 0;
+    border-bottom:1px solid var(--home-line);
+  }
+  .homepage nav.open a:last-child { border-bottom:0; }
+  .homepage nav.open a:first-child::after { display:none; }
   .homepage .hero { display:block; padding:28px 20px 32px; min-height:0; }
   .homepage .heroCopy { padding:0; }
   .homepage .heroLogoHeading { display:none; }
@@ -116,6 +138,26 @@
 
 .homepage footer { flex-wrap:wrap; }
 .homepage .privacyLink { color:var(--home-teal); text-decoration:underline; display:inline-flex; align-items:center; min-height:44px; font-size:14px; }
+
+/* Keep the active Overview link on the same baseline as its siblings. The
+   global navigation rule adds a large top padding to the first link, which
+   otherwise shifts its label inside the homepage header. */
+.homepage header nav a:first-child {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border-bottom: 0;
+  position: relative;
+}
+.homepage header nav a:first-child::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid var(--home-teal);
+}
 
 /* Workshop logistics are concise and clearly separate knowns from unconfirmed details. */
 .homepage .workshopDetails{padding:clamp(36px,5vw,88px) clamp(20px,6vw,100px);background:#f7f9f5;color:#173e30}
