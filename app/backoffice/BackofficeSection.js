@@ -260,7 +260,69 @@ function AttendeeDirectory({attendees=[],data,setData,profile,supabase}){
  const canEdit=['super_admin','operations'].includes(profile?.role);
  const filtered=attendees.filter(a=>(regionFilter==='all'||(a.state_region||'Not mapped')===regionFilter)&&(mappingFilter==='all'||a.state_mapping_status===mappingFilter));
  const selected=(data?.attendees||[]).find(a=>a.id===selectedId);
- const states=[...new Set(attendees.map(a=>a.state_…5804 tokens truncated…r','Registration form content, labels and field configuration.'],
+ const states=[...new Set(attendees.map(a=>a.state_region||'Not mapped'))].sort();
+ const counts=attendees.reduce((m,a)=>{const s=a.state_region||'Not mapped';m.set(s,(m.get(s)||0)+1);return m},new Map());
+ const labelStatus=s=>({matched:'Matched',manual:'Manually set',needs_review:'Needs review',not_mapped:'Not mapped'}[s]||'Not mapped');
+ function open(row){setSelectedId(row.id);setChoice(row.state_region||'');setNotice('')}
+ async function saveState(reset=false){
+   if(!selected||saving||!canEdit)return;
+   setSaving(true);setNotice('');
+   try{
+     const {data:s}=await supabase.auth.getSession();
+     if(!s.session)throw new Error('Please sign in again');
+     const response=await fetch(API+'?workshop_key=ai-lab-mumbai-2026',{
+       method:'POST',headers:{Authorization:'Bearer '+s.session.access_token,apikey:SUPABASE_PUBLISHABLE_KEY,'Content-Type':'application/json'},
+       body:JSON.stringify({action:'update_attendee_region',attendee_id:selected.id,state_region:reset?'':choice})
+     });
+     const j=await response.json();
+     if(!response.ok)throw new Error(j.error||'Could not update state');
+     setData(prev=>{
+       const next={...prev,attendees:(prev?.attendees||[]).map(a=>a.id===selected.id?{...a,...j.attendee}:a)};
+       try{sessionStorage.setItem('ai-lab-admin-data',JSON.stringify(next))}catch{}
+       return next;
+     });
+     setChoice(j.attendee.state_region||'');
+     setNotice('State mapping saved.');
+   }catch(e){setNotice(e?.message||'Could not save.')}
+   finally{setSaving(false)}
+ }
+ return <div className="boAttendeeWorkspace">
+   <div className="boPanel boAttendeeLocationSummary"><div><b>State-wise applications</b><p>Derived from city and country. Ambiguous or unmatched locations are not guessed.</p></div>
+    <div className="boAttendeeRegionStats">{[...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([s,n])=><span key={s}>{s}: <b>{n}</b></span>)}</div>
+   </div>
+   <div className="boAttendeeFilters">
+     <label>State / region <select value={regionFilter} onChange={e=>setRegionFilter(e.target.value)}><option value="all">All states</option>{states.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
+     <label>Mapping status <select value={mappingFilter} onChange={e=>setMappingFilter(e.target.value)}><option value="all">All statuses</option>{['matched','manual','needs_review','not_mapped'].map(s=><option key={s} value={s}>{labelStatus(s)}</option>)}</select></label>
+     <span>{filtered.length} applications</span>
+   </div>
+   <div className="boPanel boTableWrap"><table className="boDataTable"><thead><tr><th>Attendee</th><th>Company</th><th>Role</th><th>AI Level</th><th>City</th><th>State / region</th><th>Mapping</th><th>Payment</th><th>Table</th><th>Details</th></tr></thead><tbody>
+     {filtered.map(a=><tr key={a.id}><td><strong>{a.full_name||'—'}</strong><small>{a.email}</small></td><td>{a.company_organisation||'—'}</td><td>{a.career_role||'—'}</td><td>{a.ai_experience_level||'—'}</td><td>{a.city||'—'}<small>{a.country||''}</small></td><td>{a.state_region||'Not mapped'}</td><td>{labelStatus(a.state_mapping_status)}</td><td>{a.payment_status||'—'}</td><td>{a.table?`Table ${a.table.table_number}`:'Unassigned'}</td><td><button type="button" className="boAttendeeOpen" onClick={()=>open(a)}>View / edit</button></td></tr>)}
+   </tbody></table>{!filtered.length&&<p>No attendee records match these filters.</p>}</div>
+   {selected&&<section className="boPanel boAttendeeDetails">
+      <div className="boPanelHead"><div><h2>{selected.full_name}</h2><p>{selected.email} · {selected.city}, {selected.country}</p></div><button type="button" onClick={()=>setSelectedId(null)} aria-label="Close attendee details">Close</button></div>
+      <dl className="boAttendeeDetailsGrid">
+       {[
+         ['Role',selected.career_role],['Designation',selected.current_title],['Preferred contact',selected.preferred_contact_method],['Organisation',selected.company_organisation],
+         ['Industry',selected.industry],['Primary function',selec…3804 tokens truncated…gs boSettingsAccordion" open>
+  <summary className="boSettingsAccordionHead"><div><h2>Volunteer Application Settings</h2><p>Published form v{base.version||'—'} · scoring v{score.version||'—'}. Publishing creates a new version; existing applications keep the version they started with.</p></div><ChevronDown size={18}/></summary>
+  <div className="boSettingsAccordionBody">
+   <div className="boSettingsSection boScoringModelSection">
+    <div className="boSectionTitleRow"><div><h3>Volunteer Scoring Model</h3><p>Controls how the 100-point volunteer score is calculated. Weight changes apply only after publishing a new scoring version.</p></div><strong className={total===100?'boWeightTotal ok':'boWeightTotal bad'}>{total}/100</strong></div>
+    <div className="boScoringModelGrid">{order.map(k=><article key={k} className="boScoreRuleCard"><header><div><b>{labels[k]}</b><span>{Number(weights[k]||0)} points</span></div><label><input aria-label={labels[k]+' weight'} type="number" min="0" max="100" value={weights[k]??0} onChange={e=>changeWeight(k,e.target.value)}/><em>%</em></label></header><ul>{scoringRules[k].map((x,i)=><li key={i}>{x}</li>)}</ul></article>)}</div>
+    <div className="boDecisionGuidance"><div className="boSectionTitleRow"><div><h3>Score-based review guidance</h3><p>These bands explain how scores should enter the review workflow. Scores never automatically select, reject or change an applicant’s status.</p></div></div><div className="boDecisionBands">{decisionBands.map(([range,label,action,text])=><article key={range}><strong>{range}</strong><div><b>{label}</b><span>{action}</span><small>{text}</small></div></article>)}</div><p className="boScoringNote">Final decisions remain manual and should consider evidence quality, role coverage, commitment, workshop requirements and reviewer judgement alongside the total score.</p></div>
+   </div>
+
+   <div className="boSettingsSection"><h3>Application</h3><div className="boRuleFields boRuleFields3"><label><span>Application title</span><input value={title} onChange={e=>setTitle(e.target.value)}/></label><label><span>Opens at</span><input type="datetime-local" value={opens} onChange={e=>setOpens(e.target.value)}/></label><label><span>Closes at</span><input type="datetime-local" value={closes} onChange={e=>setCloses(e.target.value)}/></label></div></div>
+   <div className="boSettingsSection"><h3>Workshop schedule</h3><p>Shown to new applicants after publishing. Existing applicants retain their original schedule; reconfirm availability directly when it changes.</p><div className="boRuleFields boRuleFields3">{[['dates','Workshop dates'],['hours','Daily hours (IST)'],['venue','Venue / city']].map(([key,label])=><label key={key}><span>{label}</span><input value={workshopDetails[key]||''} onChange={e=>setWorkshopDetails(d=>({...d,[key]:e.target.value}))}/></label>)}</div></div>
+   <div className="boSettingsSection"><div className="boSectionTitleRow"><div><h3>Stack tools</h3><p>Tools applicants can select when describing their current stack.</p></div><button className="boSecondaryBtn" onClick={()=>setTools(t=>[...t,'New tool'])}>Add tool</button></div><div className="boToolList">{tools.map((x,i)=><div className="boToolRow" key={i}><input value={x} onChange={e=>setTools(t=>t.map((v,n)=>n===i?e.target.value:v))}/><button onClick={()=>setTools(t=>t.filter((_,n)=>n!==i))}>Remove</button></div>)}</div></div>
+   <div className="boPublishRow"><div><b>Publish configuration</b><small>Creates immutable form and scoring versions for new applications.</small></div>{settings.can_publish?<button className="boPrimaryBtn" disabled={busy||total!==100} onClick={publish}>{busy?'Publishing…':'Publish new volunteer version'}</button>:<span>Only Super Admin can publish volunteer settings.</span>}</div>
+  </div>
+ </details>
+}
+
+function PageContentSettings({section}){const meta={
+ 'page-home':['Home Page','/','Homepage content and section configuration.'],
+ 'page-attendee-form':['Attendee Form','/register','Registration form content, labels and field configuration.'],
  'page-volunteer-form':['Volunteer Form','/volunteer/apply','Volunteer application content, labels and field configuration.']
 }[section];return <><div className="boStats boStats3"><Card title="Page" value={meta[0]} meta={meta[1]}/><Card title="Content" value="Editable" meta="copy, labels and helper text"/><Card title="Configuration" value="Managed" meta="fields, visibility and behaviour"/></div><div className="boPanel"><h2>Content Settings</h2><p>{meta[2]}</p><div className="boSettingsGrid"><Setting label="Content edits" value="Copy & labels"/><Setting label="Field settings" value={section==='page-home'?'Sections':'Validation & options'}/><Setting label="Configuration" value="Page behaviour"/></div><p><b>Configuration workspace created.</b> Page-specific editable controls will be connected here without changing the existing public page or form until a version is published.</p></div></>}
 
