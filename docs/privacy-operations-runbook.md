@@ -24,6 +24,15 @@ Reviewed: 18 November 2026. Applies to the production **AILab** Supabase project
 
 No specific provider backup purge SLA is asserted. For applications whose status has not been closed, do not start a 90-day clock based only on original submission. For postponed events, review continued necessity.
 
+## Back-office request register and monthly reporting (implemented 18 November)
+
+- **Back Office → System → Privacy & Retention** is limited to active `super_admin` and `operations` roles. The `privacy-admin` Supabase Edge Function authenticates the administrator and checks their current database role before accessing records.
+- **Request register:** authorized staff can record requests received at `connect@eliv8lyf.com`, specify request type, applicant email and reference, designate a responsible administrator, update verification/status/legal-hold flags, and record handling and resolution notes. New requests are owned by the admin logging them. Create/update actions generate entries in `backoffice_audit_log`. Only authorized staff can access the backend; no public request submission endpoint is introduced.
+- **Status safety:** closing a case requires a written resolution; marking a deletion complete requires verified identity and an explicit confirmation that deletion was independently performed and checked. **The register does not itself delete records or stored images.** Completed and rejected cases are read-only.
+- **Retention reporting:** `pg_cron` job `weareailabs-monthly-privacy-review` (schedule `15 3 1 * *`, database timezone) calls `privacy_internal.capture_retention_report()` on the first day of each month. Reports contain aggregate counts, not applicant content. The first snapshot was generated immediately at setup; admins can inspect prior reports and the current overdue-draft queue. Only reports are automated, **not deletion**.
+- **Security:** `public.privacy_requests` and `public.privacy_retention_reports` have RLS enabled and no direct permissions for `anon` or `authenticated` roles. Access is mediated by the authorization-checked server function. Keep free-text notes minimal and do not paste confidential documents or tokens.
+- **Operations:** the appointed owner must monitor the contact mailbox, log requests, and act on overdue flags. The scheduled report remains available for review in the back office and is not emailed automatically.
+
 ## Minimum operating procedure
 
 **Run review at least monthly and when a verified privacy request arrives.** The operator should assign an internal case owner; the public contact is the mailbox above. Record case ID, category, receipt date, applicant verification status, legal-hold check, reviewer, decision, date, affected live/storage resources and response sent. Restrict this case log to authorized staff. Do not copy resumes, photographs, answers or access tokens into ordinary emails or spreadsheets.
