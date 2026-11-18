@@ -4,7 +4,15 @@ import SocialLinks from '../../components/SocialLinks';
 export const metadata = {
   title: 'Privacy policy | weareailabs',
   description: 'How eliv8Lyf handles weareailabs attendee and volunteer applications, photos, saved drafts and privacy requests.',
+  alternates: { canonical: '/privacy' },
   robots: { index: false, follow: false },
+  openGraph: {
+    title: 'Privacy policy | weareailabs',
+    description: 'How eliv8Lyf handles weareailabs attendee and volunteer applications, photos, saved drafts and privacy requests.',
+    type: 'website',
+    images: ['/brand/weareailabs-home.webp'],
+  },
+  twitter: { card: 'summary_large_image', title: 'Privacy policy | weareailabs', images: ['/brand/weareailabs-home.webp'] },
 };
 
 export default function PrivacyPage() {
@@ -13,8 +21,8 @@ export default function PrivacyPage() {
     <main className={styles.content} id="main-content">
       <p className={styles.eyebrow}>Your information</p>
       <h1>Privacy policy</h1>
-      <p>Effective 18 November 2026 · Version 1.1</p>
-      <p>weareailabs is a workshop programme operated by <a href="https://eliv8lyf.com">eliv8Lyf</a>. This policy explains how we handle information when you visit this website, apply to attend a workshop, apply to volunteer or contact us. For privacy questions and requests, email <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a>.</p>
+      <p>Effective 19 November 2026 · Version 1.2</p>
+      <p>weareailabs is a workshop programme operated by <a href="https://eliv8lyf.com">eliv8Lyf</a>. This policy explains how we handle information when you visit this website, apply to attend a workshop, apply to volunteer or contact us. For privacy questions and requests, email <a href="mailto:connect@weareailabs.com">connect@weareailabs.com</a>.</p>
       <section><h2>1. Information we collect</h2>
         <ul><li><strong>Attendee applications:</strong> your name, email, phone number, city and country, professional role, optional designation, organisation or independent status, industry, experience, business function, AI familiarity, tools used, preferred build areas, business problem, intended users, relevant systems or information sources, desired outcome, two-day workshop availability, preferred contact method, whether representative or sample data may be used, optional participation-support notes and how you heard about the workshop. We may derive a state or region from city and country using a reference dataset; uncertain results are flagged for review and an authorized administrator may correct them.</li>
         <li><strong>Volunteer applications:</strong> your contact and city, optional organisation, skills and communication examples, selected contribution track, relevant work examples or a private-work description, languages and self-reported proficiency for participant support, attendance and device availability, and agreed commitments. A profile photo is optional during application and may be requested after shortlisting. Optional fields are marked in the form.</li>
@@ -38,12 +46,12 @@ export default function PrivacyPage() {
         <p>These are retention-review targets administered by the workshop team, not an automated deletion guarantee. Our application database does not currently have an active scheduled purge for these categories. We review records and storage objects manually, including any overdue drafts or unattached photos, before authorized deletion. Browser drafts are handled as described above. If an event is postponed or cancelled, we review whether retaining an application still serves its purpose rather than retain it indefinitely.</p>
         <p>We may retain limited records longer where necessary for applicable legal, accounting, security or dispute-resolution requirements, with access restricted to those purposes. Removal from active systems may not immediately remove protected backup copies; those remain subject to the provider’s backup lifecycle and must not be reused for ordinary application processing. You can contact us for the status of a deletion request.</p>
       </section>
-      <section><h2>8. Your requests and concerns</h2><p>Contact <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a> to request access to your application information, correction, withdrawal, deletion or to raise a privacy concern. Include the email address used for your application and, if available, its reference. Do not send identity documents unless we explain why they are needed. We may ask for proportionate verification to protect your information.</p><p>We will explain if a request cannot be fulfilled in full, including where a legal retention requirement applies. Clearing your browser draft does not withdraw your submitted application.</p></section>
+      <section><h2>8. Your requests and concerns</h2><p>Contact <a href="mailto:connect@weareailabs.com">connect@weareailabs.com</a> to request access to your application information, correction, withdrawal, deletion or to raise a privacy concern. Include the email address used for your application and, if available, its reference. Do not send identity documents unless we explain why they are needed. We may ask for proportionate verification to protect your information.</p><p>We will explain if a request cannot be fulfilled in full, including where a legal retention requirement applies. Clearing your browser draft does not withdraw your submitted application.</p></section>
       <section><h2>9. Website analytics, cookies and storage</h2><p>We have not identified a dedicated advertising pixel or marketing analytics integration in the current website application code. The site uses necessary browser storage for application drafts, display preferences and administrator sessions; hosting and service providers may also process necessary technical identifiers and request logs. We do not currently use application details to build an advertising audience. If analytics or marketing technologies are introduced, this notice and any applicable choice mechanisms will be reviewed first.</p></section>
       <section><h2>10. Security</h2><p>We use access controls, private photo storage and encrypted connections to reduce risks. No website or storage system can guarantee absolute security. If you believe your application or resume information has been exposed, contact us promptly and avoid sharing application access links or tokens.</p></section>
       <section><h2>11. Updates</h2><p>We will update this page when our practices change and show the effective date. Where a new purpose requires additional permission, updating this policy alone will not substitute for asking you.</p></section>
       <a className={styles.back} href="/register">Go to attendee application →</a>
     </main>
-    <footer className={styles.footer}><a href="/">Home</a><a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a><SocialLinks/></footer>
+    <footer className={styles.footer}><a href="/">Home</a><a href="mailto:connect@weareailabs.com">Contact eliv8Lyf</a><SocialLinks/></footer>
   </div>;
 }

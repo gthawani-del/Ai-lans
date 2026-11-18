@@ -884,7 +884,7 @@ export default function VolunteerApplyV3({ config }) {
                 <p>
                   Your application answers are used for volunteer selection and coordination. An optional photo is for internal identification, not publicity. This agreement does
                   not grant permission for publicity or marketing use. You can
-                  ask the workshop team to correct or delete your application at <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a>. See our <a href="/privacy" target="_blank" rel="noopener noreferrer">privacy policy (opens in a new tab)</a>.
+                  ask the workshop team to correct or delete your application at <a href="mailto:connect@weareailabs.com">connect@weareailabs.com</a>. See our <a href="/privacy" target="_blank" rel="noopener noreferrer">privacy policy (opens in a new tab)</a>.
                 </p>
               </section>
               {field(rules.find((r) => r.key === "accurate"))}

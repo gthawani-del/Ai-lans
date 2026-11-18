@@ -1,6 +1,6 @@
 # weareailabs privacy operations and retention review
 
-Owner: **eliv8Lyf** (operator); inbound privacy mailbox: **connect@eliv8lyf.com**.
+Owner: **eliv8Lyf** (operator); inbound privacy mailbox: **connect@weareailabs.com**.
 Reviewed: 18 November 2026. Applies to the production **AILab** Supabase project and weareailabs.com.
 
 ## Verified processing
@@ -27,7 +27,7 @@ No specific provider backup purge SLA is asserted. For applications whose status
 ## Back-office request register and monthly reporting (implemented 18 November)
 
 - **Back Office → System → Privacy & Retention** is limited to active `super_admin` and `operations` roles. The `privacy-admin` Supabase Edge Function authenticates the administrator and checks their current database role before accessing records.
-- **Request register:** authorized staff can record requests received at `connect@eliv8lyf.com`, specify request type, applicant email and reference, designate a responsible administrator, update verification/status/legal-hold flags, and record handling and resolution notes. New requests are owned by the admin logging them. Create/update actions generate entries in `backoffice_audit_log`. Only authorized staff can access the backend; no public request submission endpoint is introduced.
+- **Request register:** authorized staff can record requests received at `connect@weareailabs.com`, specify request type, applicant email and reference, designate a responsible administrator, update verification/status/legal-hold flags, and record handling and resolution notes. New requests are owned by the admin logging them. Create/update actions generate entries in `backoffice_audit_log`. Only authorized staff can access the backend; no public request submission endpoint is introduced.
 - **Status safety:** closing a case requires a written resolution; marking a deletion complete requires verified identity and an explicit confirmation that deletion was independently performed and checked. **The register does not itself delete records or stored images.** Completed and rejected cases are read-only.
 - **Retention reporting:** `pg_cron` job `weareailabs-monthly-privacy-review` (schedule `15 3 1 * *`, database timezone) calls `privacy_internal.capture_retention_report()` on the first day of each month. Reports contain aggregate counts, not applicant content. The first snapshot was generated immediately at setup; admins can inspect prior reports and the current overdue-draft queue. Only reports are automated, **not deletion**.
 - **Security:** `public.privacy_requests` and `public.privacy_retention_reports` have RLS enabled and no direct permissions for `anon` or `authenticated` roles. Access is mediated by the authorization-checked server function. Keep free-text notes minimal and do not paste confidential documents or tokens.
@@ -80,7 +80,7 @@ These figures are historical audit evidence only; rerun queries before taking ac
 ## Controls and follow-ups
 
 - Ensure review teams, not anonymous visitors, can access volunteer applications; keep RLS enabled and separately verify privileged functions and service-role key handling.
-- Keep `connect@eliv8lyf.com` actively monitored. Do not promise a response timeframe that is not staffed.
+- Keep `connect@weareailabs.com` actively monitored. Do not promise a response timeframe that is not staffed.
 - Publicity/photo marketing requires explicit separate permission, not general application consent.
 - Assess legal obligations before enabling deletion automation. Review Indian DPDP phased commencement, vendor retention, possible record holds, and contractual requirements with qualified counsel.
 - If automated retention is later adopted, use dry-run previews, legal holds, explicit outcome logging, Storage API cleanup, idempotent retries, and separate authorization before activation.

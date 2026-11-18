@@ -91,7 +91,7 @@ export default function PrivacyRetentionWorkspace({supabase,profile}){
        <div className="boPanel"><span>Last report generated</span><strong className="boPrivacyDate">{date(latest?.generated_at)}</strong></div>
      </div>
      <section className="boPanel">
-       <div className="boPrivacyTitle"><div><h3>Privacy request register</h3><p>Log requests received at <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a>. Verify identity before sharing or removing data.</p></div><button type="button" onClick={()=>{setShowNew(s=>!s);setError('')}}>{showNew?'Cancel':'Log request'}</button></div>
+       <div className="boPrivacyTitle"><div><h3>Privacy request register</h3><p>Log requests received at <a href="mailto:connect@weareailabs.com">connect@weareailabs.com</a>. Verify identity before sharing or removing data.</p></div><button type="button" onClick={()=>{setShowNew(s=>!s);setError('')}}>{showNew?'Cancel':'Log request'}</button></div>
        {showNew&&<form className="boPrivacyForm" onSubmit={createCase}>
          <label>Request type<select value={form.request_type} onChange={e=>setForm(v=>({...v,request_type:e.target.value}))}>{TYPES.map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></label>
          <label>Applicant email<input type="email" required maxLength={254} autoComplete="off" value={form.applicant_email} onChange={e=>setForm(v=>({...v,applicant_email:e.target.value}))}/></label>

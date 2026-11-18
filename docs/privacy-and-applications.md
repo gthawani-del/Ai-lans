@@ -1,6 +1,6 @@
 # Privacy policy and attendee entry points
 
-14 November 2026. Operator brand and contact supplied by owner: eliv8Lyf, https://eliv8lyf.com, connect@eliv8lyf.com. No corporate suffix, office address or unverified legal entity invented.
+14 November 2026. Operator brand and contact supplied by owner: eliv8Lyf, https://eliv8lyf.com, connect@weareailabs.com. No corporate suffix, office address or unverified legal entity invented.
 
 ## Published behaviour
 

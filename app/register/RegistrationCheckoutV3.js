@@ -123,7 +123,7 @@ function SuccessScreen({success,theme,textScale}){
       <h2>What happens next?</h2>
       <p>The workshop team will review your application and contact you using your supplied details about the next steps, workshop schedule and participation decision. No response date has been announced.</p>
       <p>The workshop fee is ₹25,000 per participant. If your application is selected, the team will share payment and refund details separately. No payment has been taken here.</p>
-      <p>Please do not submit another application. To correct or update your answers, contact <a href="mailto:connect@eliv8lyf.com">connect@eliv8lyf.com</a> and include your application reference.</p>
+      <p>Please do not submit another application. To correct or update your answers, contact <a href="mailto:connect@weareailabs.com">connect@weareailabs.com</a> and include your application reference.</p>
       <a href="/" className="successReturn">Return to weareailabs →</a>
       <p><a href="/privacy">Privacy policy</a></p>
     </div>
@@ -220,5 +220,5 @@ export default function RegistrationCheckoutV3(){
 
 
           <div className="trust onePageTrust"><span className="shield"><UiIcon name="shield" size={25}/></span><span><b>Your application information</b><small>Used for application review and workshop coordination.</small></span><span className="cloud"><UiIcon name="cloud" size={25}/></span><span><b>{saveState}</b><small>Your unfinished draft stays on this device.</small></span></div>
-        </form></section><footer className="regFooter"><b><AILabMark small/></b><p><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a> · <a href="mailto:connect@eliv8lyf.com">Contact eliv8Lyf</a></p><SocialLinks/></footer></div></main>;
+        </form></section><footer className="regFooter"><b><AILabMark small/></b><p><a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy policy (opens in a new tab)</a> · <a href="mailto:connect@weareailabs.com">Contact eliv8Lyf</a></p><SocialLinks/></footer></div></main>;
 }
