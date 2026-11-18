@@ -1,18 +1,79 @@
 'use client';
 
 import {createContext,useContext,useEffect,useState} from 'react';
-import {useRouter} from 'next/navigation';
+import {usePathname,useRouter} from 'next/navigation';
 import {getSupabaseBrowserClient} from '../../lib/supabase-browser';
+import {adminSessionClockValid,clearAdminSessionClock,endAdminSession} from '../../lib/backoffice-session';
 
 const AdminSessionContext=createContext(null);
 
 export function AdminSessionProvider({children}){
- const router=useRouter();
- const supabase=getSupabaseBrowserClient();
- const [session,setSession]=useState(null);
- const [profile,setProfile]=useState(null);
- const [ready,setReady]=useState(false);
- useEffect(()=>{let live=true;(async()=>{const {data:s}=await supabase.auth.getSession();if(!live)return;if(!s.session){setReady(true);router.replace('/backoffice/login');return}const {data:a}=await supabase.from('backoffice_users').select('email,role,is_active').eq('user_id',s.session.user.id).maybeSingle();if(!live)return;if(!a?.is_active){await supabase.auth.signOut();setReady(true);router.replace('/backoffice/login');return}setSession(s.session);setProfile(a);setReady(true)})();const {data:listener}=supabase.auth.onAuthStateChange((_e,next)=>{if(!next){setSession(null);setProfile(null);router.replace('/backoffice/login')}else setSession(next)});return()=>{live=false;listener.subscription.unsubscribe()}},[router,supabase]);
- return <AdminSessionContext.Provider value={{session,profile,ready,supabase}}>{children}</AdminSessionContext.Provider>
+  const router=useRouter();
+  const pathname=usePathname();
+  const isLogin=pathname==='/backoffice/login';
+  const supabase=getSupabaseBrowserClient();
+  const [session,setSession]=useState(null);
+  const [profile,setProfile]=useState(null);
+  const [ready,setReady]=useState(false);
+
+  useEffect(()=>{
+    let live=true;
+    setReady(false);
+    (async()=>{
+      try{
+        const {data,error}=await supabase.auth.getSession();
+        if(!live)return;
+        if(error||!data?.session){
+          setSession(null);setProfile(null);setReady(true);
+          if(!isLogin)router.replace('/backoffice/login');
+          return;
+        }
+        if(!adminSessionClockValid()){
+          await endAdminSession(supabase);
+          if(!live)return;
+          setSession(null);setProfile(null);setReady(true);
+          if(!isLogin)router.replace('/backoffice/login?reason=expired');
+          return;
+        }
+        const {data:admin,error:profileError}=await supabase.from('backoffice_users')
+          .select('email,role,is_active').eq('user_id',data.session.user.id).maybeSingle();
+        if(!live)return;
+        if(profileError||!admin?.is_active){
+          await endAdminSession(supabase);
+          if(!live)return;
+          setSession(null);setProfile(null);setReady(true);
+          if(!isLogin)router.replace('/backoffice/login');
+          return;
+        }
+        setSession(data.session);setProfile(admin);setReady(true);
+        if(isLogin)router.replace('/backoffice');
+      }catch{
+        if(!live)return;
+        // Fail closed if auth or role validation cannot complete.
+        setSession(null);setProfile(null);setReady(true);
+        if(!isLogin)router.replace('/backoffice/login');
+      }
+    })();
+    return()=>{live=false};
+  },[isLogin,pathname,router,supabase]);
+
+  useEffect(()=>{
+    const {data:listener}=supabase.auth.onAuthStateChange((event,next)=>{
+      if(event==='SIGNED_OUT'){
+        clearAdminSessionClock();
+        setSession(null);setProfile(null);
+        if(window.location.pathname!=='/backoffice/login')router.replace('/backoffice/login');
+      }else if(event==='TOKEN_REFRESHED'&&next){
+        // Token refresh must never extend the admin's absolute or inactivity limits.
+        if(adminSessionClockValid())setSession(next);
+      }
+    });
+    return()=>listener.subscription.unsubscribe();
+  },[router,supabase]);
+
+  return <AdminSessionContext.Provider value={{session,profile,ready,supabase}}>
+    {isLogin?children:(ready&&session&&profile?children:<main className="boBoot" role="status">Checking administrator access…</main>)}
+  </AdminSessionContext.Provider>;
 }
+
 export function useAdminSession(){return useContext(AdminSessionContext)}
