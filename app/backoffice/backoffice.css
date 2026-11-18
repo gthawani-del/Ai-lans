@@ -27,3 +27,27 @@
 .boV2 .boTopbar p,.boV2 .boScope small,.boV2 .boPanelHead p,.boV2 .boSimpleList span,.boV2 .volKpi>small,.boV2 .volApplicant small,.boV2 .volPagination,.boV2 .boUpdatedInline{font-size:var(--text-meta-size);font-weight:var(--text-meta-weight);line-height:var(--text-meta-line)}
 .boV2 .boNavGroup>b,.boV2 .boTopbar>div:first-child>span,.boV2 .boExplain,.boV2 .volBadge,.boV2 .volRole{font-size:var(--text-micro-label-size)!important;font-weight:var(--text-micro-label-weight);line-height:var(--text-micro-label-line);letter-spacing:var(--text-micro-label-track)}
 .boV2 .boAdmin>small,.boV2 .boAttentionRows small,.boV2 .boLogicSteps small,.boV2 .boSearchResults small,.boV2 .boPersonDrawer>small,.boV2 .volPreferred{font-size:var(--text-micro-size);font-weight:var(--text-micro-weight);line-height:var(--text-micro-line)}
+
+/* Back-office sign-in: weareailabs brand refresh, isolated from dashboard */
+.boLoginPage{background:radial-gradient(ellipse at 50% 0%,#e7f2ed 0%,#f5f8f6 48%,#f8faf9 100%);color:#16382f;padding:24px 16px}
+.boLoginCard{width:min(100%,440px);border:1px solid #dce7e1;border-radius:18px;padding:30px;box-shadow:0 22px 70px #193d3020}
+.boLoginBrand{gap:16px;min-height:66px;padding-bottom:20px;border-bottom-color:#e3ece7}
+.boLoginBrand img{display:block;width:166px;max-width:58%;height:auto;object-fit:contain;object-position:left center}
+.boLoginBrand span{font-size:11px;font-weight:600;line-height:1.4;color:#547368;border-left-color:#d4e2da}
+.boLoginIntro{margin:25px 0 24px;align-items:flex-start}
+.boLoginIcon{width:44px;height:44px;border-radius:12px;background:#e5f3eb;color:#236a4d}
+.boLoginIntro h1{font-size:25px;letter-spacing:-.025em;color:#16382f}
+.boLoginIntro p{font-size:13px;line-height:1.55;color:#64796f;margin-top:7px}
+.boLoginCard form>label{font-size:13px;color:#263e34;margin-bottom:8px}
+.boLoginField{height:50px;margin-bottom:17px;padding:0 13px;border-color:#ceded5;border-radius:10px;color:#6c8779;background:#fff}
+.boLoginField:focus-within{border-color:#287856;box-shadow:0 0 0 3px #2878561c}
+.boLoginField input{min-width:0;flex:1;font-size:15px;color:#193d30}
+.boLoginField input::placeholder{color:#85958b}
+.boPasswordToggle{flex:0 0 38px;display:grid;place-items:center;height:38px;width:38px;padding:0;border:0;border-radius:8px;background:transparent;color:#577b69;cursor:pointer}
+.boPasswordToggle:hover{background:#eef6f1;color:#1c6347}
+.boPasswordToggle:focus-visible{outline:2px solid #287856;outline-offset:2px}
+.boLoginCard form>button[type="submit"]{height:50px;border-radius:10px;background:#216c4c;font-size:14px;font-weight:750}
+.boLoginCard form>button[type="submit"]:hover:not(:disabled){background:#185b3e}
+.boLoginCard form>button[type="submit"]:focus-visible{outline:3px solid #65aa87;outline-offset:2px}
+.boLoginCard>small{font-size:11px;line-height:1.5;color:#768b7e;margin-top:19px}
+@media(max-width:480px){.boLoginCard{padding:24px 20px;border-radius:16px}.boLoginBrand img{width:148px}.boLoginBrand span{font-size:10px}.boLoginIntro h1{font-size:23px}}
