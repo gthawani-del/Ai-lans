@@ -1,0 +1,19 @@
+.cmsFormGovernance{display:grid;gap:13px;margin-top:8px;padding-top:14px;border-top:1px solid #e2eae9;color:#365758}
+.cmsFormGovernance>div:first-child h3{margin:4px 0;color:#193f40;font-size:14px}
+.cmsFormGovernance>div:first-child p,.cmsFormGovernanceGroup>p{margin:5px 0;color:#687c7e;font-size:10px;line-height:1.5}
+.cmsFormGovernanceGroup{display:grid;gap:8px;padding:11px;border:1px solid #e0e9e8;border-radius:7px;background:#fbfdfd}
+.cmsFormGovernanceGroup h4{margin:0;color:#21494a;font-size:11px}
+.cmsFormGovernanceGroup>label{display:grid;gap:4px;min-width:0}
+.cmsFormGovernanceGroup>label>span{color:#546b6d;font-size:10px;font-weight:650}
+.cmsFormGovernanceGroup input:not([type=checkbox]),.cmsFormGovernanceGroup textarea,.cmsFormGovernanceGroup select{box-sizing:border-box;width:100%;min-height:34px;border:1px solid #d5e0df;border-radius:5px;background:#fff;padding:6px 8px;color:#244748;font:inherit;font-size:11px}
+.cmsFormGovernanceGroup input[type=number]{appearance:textfield}
+.cmsFormGovernanceGroup .cmsFormOwnerConfirm{display:flex;grid-template-columns:auto 1fr;align-items:flex-start;gap:7px;color:#465f60;font-size:10px;line-height:1.45}
+.cmsFormGovernanceGroup .cmsFormOwnerConfirm input{flex:0 0 auto;accent-color:#007b79;margin:1px 0 0}
+.cmsFormGovernanceGroup button{justify-self:start;min-height:32px;font-size:10px}
+.cmsFormGovernanceActions{display:flex;flex-wrap:wrap;gap:6px}
+.cmsFormGovernanceActions button{flex:1}
+.cmsFormSaved{margin:0;padding:7px 9px;border-radius:5px;background:#eef8f3;color:#2a6648;font-size:10px;line-height:1.4}
+@media(max-width:780px){.cmsFormGovernanceGroup{padding:10px}.cmsFormGovernanceActions{display:grid;grid-template-columns:1fr}.cmsFormGovernanceActions button{width:100%}}
+.cmsFormNotificationStatus{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #dce7e5;border-radius:7px;background:#f8fbfa}
+.cmsFormNotificationStatus>div{display:grid;gap:3px}.cmsFormNotificationStatus b{color:#315758;font-size:12px}.cmsFormNotificationStatus span{color:#617576;font-size:11px}.cmsFormNotificationStatus button{flex:0 0 auto}
+@media(max-width:560px){.cmsFormNotificationStatus{align-items:flex-start;flex-direction:column}.cmsFormNotificationStatus button{width:100%}}

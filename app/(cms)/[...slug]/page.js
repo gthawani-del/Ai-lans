@@ -54,7 +54,7 @@ export default async function CmsPublicPage({ params }) {
     <article className="cmsPublicArticle">
       <header className="cmsPublicHeader"><a href="/" aria-label="weareailabs home">weareailabs</a><span>{page.template?.name}</span></header>
       <h1>{page.page.title}</h1>
-      <div className="cmsLiveSections">{sections.map((section, index) => <PreviewSection key={section.id || index} section={section} />)}</div>
+      <div className="cmsLiveSections">{sections.map((section, index) => <PreviewSection key={section.id || index} section={section} interactiveForm sourcePageId={page.page.id} />)}</div>
     </article>
   </main>;
 }

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Save, Send, Trash2, X } from 'lucide-react';
 import CmsPageSeoPanel from './CmsPageSeoPanel';
+import CmsPublicForm from './CmsPublicForm';
 
 const EDITABLE = ['hero', 'rich_text', 'image_text', 'cta', 'faq', 'form_embed'];
 const makeId = () => globalThis.crypto?.randomUUID?.() || ('section-' + Date.now() + '-' + Math.random().toString(36).slice(2));
@@ -27,7 +28,7 @@ function sectionText(section) {
   return false;
 }
 
-export function PreviewSection({ section, formOptions = [] }) {
+export function PreviewSection({ section, formOptions = [], interactiveForm = false, sourcePageId = null }) {
   if (section.visible === false) return null;
   const props = section.props || {};
   if (section.type === 'hero') return <section className="cmsLiveHero"><small>{props.eyebrow}</small><h1>{props.heading || 'Your page headline'}</h1><p>{props.body || 'Add a concise introduction for this page.'}</p>{props.cta_label && <a href={props.cta_href || '#'}>{props.cta_label}</a>}</section>;
@@ -42,6 +43,7 @@ export function PreviewSection({ section, formOptions = [] }) {
       return <section className="cmsLiveFormEmbed"><small>PROTECTED EXISTING FORM</small>{props.description && <p>{props.description}</p>}<p>Business fields and validation stay on the existing form.</p><a href={path}>{label} →</a></section>;
     }
     const selected = formOptions.find(item => item.id === props.form_id && item.kind === 'standard');
+    if (interactiveForm && props.form_id) return <section className="cmsLiveFormEmbed"><CmsPublicForm formId={props.form_id} sourcePageId={sourcePageId}/></section>;
     return <section className="cmsLiveFormEmbed"><small>FORM EMBED</small>{selected ? <><h2>{selected.public_title || selected.name}</h2><p>Published form · {selected.current_version ? `version ${selected.current_version}` : 'current published version'}</p><span className="cmsFormEmbedUnavailable">Live form rendering is unavailable while public submissions are disabled.</span></> : <><h2>{props.label || 'Form currently unavailable'}</h2><p>{props.description || 'This form is not available to visitors.'}</p></>}</section>;
   }
   return null;

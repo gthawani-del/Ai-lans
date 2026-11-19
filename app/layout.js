@@ -9,6 +9,8 @@ import './backoffice/backoffice.css';
 import './backoffice/backoffice-controls.css';
 import './backoffice/sidebar-hotfix.css';
 import './backoffice/cms-page-studio.css';
+import './cms-public-form.css';
+import './cms-form-governance.css';
 import './backoffice/backoffice-sections.css';
 import BackofficeShellBehavior from './BackofficeShellBehavior';
 import { createPageMetadata } from '../lib/seo';
