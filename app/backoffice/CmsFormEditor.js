@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowLeft, ArrowUp, Eye, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowUp, Eye, History as HistoryIcon, Plus, Save, Trash2 } from 'lucide-react';
 
 const FIELD_TYPES = [
   ['short_text','Short text'],['email','Email'],['phone','Phone'],['long_text','Long text'],['select','Select'],
@@ -47,13 +47,20 @@ export default function CmsFormEditor({ formId, supabase, onClose, onSaved }) {
   const [values, setValues] = useState({});
   const [simulationErrors, setSimulationErrors] = useState({});
   const [simulationMessage, setSimulationMessage] = useState('');
+  const [history, setHistory] = useState(null);
+  const [availability, setAvailability] = useState('open');
+  const [closedMessage, setClosedMessage] = useState('');
+  const [savedAvailability, setSavedAvailability] = useState({availability_status:'open',closed_message:''});
+  const [availabilitySaving, setAvailabilitySaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('Loading draft…');
   const selectedField = definition?.fields?.find(item=>item.id===selectedId) || null;
   const fields = definition?.fields || [];
-  const dirty = useMemo(() => Boolean(definition&&form&&JSON.stringify({form,definition})!==savedSnapshot),[definition,form,savedSnapshot]);
+  const draftDirty = useMemo(() => Boolean(definition&&form&&JSON.stringify({form,definition})!==savedSnapshot),[definition,form,savedSnapshot]);
+  const availabilityDirty=availability!==savedAvailability.availability_status||closedMessage!==savedAvailability.closed_message;
+  const dirty=draftDirty||availabilityDirty;
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
@@ -61,8 +68,10 @@ export default function CmsFormEditor({ formId, supabase, onClose, onSaved }) {
       const { data, error: rpcError } = await supabase.rpc('cms_admin_get_form_editor', { p_form_id: formId });
       if (rpcError) throw rpcError;
       if (!data?.form?.definition) throw new Error('The draft definition was not returned.');
+      const {data:availabilityData,error:availabilityError}=await supabase.rpc('cms_admin_get_form_availability',{p_form_id:formId});
+      if(availabilityError)throw availabilityError;
       const nextForm=data.form; const nextDefinition=clone(nextForm.definition);
-      setForm(nextForm); setDefinition(nextDefinition); setSavedSnapshot(JSON.stringify({form:nextForm,definition:nextDefinition})); setSelectedId(nextDefinition.fields?.[0]?.id||null); setStatus(`Saved draft · version ${nextForm.version_no}`);
+      setForm(nextForm);setAvailability(availabilityData?.availability_status||'open');setClosedMessage(availabilityData?.closed_message||'');setSavedAvailability({availability_status:availabilityData?.availability_status||'open',closed_message:availabilityData?.closed_message||''});setDefinition(nextDefinition); setSavedSnapshot(JSON.stringify({form:nextForm,definition:nextDefinition})); setSelectedId(nextDefinition.fields?.[0]?.id||null); setStatus(`Saved draft · version ${nextForm.version_no}`);
     } catch (cause) { setError(cause?.message||'Could not load this draft.'); }
     finally { setLoading(false); }
   },[formId,supabase]);
@@ -105,6 +114,9 @@ export default function CmsFormEditor({ formId, supabase, onClose, onSaved }) {
     setSimulationErrors(nextErrors);setSimulationMessage(Object.keys(nextErrors).length?'Review the highlighted fields.':'Preview check passed. No response was sent or stored.');
   }
   function changeValue(key,value){setValues(current=>({...current,[key]:value}));setSimulationErrors(current=>({...current,[key]:undefined}));setSimulationMessage('');}
+  async function openHistory(){setBusy(true);setError('');try{const {data,error:rpcError}=await supabase.rpc('cms_admin_list_form_versions',{p_form_id:formId});if(rpcError)throw rpcError;setHistory(Array.isArray(data)?data:[]);}catch(cause){setError(cause?.message||'Could not load form history.');}finally{setBusy(false);}}
+  async function restoreVersion(version){if(!window.confirm(`Restore version ${version.version_no} as a new draft? The original revision will remain unchanged.`))return;setBusy(true);setError('');try{const {data,error:rpcError}=await supabase.rpc('cms_admin_restore_form_version',{p_form_id:formId,p_version_id:version.id,p_expected_draft_version_id:form.draft_version_id});if(rpcError)throw rpcError;if(!data?.form)throw new Error('The restored draft was not returned.');const nextForm=data.form;const nextDefinition=clone(nextForm.definition);setForm(nextForm);setDefinition(nextDefinition);setSavedSnapshot(JSON.stringify({form:nextForm,definition:nextDefinition}));setSelectedId(nextDefinition.fields?.[0]?.id||null);setHistory(null);setStatus(`Restored to new draft · version ${nextForm.version_no}`);onSaved?.(`Previous version restored to new draft version ${nextForm.version_no}.`);}catch(cause){setError(cause?.message||'Could not restore that version.');}finally{setBusy(false);}}
+  async function saveAvailability(){setAvailabilitySaving(true);setError('');setStatus('Saving availability…');try{const {data,error:rpcError}=await supabase.rpc('cms_admin_set_form_availability',{p_form_id:formId,p_status:availability,p_closed_message:closedMessage});if(rpcError)throw rpcError;const next={availability_status:data?.availability_status||availability,closed_message:data?.closed_message??closedMessage};setAvailability(next.availability_status);setClosedMessage(next.closed_message);setSavedAvailability(next);setStatus('Availability saved');}catch(cause){setError(cause?.message||'Could not update form availability.');setStatus('Save failed');}finally{setAvailabilitySaving(false);}}
   const visibleFields=fields.filter(field=>matchesRule(field.visibility,values));
   const selectedIndex=fields.findIndex(item=>item.id===selectedId);
   const previousFields=selectedIndex<0?[]:fields.slice(0,selectedIndex).filter(item=>['select','radio'].includes(item.type));
@@ -115,7 +127,7 @@ export default function CmsFormEditor({ formId, supabase, onClose, onSaved }) {
 
   return <div className="cmsFormEditor">
     <header className="cmsFormEditorTop"><div className="cmsFormEditorIdentity"><button className="boCmsQuiet" type="button" onClick={close}><ArrowLeft size={15}/> Forms</button><div><span className="boCmsKicker">PRIVATE DRAFT · NOINDEX</span><h2>{form?.name||'Form draft'}</h2><p>{status} · {form?.template_name||'Contact'}{form?.has_published_version?' · published version remains unchanged':''}</p></div></div>
-      <div className="cmsFormEditorActions"><button className="boCmsQuiet" type="button" onClick={()=>{setPanel('Preview');setSimulationMessage('');}}><Eye size={15}/> Preview</button><button className="boCmsPrimary" type="button" onClick={saveDraft} disabled={!dirty||saving}><Save size={15}/>{saving?'Saving…':'Save draft'}</button><button className="boCmsQuiet" type="button" disabled title="Publishing is gated until the approved purpose, retention, consent and security controls are recorded.">Publish</button></div>
+      <div className="cmsFormEditorActions"><button className="boCmsQuiet" type="button" onClick={openHistory} disabled={busy}><HistoryIcon size={15}/> History</button><button className="boCmsQuiet" type="button" onClick={()=>{setPanel('Preview');setSimulationMessage('');}}><Eye size={15}/> Preview</button><button className="boCmsPrimary" type="button" onClick={saveDraft} disabled={!draftDirty||saving}><Save size={15}/>{saving?'Saving…':'Save draft'}</button><button className="boCmsQuiet" type="button" disabled title="Publishing is gated until the approved purpose, retention, consent and security controls are recorded.">Publish</button></div>
     </header>
     {error&&<div className="boCmsAlert" role="alert">{error}{error.includes('changed in another session')&&<button type="button" onClick={load}>Reload latest version</button>}</div>}
     <p className="cmsFormPublishGate" role="status">Publishing and public submissions are disabled. Draft preview is local simulation only; no response data is written.</p>
@@ -149,6 +161,8 @@ export default function CmsFormEditor({ formId, supabase, onClose, onSaved }) {
           <label><span>Description</span><textarea rows={3} maxLength={500} value={definition?.description||''} onChange={event=>patchDefinition({description:event.target.value})}/></label>
           <label><span>Submit button text</span><input value={definition?.submit_label||''} maxLength={80} onChange={event=>patchDefinition({submit_label:event.target.value})}/></label>
           <label><span>Purpose note</span><textarea rows={3} maxLength={500} value={form?.purpose||''} onChange={event=>patchForm({purpose:event.target.value})}/></label>
+          <fieldset className="cmsFormAvailability"><legend>Availability</legend><label><span>Current state</span><select value={availability} onChange={event=>setAvailability(event.target.value)}><option value="open">Open</option><option value="closed">Closed</option></select></label>{availability==='closed'&&<label><span>Closed message</span><textarea rows={2} maxLength={300} value={closedMessage} onChange={event=>setClosedMessage(event.target.value)} placeholder="This form is currently closed."/></label>}<small>This setting is stored and audited. The public route is not active while submissions are disabled.</small><button className="boCmsQuiet" type="button" onClick={saveAvailability} disabled={availabilitySaving}>{availabilitySaving?'Saving…':'Save availability'}</button></fieldset>
+          <div className="cmsFormNotificationGate"><b>Notifications</b><span>Disabled. No verified transactional email provider or authorised recipient has been confirmed.</span></div>
         </>:selectedField?<>
           <div className="cmsFormPanelTitle"><div><span className="boCmsKicker">FIELD INSPECTOR</span><h3>{selectedField.label}</h3></div><button className="cmsFormDelete" type="button" onClick={()=>deleteField(selectedField)} aria-label={`Delete ${selectedField.label}`}><Trash2 size={15}/></button></div>
           <label><span>Field type</span><select value={selectedField.type} onChange={event=>{const type=event.target.value;const options=['select','radio','checkbox_group'].includes(type)?(selectedField.options?.length?selectedField.options:[{value:'option_1',label:'Option 1'},{value:'option_2',label:'Option 2'}]):undefined;patchField(selectedId,{type,...(options?{options}:{})});}}>{FIELD_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
@@ -165,5 +179,6 @@ export default function CmsFormEditor({ formId, supabase, onClose, onSaved }) {
         {panel==='Fields'&&fields.length>1&&<div className="cmsFormInspectorOrder"><span>Order {selectedIndex+1} of {fields.length}</span></div>}
       </aside>
     </div>
+    {history&&<div className="cmsFormHistoryOverlay" onMouseDown={event=>{if(event.target===event.currentTarget)setHistory(null)}}><section className="boPanel cmsFormHistoryDialog" role="dialog" aria-modal="true" aria-labelledby="cms-form-history-title"><div className="cmsFormPanelTitle"><div><span className="boCmsKicker">IMMUTABLE VERSION LOG</span><h3 id="cms-form-history-title">Form history</h3></div><button className="boCmsQuiet" type="button" onClick={()=>setHistory(null)}>Close</button></div>{history.length?<ol>{history.map(version=><li key={version.id}><div><b>Version {version.version_no}{version.is_current_draft?' · current draft':''}{version.is_current_published?' · published':''}</b><span>{new Date(version.created_at).toLocaleString('en-IN')} · {version.created_by||'Admin'}</span></div>{!version.is_current_draft&&<button className="boCmsQuiet" type="button" onClick={()=>restoreVersion(version)} disabled={busy}>Restore as new draft</button>}</li>)}</ol>:<p>No saved form versions yet.</p>}<small>Restoring creates a new version. Existing versions and any responses remain unchanged.</small></section></div>}
   </div>;
 }

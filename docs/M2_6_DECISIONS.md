@@ -37,3 +37,11 @@ The M2.6-A migration is additive and does not alter attendee or volunteer tables
 - The Contact form defaults to minimal name, email, subject, optional `Other` detail (shown only when selected), and message fields. These are editable product defaults from the supplied spec, not legal claims or approved production collection settings.
 - M2.6-C adds the private inbox, exact-version response details, status history and export checks. Current response-view permission follows the existing super-admin role. CSV export has a separate per-account grant table with no grants by default; the current repo does not provide an owner-approved grant assignment workflow.
 - Public collection stays gated until the documented owner approvals and the abuse controls are present. The production inbox therefore starts empty and shows that public submissions are disabled; no sample response rows are created.
+
+## M2.6-D template and lifecycle extension
+
+- The available generic templates are now Contact, Waitlist, Feedback / Survey and Newsletter. Workshop Registration and Custom Blank remain visible but cannot be created until M2.6-E.
+- Duplicate creates a new form ID and version 1 draft from the current draft definition, with no submissions, consent records or notification state copied.
+- History is append-only. Restore creates a new draft version after an expected-draft-version check; it never mutates the selected historical version.
+- Open/Closed is a separately audited form setting. It is saved server-side. Since no public renderer or submission handler is activated, this state does not create a public route in this milestone.
+- Notification sending remains disabled because no verified transactional provider or approved recipient routing was found. No real outbox jobs are queued.
