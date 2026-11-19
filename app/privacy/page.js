@@ -7,8 +7,8 @@ export const metadata = createPageMetadata({
   description: 'How eliv8Lyf handles weareailabs attendee and volunteer applications, photos, saved drafts and privacy requests.',
   path: '/privacy',
   defaultImage: { src: '/brand/weareailabs-home.webp', alt: 'weareailabs' },
-  indexable: false,
-  follow: false,
+  indexable: true,
+  follow: true,
 });
 
 export default function PrivacyPage() {
