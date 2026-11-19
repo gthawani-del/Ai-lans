@@ -1,6 +1,6 @@
 # M2.6 Form Studio decisions
 
-**Milestone:** M2.6-A foundation. This records the inspected implementation and does not approve public form collection, email delivery, or retention periods.
+**Milestones:** M2.6-A through D deployed; M2.6-E being implemented. This records the inspected implementation and does not approve public form collection, email delivery, or retention periods.
 
 ## Existing services to extend
 
@@ -45,3 +45,12 @@ The M2.6-A migration is additive and does not alter attendee or volunteer tables
 - History is append-only. Restore creates a new draft version after an expected-draft-version check; it never mutates the selected historical version.
 - Open/Closed is a separately audited form setting. It is saved server-side. Since no public renderer or submission handler is activated, this state does not create a public route in this milestone.
 - Notification sending remains disabled because no verified transactional provider or approved recipient routing was found. No real outbox jobs are queued.
+
+## M2.6-E generic workshop/custom forms and Page Studio embed adapter
+
+- `workshop_registration_v1` and `custom_v1` can now create persisted private drafts. Workshop choices start empty until verified workshop choices exist; the blank template has no answer fields and cannot pass publish validation. Both templates remain unpublished.
+- Page Studio reuses the existing `form_embed` section allowed by the `form_landing` and `workshop_event` template registry. Its authenticated picker exposes only currently published/open generic forms when the global public-submission gate is enabled; it also offers fixed navigation adapters for the protected attendee and volunteer routes.
+- The public and backoffice page preview uses a safe unavailable state for generic forms while public submissions are disabled. Protected adapters point only to `/register` and `/volunteer/apply`; no applicant fields, validation, API, consent or data destination is copied into Form Studio.
+- Page usage is read from actual saved draft and published revisions, not seeded rows. It distinguishes revision kind and exposes the page title/path/status in the Forms usage map.
+- The migration extends only Form Studio and the existing CMS page-draft save RPC. It does not alter attendee or volunteer schemas/functions.
+- M2.6-E limitation: the production database currently has zero CMS pages and zero generic forms, so a two-page live embed cannot be demonstrated. Generic forms cannot publish or collect responses until the required retention/privacy approvals and submission security controls are in place. This is not a reason to fabricate options or turn on public collection.

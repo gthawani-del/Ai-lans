@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Save, Send, Trash2, X } from 'lucide-react';
 import CmsPageSeoPanel from './CmsPageSeoPanel';
 
-const EDITABLE = ['hero', 'rich_text', 'image_text', 'cta', 'faq'];
+const EDITABLE = ['hero', 'rich_text', 'image_text', 'cta', 'faq', 'form_embed'];
 const makeId = () => globalThis.crypto?.randomUUID?.() || ('section-' + Date.now() + '-' + Math.random().toString(36).slice(2));
 const defaults = {
   hero: { eyebrow: '', heading: '', body: '', cta_label: '', cta_href: '' },
@@ -12,6 +12,7 @@ const defaults = {
   image_text: { heading: '', body: '', image_url: '', alt: '' },
   cta: { heading: '', body: '', label: '', href: '' },
   faq: { heading: '', items: [{ question: '', answer: '' }] },
+  form_embed: { form_id: '', protected_key: '', mode: 'follow_published', label: '', description: '' },
 };
 const titleCase = value => value.replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase());
 
@@ -22,10 +23,11 @@ function sectionText(section) {
   if (section.type === 'image_text') return Boolean(props.heading || props.body || props.image_url || props.alt);
   if (section.type === 'cta') return Boolean(props.heading || props.body || props.label || props.href);
   if (section.type === 'faq') return Boolean(props.heading || (props.items || []).some(item => item.question || item.answer));
+  if (section.type === 'form_embed') return Boolean(props.form_id || props.protected_key);
   return false;
 }
 
-export function PreviewSection({ section }) {
+export function PreviewSection({ section, formOptions = [] }) {
   if (section.visible === false) return null;
   const props = section.props || {};
   if (section.type === 'hero') return <section className="cmsLiveHero"><small>{props.eyebrow}</small><h1>{props.heading || 'Your page headline'}</h1><p>{props.body || 'Add a concise introduction for this page.'}</p>{props.cta_label && <a href={props.cta_href || '#'}>{props.cta_label}</a>}</section>;
@@ -33,6 +35,15 @@ export function PreviewSection({ section }) {
   if (section.type === 'image_text') return <section className="cmsLiveImageText">{props.image_url && <img src={props.image_url} alt={props.alt || ''}/>}<div>{props.heading && <h2>{props.heading}</h2>}<p>{props.body || 'Add supporting copy for this image.'}</p></div></section>;
   if (section.type === 'cta') return <section className="cmsLiveCta">{props.heading && <h2>{props.heading}</h2>}{props.body && <p>{props.body}</p>}{props.label && <a href={props.href || '#'}>{props.label}</a>}</section>;
   if (section.type === 'faq') return <section className="cmsLiveFaq">{props.heading && <h2>{props.heading}</h2>}{(props.items || []).map((item, index) => <div key={index}><h3>{item.question || 'Question'}</h3><p>{item.answer || 'Answer'}</p></div>)}</section>;
+  if (section.type === 'form_embed') {
+    if (props.protected_key === 'attendee' || props.protected_key === 'volunteer') {
+      const path = props.protected_key === 'attendee' ? '/register' : '/volunteer/apply';
+      const label = props.label || (props.protected_key === 'attendee' ? 'Attendee application' : 'Volunteer application');
+      return <section className="cmsLiveFormEmbed"><small>PROTECTED EXISTING FORM</small>{props.description && <p>{props.description}</p>}<p>Business fields and validation stay on the existing form.</p><a href={path}>{label} →</a></section>;
+    }
+    const selected = formOptions.find(item => item.id === props.form_id && item.kind === 'standard');
+    return <section className="cmsLiveFormEmbed"><small>FORM EMBED</small>{selected ? <><h2>{selected.public_title || selected.name}</h2><p>Published form · {selected.current_version ? `version ${selected.current_version}` : 'current published version'}</p><span className="cmsFormEmbedUnavailable">Live form rendering is unavailable while public submissions are disabled.</span></> : <><h2>{props.label || 'Form currently unavailable'}</h2><p>{props.description || 'This form is not available to visitors.'}</p></>}</section>;
+  }
   return null;
 }
 
@@ -71,10 +82,22 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
   const [notice, setNotice] = useState('');
   const [dirty, setDirty] = useState(false);
   const [seoDirty, setSeoDirty] = useState(false);
+  const [embedForms, setEmbedForms] = useState([]);
+  const [embedLoadError, setEmbedLoadError] = useState('');
   const [seoTitleTouched, setSeoTitleTouched] = useState(Boolean(initial.revision?.seo?.seo_title));
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(Boolean(initial.page?.has_unpublished_changes));
   const [revisionNumber, setRevisionNumber] = useState(Number(initial.revision?.revision_number || 1));
   const supported = useMemo(() => (initial.template?.allowed_sections || []).filter(type => EDITABLE.includes(type)), [initial.template]);
+  useEffect(() => {
+    if (!supported.includes('form_embed')) return;
+    let active = true;
+    supabase.rpc('cms_admin_list_form_embed_options').then(({ data, error: rpcError }) => {
+      if (!active) return;
+      if (rpcError) setEmbedLoadError(rpcError.message || 'Could not load safe form options.');
+      else setEmbedForms(Array.isArray(data) ? data : []);
+    });
+    return () => { active = false; };
+  }, [supabase, supported]);
   const selected = sections.find(section => section.id === selectedId) || null;
   const canEdit = ['draft', 'published'].includes(initial.page?.status);
   const canPublish = canEdit && (initial.page?.status === 'draft' || hasUnpublishedChanges);
@@ -157,6 +180,7 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
             {selected.type === 'image_text' && <><Field label="Heading" value={selected.props.heading} onChange={value => patchProps(selected.id, 'heading', value)}/><Field label="Content" value={selected.props.body} multiline onChange={value => patchProps(selected.id, 'body', value)}/><Field label="Image path" value={selected.props.image_url} onChange={value => patchProps(selected.id, 'image_url', value)} placeholder="/images/approved-image.webp"/><Field label="Image alt text" value={selected.props.alt} onChange={value => patchProps(selected.id, 'alt', value)}/><small>Use a site asset path starting with one slash. Media Library selection comes in M2.5.</small></>}
             {selected.type === 'cta' && <><Field label="Heading" value={selected.props.heading} onChange={value => patchProps(selected.id, 'heading', value)}/><Field label="Supporting text" value={selected.props.body} multiline onChange={value => patchProps(selected.id, 'body', value)}/><Field label="Button label" value={selected.props.label} onChange={value => patchProps(selected.id, 'label', value)}/><Field label="Button URL" value={selected.props.href} onChange={value => patchProps(selected.id, 'href', value)} placeholder="/register or https://…"/></>}
             {selected.type === 'faq' && <><Field label="Section heading" value={selected.props.heading} onChange={value => patchProps(selected.id, 'heading', value)}/>{(selected.props.items || []).map((item, index) => <div className="cmsFaqFields" key={index}><b>Question {index + 1}</b><Field label="Question" value={item.question} onChange={value => updateFaq(index, 'question', value)}/><Field label="Answer" value={item.answer} multiline onChange={value => updateFaq(index, 'answer', value)}/><button className="cmsTextButton" type="button" onClick={() => patchProps(selected.id, 'items', selected.props.items.filter((_, itemIndex) => itemIndex !== index))}>Remove question</button></div>)}<button className="boCmsQuiet" type="button" onClick={() => patchProps(selected.id, 'items', [...(selected.props.items || []), { question: '', answer: '' }])}><Plus size={14}/> Add question</button></>}
+            {selected.type === 'form_embed' && <><label className="cmsEditField"><span>Form or protected route</span><select value={selected.props.protected_key ? `protected:${selected.props.protected_key}` : selected.props.form_id || ''} onChange={event => {const value=event.target.value;if(value.startsWith('protected:')){patchSection(selected.id,{props:{...selected.props,form_id:'',protected_key:value.slice(10),mode:'navigate'}});}else{patchSection(selected.id,{props:{...selected.props,protected_key:'',form_id:value,mode:'follow_published'}});}}}><option value="">Choose an available form…</option>{embedForms.filter(item=>item.kind==='standard').map(item=><option value={item.id} key={item.id}>{item.name} · published v{item.current_version}</option>)}<optgroup label="Protected existing routes">{embedForms.filter(item=>item.kind==='protected').map(item=><option value={`protected:${item.protected_key}`} key={item.protected_key}>{item.name} · fields locked</option>)}</optgroup></select></label>{embedLoadError&&<p className="boCmsInlineError" role="alert">{embedLoadError}</p>}{!embedLoadError&&!embedForms.some(item=>item.kind==='standard')&&<small>No published generic forms are available. Protected attendee/volunteer routes remain selectable; public collection is still disabled.</small>}<Field label="Link label / form heading" value={selected.props.label} onChange={value=>patchProps(selected.id,'label',value)}/><Field label="Supporting instruction" value={selected.props.description} multiline onChange={value=>patchProps(selected.id,'description',value)}/>{selected.props.protected_key&&<p className="cmsFormPublishGate">Protected existing form · business fields, validation and data destination stay locked. This section navigates to the current application route.</p>}</>}
           </div>}
           {!selected && <p className="cmsNoSection">Select a section to edit it, or add one above.</p>}
           </div>
@@ -166,7 +190,7 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
         </div>
         <div className={'boCmsEditorPreview ' + (mobileTab === 'edit' ? 'cmsMobileHidden' : '')}>
           <div className="cmsPreviewToolbar"><span>Preview · unsaved changes appear here</span><div role="group" aria-label="Preview size"><button type="button" aria-pressed={device === 'desktop'} onClick={() => setDevice('desktop')}>Desktop</button><button type="button" aria-pressed={device === 'mobile'} onClick={() => setDevice('mobile')}>Mobile</button></div></div>
-          <div className={'cmsLiveCanvas cmsLiveCanvas--' + device}><div className="cmsLivePage"><header><small>{initial.template?.name}</small></header><h1 className="cmsLivePageTitle">{pageTitle || 'Untitled page'}</h1>{sections.filter(section => section.visible !== false).map(section => <PreviewSection key={section.id} section={section}/>)}{!sections.filter(section => section.visible !== false).length && <p className="cmsLiveEmpty">Add a section to begin writing this page.</p>}</div></div>
+          <div className={'cmsLiveCanvas cmsLiveCanvas--' + device}><div className="cmsLivePage"><header><small>{initial.template?.name}</small></header><h1 className="cmsLivePageTitle">{pageTitle || 'Untitled page'}</h1>{sections.filter(section => section.visible !== false).map(section => <PreviewSection key={section.id} section={section} formOptions={embedForms}/>)}{!sections.filter(section => section.visible !== false).length && <p className="cmsLiveEmpty">Add a section to begin writing this page.</p>}</div></div>
         </div>
       </div>
       <footer className="boCmsEditorFooter"><span>{initial.page.status==='published'?'Save changes as a draft. The current published version stays live until you publish.':'Draft pages are private. Saving does not publish them.'}</span><button type="button" className="boCmsPrimary" onClick={saveDraft} disabled={busy || !canEdit || pageTitle.trim().length < 2 || (!dirty && !seoDirty)}><Save size={15}/>{busy ? 'Saving…' : 'Save changes'}</button></footer>
