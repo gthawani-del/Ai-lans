@@ -8,8 +8,8 @@ const socialProfiles = [
 
 export const metadata = createPageMetadata({
   path: '/',
-  title: 'weareailabs | Hands-on AI Business Workshop',
-  description: 'Turn real business problems into working AI solutions. A hands-on Mumbai workshop for founders, CXOs and business leaders. Dates to be announced.',
+  title: 'weareailabs | Practical AI Workshops & Learning',
+  description: 'Explore practical AI workshops with weareailabs. Learn by building, discover useful AI tools and connect with people creating real-world projects.',
   seo: { og_description: 'Stop learning about AI. Start building with it. Mumbai — dates to be announced.' },
   defaultImage: { src: '/brand/weareailabs-home.webp', alt: 'weareailabs — Explore Learn Create Together' },
   indexable: true,
