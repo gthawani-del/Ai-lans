@@ -58,6 +58,14 @@ export function AdminSessionProvider({children}){
   },[isLogin,pathname,router,supabase]);
 
   useEffect(()=>{
+    if(!ready||!session||!profile?.is_active||isLogin)return;
+    const parts=(pathname||'').split('/').filter(Boolean);
+    const section=parts[1]||'dashboard';
+    const module=['pages','media','forms','configuration','system','attendees','volunteers','workshop'].includes(section)?section:'dashboard';
+    supabase.rpc('cms_admin_record_activity',{p_action:'admin_accessed',p_module:module,p_route:pathname||'/backoffice'}).then(({error})=>{if(error)console.warn('Admin access activity could not be recorded.');});
+  },[isLogin,pathname,profile?.is_active,ready,session,supabase]);
+
+  useEffect(()=>{
     const {data:listener}=supabase.auth.onAuthStateChange((event,next)=>{
       if(event==='SIGNED_OUT'){
         clearAdminSessionClock();

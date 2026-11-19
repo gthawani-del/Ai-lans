@@ -1,4 +1,5 @@
 import {AdminSessionProvider} from './AdminSessionContext';
+import './cms-activity-log.css';
 
 export const metadata={title:'Backoffice | weareailabs',robots:{index:false,follow:false}};
 

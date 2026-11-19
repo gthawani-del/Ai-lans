@@ -12,6 +12,7 @@ import SocialProfilesSettings from './SocialProfilesSettings';
 import CmsPageStudio from './CmsPageStudio';
 import CmsMediaLibrary from './CmsMediaLibrary';
 import CmsFormStudio from './CmsFormStudio';
+import CmsActivityLog from './CmsActivityLog';
 
 const API=`${SUPABASE_URL}/functions/v1/backoffice-section-data`;
 const VOLUNTEER_API=`${SUPABASE_URL}/functions/v1/volunteer-admin-data`;
@@ -24,9 +25,9 @@ const NAV=[
  ['Workshop',[['Table Assignment','/backoffice/workshop-table-assignment',Table2],['Volunteers','/backoffice/workshop-volunteers',Users],['Reports','/backoffice/workshop-reports',BarChart3]]],
  ['Pages',[['Page Studio','/backoffice/pages',FileText],['Media Library','/backoffice/media',ImagePlus],['Forms','/backoffice/forms',ClipboardList],['Home Page','/backoffice/page-home',Home],['Attendee Form','/backoffice/page-attendee-form',FileText],['Volunteer Form','/backoffice/page-volunteer-form',FileText]]],
  ['Configuration',[['MVP Options','/backoffice/mvp-options',Settings2],['Settings','/backoffice/settings',Settings2],['Social Profiles','/backoffice/social-profiles',Share2]]],
- ['System',[['Data Quality','/backoffice/data-quality',Database],['Audit Log','/backoffice/audit-log',FileClock],['Privacy & Retention','/backoffice/privacy-retention',Database],['System Health','/backoffice/system-health',Activity]]]
+ ['System',[['Data Quality','/backoffice/data-quality',Database],['Activity Log','/backoffice/audit-log',FileClock],['Privacy & Retention','/backoffice/privacy-retention',Database],['System Health','/backoffice/system-health',Activity]]]
 ];
-const TITLES={pages:'Page Studio',media:'Media Library',forms:'Form Studio','page-home':'Home Page Content','page-attendee-form':'Attendee Form Content','page-volunteer-form':'Volunteer Form Content',attention:'Attention Queue',analysis:'Analysis',attendees:'Attendees','mvp-demand':'MVP Demand','table-allocation':'Table Allocation',volunteers:'Volunteers','volunteer-analysis':'Volunteer Analysis','workshop-table-assignment':'Workshop Table Assignment','workshop-volunteers':'Workshop Volunteers','workshop-reports':'Workshop Reports','volunteer-reports':'Volunteer Reports',payments:'Payments','mvp-options':'MVP Options',settings:'Settings','social-profiles':'Social Profiles','data-quality':'Data Quality','audit-log':'Audit Log','privacy-retention':'Privacy & Retention','system-health':'System Health'};
+const TITLES={pages:'Page Studio',media:'Media Library',forms:'Form Studio','page-home':'Home Page Content','page-attendee-form':'Attendee Form Content','page-volunteer-form':'Volunteer Form Content',attention:'Attention Queue',analysis:'Analysis',attendees:'Attendees','mvp-demand':'MVP Demand','table-allocation':'Table Allocation',volunteers:'Volunteers','volunteer-analysis':'Volunteer Analysis','workshop-table-assignment':'Workshop Table Assignment','workshop-volunteers':'Workshop Volunteers','workshop-reports':'Workshop Reports','volunteer-reports':'Volunteer Reports',payments:'Payments','mvp-options':'MVP Options',settings:'Settings','social-profiles':'Social Profiles','data-quality':'Data Quality','audit-log':'Admin Activity Log','privacy-retention':'Privacy & Retention','system-health':'System Health'};
 
 function agoRange(days){const d=new Date();d.setDate(d.getDate()-days+1);d.setHours(0,0,0,0);return d.getTime()}
 function fmt(v){return v?new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'—'}
@@ -91,7 +92,7 @@ function renderSection(section,c){const {attendees,paid,demand,data,loading,fmt,
  if(section==='settings'){const s=data?.settings||{},vs=c.volunteerSettings;return <>{vs&&<VolunteerSettings settings={vs} supabase={c.supabase} onPublished={c.setVolunteerSettings}/>}<TableAssignmentSettings settings={s} supabase={c.supabase} workshop="ai-lab-mumbai-2026" onSaved={next=>c.setData(d=>({...d,settings:next}))}/></>}
  if(section==='privacy-retention')return <PrivacyRetentionWorkspace supabase={c.supabase} profile={c.profile}/>;
  if(section==='data-quality')return <DataQualityWorkspace attendees={data?.attendees||[]}/>;
- if(section==='audit-log')return <AuditLogWorkspace rows={data?.audit||[]} range={c.range||'30d'} fmt={fmt}/>;
+ if(section==='audit-log')return <CmsActivityLog supabase={c.supabase}/>;
  if(section==='system-health')return <SystemHealthWorkspace supabase={c.supabase}/>;
  return <div className="boPanel">Unknown section.</div>}
 
