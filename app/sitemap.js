@@ -8,7 +8,7 @@ export const revalidate = 0;
 export default async function sitemap() {
   const entries = [
     { url: `${SITE_ORIGIN}/` },
-    { url: `${SITE_ORIGIN}/volunteer` },
+    { url: `${SITE_ORIGIN}/privacy` },
   ];
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
