@@ -54,6 +54,7 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
     og_title: initial.revision?.seo?.og_title || '',
     og_description: initial.revision?.seo?.og_description || '',
     og_image_asset_id: initial.revision?.seo?.og_image_asset_id || 'brand_home',
+    og_image_url: initial.revision?.seo?.og_image_url || '',
     social_image_alt: initial.revision?.seo?.social_image_alt || '',
     og_type: initial.revision?.seo?.og_type || 'website',
     locale: initial.revision?.seo?.locale || 'en-IN',
@@ -160,7 +161,7 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
           {!selected && <p className="cmsNoSection">Select a section to edit it, or add one above.</p>}
           </div>
           <div hidden={editPane !== 'seo'}>
-            <CmsPageSeoPanel seo={seo} onChange={next=>{updateSeo(next);if(next.seo_title!==seo.seo_title)setSeoTitleTouched(true);}} pageTitle={pageTitle} slug={initial.page.slug} templateId={initial.page.template_id} sections={sections}/>
+            <CmsPageSeoPanel supabase={supabase} seo={seo} onChange={next=>{updateSeo(next);if(next.seo_title!==seo.seo_title)setSeoTitleTouched(true);}} pageTitle={pageTitle} slug={initial.page.slug} templateId={initial.page.template_id} sections={sections}/>
           </div>
         </div>
         <div className={'boCmsEditorPreview ' + (mobileTab === 'edit' ? 'cmsMobileHidden' : '')}>
