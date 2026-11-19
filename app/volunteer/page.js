@@ -9,7 +9,7 @@ export const metadata = createPageMetadata({
   description,
   path: '/volunteer',
   defaultImage: { src: '/brand/weareailabs-volunteer.webp', alt: 'weareailabs volunteer programme' },
-  indexable: true,
+  indexable: false,
   follow: true,
 });
 
