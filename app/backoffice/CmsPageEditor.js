@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Save, Send, Trash2, X } from 'lucide-react';
+import CmsPageSeoPanel from './CmsPageSeoPanel';
 
 const EDITABLE = ['hero', 'rich_text', 'image_text', 'cta', 'faq'];
 const makeId = () => globalThis.crypto?.randomUUID?.() || ('section-' + Date.now() + '-' + Math.random().toString(36).slice(2));
@@ -44,13 +45,32 @@ function Field({ label, value, onChange, multiline = false, placeholder = '' }) 
 export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onPublished }) {
   const [pageTitle, setPageTitle] = useState(initial.page?.title || '');
   const [sections, setSections] = useState((initial.revision?.document?.sections || []).map(section => ({ ...section, props: { ...(section.props || {}) }, visible: section.visible !== false })));
+  const [seo, setSeo] = useState(() => ({
+    seo_title: initial.revision?.seo?.seo_title || initial.page?.title || '',
+    meta_description: initial.revision?.seo?.meta_description || '',
+    canonical_path: initial.revision?.seo?.canonical_path || `/${initial.page?.slug || ''}`,
+    indexable: initial.revision?.seo?.indexable === true,
+    follow_links: initial.revision?.seo?.follow_links !== false,
+    og_title: initial.revision?.seo?.og_title || '',
+    og_description: initial.revision?.seo?.og_description || '',
+    og_image_asset_id: initial.revision?.seo?.og_image_asset_id || 'brand_home',
+    social_image_alt: initial.revision?.seo?.social_image_alt || '',
+    og_type: initial.revision?.seo?.og_type || 'website',
+    locale: initial.revision?.seo?.locale || 'en-IN',
+    structured_data_type: initial.revision?.seo?.structured_data_type || 'WebPage',
+    author_name: initial.revision?.seo?.author_name || '',
+    references: Array.isArray(initial.revision?.seo?.references) ? initial.revision.seo.references : [],
+  }));
   const [selectedId, setSelectedId] = useState(sections[0]?.id || '');
   const [device, setDevice] = useState('desktop');
   const [mobileTab, setMobileTab] = useState('edit');
+  const [editPane, setEditPane] = useState('content');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [dirty, setDirty] = useState(false);
+  const [seoDirty, setSeoDirty] = useState(false);
+  const [seoTitleTouched, setSeoTitleTouched] = useState(Boolean(initial.revision?.seo?.seo_title));
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(Boolean(initial.page?.has_unpublished_changes));
   const [revisionNumber, setRevisionNumber] = useState(Number(initial.revision?.revision_number || 1));
   const supported = useMemo(() => (initial.template?.allowed_sections || []).filter(type => EDITABLE.includes(type)), [initial.template]);
@@ -70,7 +90,9 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
     [next[index], next[target]] = [next[target], next[index]];
     setSections(next.map((section, order) => ({ ...section, order }))); setDirty(true);
   }
+  function updateSeo(next) { setSeo(next); setSeoDirty(true); }
   async function saveDraft() {
+    if (!dirty && !seoDirty) return;
     setBusy(true); setError(''); setNotice('');
     try {
       const document = { ...(initial.revision?.document || {}), version: 1, sections: sections.map((section, order) => ({ ...section, order })) };
@@ -79,20 +101,21 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
         p_expected_revision: revisionNumber,
         p_title: pageTitle.trim(),
         p_document: document,
+        p_seo: seo,
       });
       if (rpcError) throw rpcError;
-      const nextRevision = Number(data?.revision?.revision_number || revisionNumber + 1);
-      setRevisionNumber(nextRevision);
+      const expectedRevision = Number(data?.revision?.revision_number || revisionNumber + 1);
+      setRevisionNumber(expectedRevision); setSeoDirty(false);
       setDirty(false);
       setHasUnpublishedChanges(true);
-      setNotice(initial.page.status === 'published' ? 'Draft saved as revision ' + nextRevision + '. The current published version remains live.' : 'Draft saved as revision ' + nextRevision + '. It is still private and unpublished.');
+      setNotice(initial.page.status === 'published' ? 'Draft saved as revision ' + expectedRevision + '. The current published version remains live.' : 'Draft saved as revision ' + expectedRevision + '. It is still private and unpublished.');
       onSaved?.(data);
     } catch (cause) {
       setError(cause?.message || 'Could not save this draft. Reload it to check for a newer revision.');
     } finally { setBusy(false); }
   }
   async function publishDraft() {
-    if (dirty) { setError('Save your edits before publishing.'); return; }
+    if (dirty || seoDirty) { setError('Save your content and SEO edits before publishing.'); return; }
     const verb = initial.page.status === 'published' ? 'Publish these saved changes' : 'Publish this page';
     if (!window.confirm(verb + '? This will make the saved page available at /' + initial.page.slug + '.')) return;
     setBusy(true); setError(''); setNotice('');
@@ -112,13 +135,15 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
 
   return <div className="boCmsOverlay boCmsEditorOverlay" onMouseDown={event => { if (event.target === event.currentTarget && !busy) onClose(); }}>
     <section className="boCmsEditorDialog" role="dialog" aria-modal="true" aria-labelledby="cmsEditorTitle">
-      <header className="boCmsEditorHeader"><div><span className="boCmsKicker">PAGE EDITOR · {initial.page?.status === 'published' ? 'PUBLISHED PAGE' : 'PRIVATE DRAFT'}</span><strong id="cmsEditorTitle">{pageTitle || 'Untitled page'}</strong><small>Revision {revisionNumber} · {initial.template?.name}{initial.page?.status === 'published' && ' · current live version is preserved while editing'}</small></div><div className="boCmsEditorHeaderActions"><button type="button" className="boCmsQuiet" onClick={saveDraft} disabled={busy || !canEdit || pageTitle.trim().length < 2}><Save size={15}/>{busy ? 'Saving…' : 'Save draft'}</button>{canPublish&&<button type="button" className="boCmsPrimary" onClick={publishDraft} disabled={busy||dirty}><Send size={14}/>{busy?'Working…':'Publish'}</button>}<button className="boCmsClose" type="button" onClick={onClose} aria-label="Close editor" disabled={busy}><X size={17}/></button></div></header>
+      <header className="boCmsEditorHeader"><div><span className="boCmsKicker">PAGE EDITOR · {initial.page?.status === 'published' ? 'PUBLISHED PAGE' : 'PRIVATE DRAFT'}</span><strong id="cmsEditorTitle">{pageTitle || 'Untitled page'}</strong><small>Revision {revisionNumber} · {initial.template?.name}{initial.page?.status === 'published' && ' · current live version is preserved while editing'}</small></div><div className="boCmsEditorHeaderActions"><button type="button" className="boCmsQuiet" onClick={saveDraft} disabled={busy || !canEdit || pageTitle.trim().length < 2 || (!dirty && !seoDirty)}><Save size={15}/>{busy ? 'Saving…' : 'Save changes'}</button>{canPublish&&<button type="button" className="boCmsPrimary" onClick={publishDraft} disabled={busy||dirty||seoDirty}><Send size={14}/>{busy?'Working…':'Publish'}</button>}<button className="boCmsClose" type="button" onClick={onClose} aria-label="Close editor" disabled={busy}><X size={17}/></button></div></header>
       {!canEdit && <div className="boCmsAlert">This page is {initial.page?.status}. Restore an archived page from its history before editing.</div>}
       {error && <div className="boCmsAlert" role="alert">{error}</div>}{notice && <div className="boCmsNotice" role="status">{notice}</div>}
       <div className="cmsEditorMobileTabs"><button type="button" aria-pressed={mobileTab === 'edit'} onClick={() => setMobileTab('edit')}>Edit</button><button type="button" aria-pressed={mobileTab === 'preview'} onClick={() => setMobileTab('preview')}>Preview</button></div>
       <div className="boCmsEditorBody">
         <div className={'boCmsEditorControls ' + (mobileTab === 'preview' ? 'cmsMobileHidden' : '')}>
-          <label className="cmsEditField"><span>Page title</span><input value={pageTitle} maxLength={160} onChange={event => {setPageTitle(event.target.value);setDirty(true);}} disabled={!canEdit}/></label>
+          <div className="cmsEditorSubtabs" role="tablist" aria-label="Page editor sections"><button role="tab" type="button" aria-selected={editPane==='content'} onClick={()=>setEditPane('content')}>Content</button><button role="tab" type="button" aria-selected={editPane==='seo'} onClick={()=>setEditPane('seo')}>SEO &amp; AEO</button></div>
+          <div hidden={editPane !== 'content'}>
+          <label className="cmsEditField"><span>Page title</span><input value={pageTitle} maxLength={160} onChange={event => {const value=event.target.value;setPageTitle(value);setDirty(true);if(!seoTitleTouched){setSeo(current=>({...current,seo_title:value}));setSeoDirty(true);}}} disabled={!canEdit}/></label>
           <div className="cmsSectionHeading"><div><b>Sections</b><small>Arrange and edit the visible content blocks.</small></div><span>{sections.length}</span></div>
           <div className="cmsSectionList">{sections.map((section, index) => <div className={'cmsSectionItem ' + (section.id === selectedId ? 'isSelected' : '')} key={section.id}>
             <button className="cmsSectionSelect" type="button" onClick={() => setSelectedId(section.id)}><b>{titleCase(section.type)}</b><small>{sectionText(section) ? 'Content added' : 'Needs content'} · {section.visible === false ? 'Hidden' : 'Visible'}</small></button>
@@ -133,13 +158,17 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
             {selected.type === 'faq' && <><Field label="Section heading" value={selected.props.heading} onChange={value => patchProps(selected.id, 'heading', value)}/>{(selected.props.items || []).map((item, index) => <div className="cmsFaqFields" key={index}><b>Question {index + 1}</b><Field label="Question" value={item.question} onChange={value => updateFaq(index, 'question', value)}/><Field label="Answer" value={item.answer} multiline onChange={value => updateFaq(index, 'answer', value)}/><button className="cmsTextButton" type="button" onClick={() => patchProps(selected.id, 'items', selected.props.items.filter((_, itemIndex) => itemIndex !== index))}>Remove question</button></div>)}<button className="boCmsQuiet" type="button" onClick={() => patchProps(selected.id, 'items', [...(selected.props.items || []), { question: '', answer: '' }])}><Plus size={14}/> Add question</button></>}
           </div>}
           {!selected && <p className="cmsNoSection">Select a section to edit it, or add one above.</p>}
+          </div>
+          <div hidden={editPane !== 'seo'}>
+            <CmsPageSeoPanel seo={seo} onChange={next=>{updateSeo(next);if(next.seo_title!==seo.seo_title)setSeoTitleTouched(true);}} pageTitle={pageTitle} slug={initial.page.slug} templateId={initial.page.template_id} sections={sections}/>
+          </div>
         </div>
         <div className={'boCmsEditorPreview ' + (mobileTab === 'edit' ? 'cmsMobileHidden' : '')}>
           <div className="cmsPreviewToolbar"><span>Preview · unsaved changes appear here</span><div role="group" aria-label="Preview size"><button type="button" aria-pressed={device === 'desktop'} onClick={() => setDevice('desktop')}>Desktop</button><button type="button" aria-pressed={device === 'mobile'} onClick={() => setDevice('mobile')}>Mobile</button></div></div>
           <div className={'cmsLiveCanvas cmsLiveCanvas--' + device}><div className="cmsLivePage"><header><small>{initial.template?.name}</small></header><h1 className="cmsLivePageTitle">{pageTitle || 'Untitled page'}</h1>{sections.filter(section => section.visible !== false).map(section => <PreviewSection key={section.id} section={section}/>)}{!sections.filter(section => section.visible !== false).length && <p className="cmsLiveEmpty">Add a section to begin writing this page.</p>}</div></div>
         </div>
       </div>
-      <footer className="boCmsEditorFooter"><span>Draft pages are private. Saving does not change the public website.</span><button type="button" className="boCmsPrimary" onClick={saveDraft} disabled={busy || !canEdit || pageTitle.trim().length < 2}><Save size={15}/>{busy ? 'Saving…' : 'Save draft'}</button></footer>
+      <footer className="boCmsEditorFooter"><span>{initial.page.status==='published'?'Save changes as a draft. The current published version stays live until you publish.':'Draft pages are private. Saving does not publish them.'}</span><button type="button" className="boCmsPrimary" onClick={saveDraft} disabled={busy || !canEdit || pageTitle.trim().length < 2 || (!dirty && !seoDirty)}><Save size={15}/>{busy ? 'Saving…' : 'Save changes'}</button></footer>
     </section>
   </div>;
 }

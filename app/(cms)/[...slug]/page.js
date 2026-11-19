@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import { PreviewSection } from '../../backoffice/CmsPageEditor';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '../../../lib/supabase-browser';
+import { buildCmsStructuredData, createPageMetadata, resolveSeoImage } from '../../../lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -30,18 +31,16 @@ export async function generateMetadata({ params }) {
   const page = await getPage(slug);
   if (!page) return { title: 'Page not found' };
   const seo = page.revision?.seo || {};
-  const title = seo.title || page.page.title;
-  const description = pageDescription(page);
-  const canonical = seo.canonical_url || `https://weareailabs.com/${page.page.slug}`;
-  const image = seo.social_image_url || seo.og_image || '/weareailabs-logo.webp';
-  return {
-    title,
-    description,
-    alternates: { canonical },
-    robots: { index: seo.indexable === true, follow: true },
-    openGraph: { title: seo.og_title || title, description: seo.og_description || description, url: canonical, images: [image], type: 'article' },
-    twitter: { card: 'summary_large_image', title: seo.og_title || title, description: seo.og_description || description, images: [image] },
-  };
+  return createPageMetadata({
+    title: page.page.title,
+    description: pageDescription(page),
+    path: `/${page.page.slug}`,
+    seo,
+    defaultImage: resolveSeoImage(seo),
+    openGraphType: seo.og_type || (page.page.template_id === 'editorial_article' ? 'article' : 'website'),
+    indexable: false,
+    follow: true,
+  });
 }
 
 export default async function CmsPublicPage({ params }) {
@@ -49,7 +48,9 @@ export default async function CmsPublicPage({ params }) {
   const page = await getPage(slug);
   if (!page) notFound();
   const sections = (page.revision?.document?.sections || []).filter(section => section.visible !== false);
+  const structuredData = buildCmsStructuredData(page);
   return <main className="cmsPublicPage">
+    {structuredData && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />}
     <article className="cmsPublicArticle">
       <header className="cmsPublicHeader"><a href="/" aria-label="weareailabs home">weareailabs</a><span>{page.template?.name}</span></header>
       <h1>{page.page.title}</h1>

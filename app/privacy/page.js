@@ -1,19 +1,15 @@
 import styles from './privacy.module.css';
 import SocialLinks from '../../components/SocialLinks';
+import { createPageMetadata } from '../../lib/seo';
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: 'Privacy policy | weareailabs',
   description: 'How eliv8Lyf handles weareailabs attendee and volunteer applications, photos, saved drafts and privacy requests.',
-  alternates: { canonical: '/privacy' },
-  robots: { index: false, follow: false },
-  openGraph: {
-    title: 'Privacy policy | weareailabs',
-    description: 'How eliv8Lyf handles weareailabs attendee and volunteer applications, photos, saved drafts and privacy requests.',
-    type: 'website',
-    images: ['/brand/weareailabs-home.webp'],
-  },
-  twitter: { card: 'summary_large_image', title: 'Privacy policy | weareailabs', images: ['/brand/weareailabs-home.webp'] },
-};
+  path: '/privacy',
+  defaultImage: { src: '/brand/weareailabs-home.webp', alt: 'weareailabs' },
+  indexable: false,
+  follow: false,
+});
 
 export default function PrivacyPage() {
   return <div className={styles.page}>

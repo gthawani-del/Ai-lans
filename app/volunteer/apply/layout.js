@@ -2,10 +2,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import './theme.css';
 import SocialLinks from '../../../components/SocialLinks';
+import { createPageMetadata } from '../../../lib/seo';
 
 const title = 'Volunteer application | weareailabs';
 const description = 'Apply to support weareailabs participants with technical, creative or operational skills.';
-export const metadata = { title, description, alternates: { canonical: '/volunteer/apply' }, robots: { index: false, follow: false }, openGraph: { title, description, type: 'website', images: ['/brand/weareailabs-volunteer.webp'] }, twitter: { card: 'summary_large_image', title, description, images: ['/brand/weareailabs-volunteer.webp'] } };
+export const metadata = createPageMetadata({title,description,path:'/volunteer/apply',defaultImage:{src:'/brand/weareailabs-volunteer.webp',alt:'weareailabs volunteer programme'},indexable:false,follow:false});
 
 export default function VolunteerApplicationLayout({ children }) {
   return <div className="volunteerFormTheme" style={{ '--vf-sans': 'system-ui, -apple-system, Segoe UI, sans-serif', '--vf-serif': 'Georgia, serif' }}>
