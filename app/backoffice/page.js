@@ -174,6 +174,7 @@ export default function Backoffice(){
             ['Reports','/backoffice/workshop-reports',BarChart3]
           ]],
           ['Pages',[
+            ['Forms','/backoffice/forms',ClipboardList],
             ['Home Page','/backoffice/page-home',Home],
             ['Attendee Form','/backoffice/page-attendee-form',FileText],
             ['Volunteer Form','/backoffice/page-volunteer-form',FileText]
