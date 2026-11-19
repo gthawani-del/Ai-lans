@@ -27,3 +27,12 @@
 ## Rollback
 
 The M2.6-A migration is additive and does not alter attendee or volunteer tables/functions. Rollback means disabling `studio_enabled`; do not drop form records or submission tables if the feature is later used.
+
+## M2.6-B draft editor
+
+- The first editable vertical slice is `contact_v1`. Other registered templates remain visible in the catalogue but cannot create records until their scheduled M2.6-D/E milestone.
+- Creating Contact makes a real form identity and initial immutable draft version in the database, then opens the editor. Draft saves create a new version with an expected-version check; they do not change any published-version pointer.
+- The editor provides a field list, live preview, selected-field settings, keyboard move controls, and a local-only preview simulation. The simulation never writes submissions. Only the existing super-admin role is authorised because no separate editor/publisher/PII roles exist in the current backoffice.
+- The current deployment has no owner-approved retention category or versioned final consent policy. Public form publishing and submissions therefore remain disabled. The editor exposes no active publish action. The public submission route and notifications are not enabled in this milestone.
+- The Contact form defaults to minimal name, email, subject, optional `Other` detail (shown only when selected), and message fields. These are editable product defaults from the supplied spec, not legal claims or approved production collection settings.
+- M2.6-C will add the private inbox and status/history views. M2.6-D/E will expand template coverage and form-page usage. Public collection stays gated until the documented owner approvals and the abuse controls are present.
