@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { inspectAeoSignals, SEO_IMAGE_ASSETS, validateCmsSeo } from '../../lib/seo';
+import { inspectAeoSignals, inspectCmsContent, SEO_IMAGE_ASSETS, validateCmsSeo } from '../../lib/seo';
 
 function CounterField({ label, value, onChange, maxLength, multiline = false, hint }) {
   const Control = multiline ? 'textarea' : 'input';
@@ -13,6 +13,7 @@ export default function CmsPageSeoPanel({ seo, onChange, pageTitle, slug, templa
   const [fallbackFailed, setFallbackFailed] = useState(false);
   const [mediaAssets, setMediaAssets] = useState([]);
   const [mediaError, setMediaError] = useState('');
+  const [targetChecks, setTargetChecks] = useState({});
   useEffect(() => {
     let active = true;
     supabase.rpc('cms_admin_list_media', { p_query: null, p_status: 'approved', p_tag: null }).then(({ data, error }) => {
@@ -25,6 +26,25 @@ export default function CmsPageSeoPanel({ seo, onChange, pageTitle, slug, templa
   const selectedMedia = mediaAssets.find(item => item.id === seo.og_image_asset_id);
   const asset = SEO_IMAGE_ASSETS[seo.og_image_asset_id] || (selectedMedia ? { src: selectedMedia.publicUrl, alt: selectedMedia.alt_text || 'Approved media library image', label: selectedMedia.file_name } : SEO_IMAGE_ASSETS.brand_home);
   const signals = useMemo(() => inspectAeoSignals({ pageTitle, sections, seo, templateId }), [pageTitle, sections, seo, templateId]);
+  const contentChecks = useMemo(() => inspectCmsContent({ pageTitle, sections }), [pageTitle, sections]);
+  const internalTargets = useMemo(() => [...new Set(contentChecks.internalLinks.map(link => link.target))], [contentChecks.internalLinks]);
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(async () => {
+      const pending = Object.fromEntries(internalTargets.map(href => [href, { state: 'checking', detail: 'Checking live route…' }]));
+      if (active) setTargetChecks(pending);
+      const results = await Promise.all(internalTargets.map(async href => {
+        try {
+          const response = await fetch(new URL(href, window.location.origin), { method: 'HEAD', cache: 'no-store', credentials: 'same-origin' });
+          return [href, response.ok ? { state: 'ok', detail: `Live route responded ${response.status}.` } : { state: 'broken', detail: `Live route responded ${response.status}.` }];
+        } catch {
+          return [href, { state: 'unknown', detail: 'Could not verify this route from the current browser session.' }];
+        }
+      }));
+      if (active) setTargetChecks(Object.fromEntries(results));
+    }, 350);
+    return () => { active = false; clearTimeout(timer); };
+  }, [internalTargets]);
   const validation = useMemo(() => validateCmsSeo(seo, { title: pageTitle, slug, templateId }), [seo, pageTitle, slug, templateId]);
   const metaTitle = seo.seo_title || pageTitle;
   const metaDescription = seo.meta_description || 'Add a search description to preview it here.';
@@ -58,7 +78,7 @@ export default function CmsPageSeoPanel({ seo, onChange, pageTitle, slug, templa
     <aside className="cmsSeoPreviews">
       <section className="cmsSeoPreviewCard"><span className="boCmsKicker">SEARCH RESULT PREVIEW</span><div className="cmsSearchResult"><div className="cmsSearchBrand"><img src="/favicon.ico" alt=""/><span>weareailabs.com</span></div><b>{metaTitle}</b><small>https://weareailabs.com{canonical}</small><p>{metaDescription}</p></div><small className="cmsSeoDisclaimer">Preview only. Google may generate its own title or snippet.</small></section>
       <section className="cmsSeoPreviewCard"><span className="boCmsKicker">SOCIAL CARD PREVIEW</span><div className="cmsSocialCard">{!fallbackFailed ? <img src={imageFailed ? SEO_IMAGE_ASSETS.brand_home.src : (seo.og_image_url || asset.src)} alt={imageFailed ? SEO_IMAGE_ASSETS.brand_home.alt : (seo.social_image_alt || asset.alt)} onError={() => imageFailed ? setFallbackFailed(true) : setImageFailed(true)} /> : <div className="cmsSocialCardFallback">Brand fallback image unavailable</div>}{imageFailed&&!fallbackFailed&&<small className="cmsSeoImageWarning">Selected image unavailable · using approved weareailabs brand image</small>}<div><b>{seo.og_title || metaTitle}</b><p>{seo.og_description || metaDescription}</p><small>weareailabs.com</small></div></div></section>
-      <section className="cmsSeoPreviewCard"><span className="boCmsKicker">BASIC AEO CHECKS</span><p className="cmsAeoNote">Editorial signals only; this is not a score or a citation guarantee.</p><ul className="cmsAeoList">{signals.map((signal, index) => <li className={signal.pass ? 'isPass' : ''} key={index}><span aria-hidden="true">{signal.pass ? '✓' : '○'}</span><div><b>{signal.label}</b><small>{signal.detail}</small></div></li>)}</ul></section>
+      <section className="cmsSeoPreviewCard"><span className="boCmsKicker">BASIC AEO CHECKS</span><p className="cmsAeoNote">Editorial signals only; this is not a score or a citation guarantee.</p><ul className="cmsAeoList">{signals.map((signal, index) => <li className={signal.pass ? 'isPass' : ''} key={index}><span aria-hidden="true">{signal.pass ? '✓' : '○'}</span><div><b>{signal.label}</b><small>{signal.detail}</small></div></li>)}</ul>{internalTargets.length>0&&<div className="cmsInternalChecks"><b>Internal link targets</b><ul>{internalTargets.map(href=>{const result=targetChecks[href]||{state:'checking',detail:'Checking live route…'};return <li key={href} className={`is-${result.state}`}><code>{href}</code><small>{result.detail}</small></li>})}</ul></div>}</section>
     </aside>
   </div>;
 }
