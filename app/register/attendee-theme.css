@@ -52,6 +52,63 @@
 .registrationCheckout.registrationCheckout a, .registrationCheckout.registrationCheckout .regFooter a, .paymentSuccessPage a:not(.successReturn) { color:var(--at-teal)!important; }
 .paymentSuccessPage .successLead, .paymentSuccessPage .successMeta span { color:var(--at-muted)!important; }
 .paymentSuccessPage .successMeta > div { background:var(--at-surface)!important; border-color:var(--at-line)!important; }
+
+/* Mobile-first attendee layout refinements. All selectors stay within /register. */
+.registrationCheckout.onePageRegistration { width:100%; min-width:0; overflow-x:clip; background:var(--at-canvas); }
+.registrationCheckout .onePageMain { min-width:0; }
+.registrationCheckout .privacyIntroLink { margin:0 0 8px; font-size:.78rem; line-height:1.35; }
+.registrationCheckout .privacyIntroLink a { text-underline-offset:3px; }
+.registrationCheckout .workshopIntro { display:grid; gap:4px; margin:0 0 9px; padding:11px 13px; border:1px solid var(--at-line); border-radius:10px; background:var(--at-soft); color:var(--at-ink); font-size:.9rem; line-height:1.42; }
+.registrationCheckout .workshopIntro strong { font-size:1rem; }
+.registrationCheckout .workshopIntro small { color:var(--at-muted); font-size:.82rem; line-height:1.4; }
+.registrationCheckout .reg-clear-draft { min-height:40px; margin:0 0 8px; padding:5px 0; font:inherit; font-size:.82rem; color:var(--at-teal); }
+.registrationCheckout .moduleTrailFour { gap:6px; margin-bottom:10px; }
+.registrationCheckout .moduleTrailFour span { min-width:0; height:36px; padding:0 6px; border-color:var(--at-line); background:var(--at-canvas); color:var(--at-muted); font-size:.7rem; line-height:1.2; text-align:center; }
+.registrationCheckout .moduleTrailFour span.active { border-color:var(--at-teal); background:var(--at-soft); color:var(--at-teal); }
+.registrationCheckout .regFooter { gap:12px; min-width:0; }
+.registrationCheckout .regFooter .socialLinks { gap:7px; }
+.registrationCheckout .regFooter .socialLinks a { width:38px; height:38px; flex-basis:38px; border-radius:9px; }
+.registrationCheckout .regFooter .socialLinks svg { width:20px; height:20px; }
+.registrationCheckout[data-theme="dark"] .regRail .attendeeLogo { background:#fff; border-radius:7px; }
+@media(max-width:900px) {
+  .registrationCheckout .regRail { padding:10px 16px; }
+  .registrationCheckout .regRail .attendeeLogo { width:124px; height:48px; }
+  .registrationCheckout .onePageMain { padding-top:10px; }
+  .registrationCheckout .regFooter { display:flex!important; flex-wrap:wrap; align-items:center!important; justify-content:space-between!important; }
+  .registrationCheckout .regFooter .attendeeLogo { width:104px; height:56px; }
+  .registrationCheckout .regFooter p { flex:1 1 150px; margin:0; font-size:.72rem; line-height:1.45; }
+}
+@media(max-width:620px) {
+  .registrationCheckout .regMain.onePageMain { padding:8px 12px 0; }
+  .registrationCheckout .privacyIntroLink { margin-bottom:6px; font-size:.72rem; }
+  .registrationCheckout .workshopIntro { gap:3px; margin-bottom:7px; padding:10px 11px; font-size:.82rem; line-height:1.38; }
+  .registrationCheckout .workshopIntro strong { font-size:.94rem; }
+  .registrationCheckout .workshopIntro small { font-size:.76rem; }
+  .registrationCheckout .reg-clear-draft { min-height:38px; margin-bottom:6px; font-size:.8rem; }
+  .registrationCheckout .moduleTrailFour { gap:5px; margin-bottom:9px; }
+  .registrationCheckout .moduleTrailFour span { height:34px; padding:0 4px; font-size:.66rem; }
+  .registrationCheckout .onePageCard { padding:16px 12px; }
+  .registrationCheckout .onePageHead { gap:8px; margin-bottom:12px; }
+  .registrationCheckout .onePageHead h1 { margin:0 0 5px; font-size:1rem; line-height:1.3; }
+  .registrationCheckout .onePageHead p { margin:0; font-size:.82rem; line-height:1.42; }
+  .registrationCheckout .headerUtilities { justify-content:flex-start; align-items:center; gap:8px; }
+  .registrationCheckout .displayButton { width:42px; height:42px; min-width:42px; }
+  .registrationCheckout .time { margin:0 0 0 3px; }
+  .registrationCheckout .moduleHeader { min-height:58px; }
+  .registrationCheckout .moduleBody { padding:12px 10px 2px; }
+  .registrationCheckout .field { margin-bottom:11px; }
+  .registrationCheckout .regCard input, .registrationCheckout .regCard select, .registrationCheckout .regCard textarea { min-height:44px; border-radius:8px; font-size:.9rem; }
+  .registrationCheckout .regFooter { flex-direction:row!important; gap:10px; padding:12px!important; }
+  .registrationCheckout .regFooter .attendeeLogo { width:92px; height:50px; }
+  .registrationCheckout .regFooter p { flex:1 1 130px; font-size:.68rem; }
+  .registrationCheckout .regFooter .socialLinks { flex:1 0 100%; justify-content:flex-start; }
+  .registrationCheckout .regFooter .socialLinks a { width:36px; height:36px; flex-basis:36px; }
+}
+@media(max-width:370px) {
+  .registrationCheckout .regMain.onePageMain { padding-left:9px; padding-right:9px; }
+  .registrationCheckout .regFooter { gap:8px; }
+  .registrationCheckout .moduleTrailFour span { font-size:.61rem; }
+}
 @media(max-width:900px) {
   .registrationCheckout.registrationCheckout .regRail .attendeeLogo { width:152px; height:44px; }
 }
