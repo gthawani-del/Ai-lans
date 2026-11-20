@@ -1,8 +1,11 @@
 import CmsPublicForm from '../../backoffice/CmsPublicForm';
+import { createPageMetadata } from '../../../lib/seo';
 
 export async function generateMetadata({ params }) {
   const { handle } = await params;
-  return { title: 'Form | weareailabs', robots: { index: false, follow: false }, alternates: { canonical: `https://weareailabs.com/forms/${encodeURIComponent(handle)}` } };
+  const title = 'Form | weareailabs';
+  const description = 'Complete the weareailabs form using the information requested on the page.';
+  return createPageMetadata({ title, description, path: `/forms/${encodeURIComponent(handle)}`, indexable: false, follow: false });
 }
 
 export default async function PublicFormPage({ params }) {
