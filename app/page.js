@@ -40,7 +40,7 @@ export default function Page() {
         '@type': 'WebPage',
         '@id': 'https://weareailabs.com/#webpage',
         url: 'https://weareailabs.com/',
-        name: 'weareailabs | Hands-on AI Business Workshop',
+        name: 'weareailabs | Practical AI Workshops & Learning',
         isPartOf: { '@id': 'https://weareailabs.com/#website' },
         about: { '@id': 'https://weareailabs.com/#organization' },
         inLanguage: 'en-IN',

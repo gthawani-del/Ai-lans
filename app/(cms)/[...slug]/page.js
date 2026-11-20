@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { PreviewSection } from '../../backoffice/CmsPageEditor';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '../../../lib/supabase-browser';
-import { buildCmsStructuredData, createPageMetadata, resolveSeoImage } from '../../../lib/seo';
+import { buildCmsStructuredData, createPageMetadata, deriveMetaDescription, resolveSeoImage } from '../../../lib/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,9 +21,16 @@ function pageDescription(page) {
   const explicit = page?.revision?.seo?.description || page?.revision?.seo?.meta_description;
   if (explicit) return explicit;
   const sections = page?.revision?.document?.sections || [];
-  const intro = sections.find(section => section.visible !== false && section.type === 'hero')?.props?.body
-    || sections.find(section => section.visible !== false && section.type === 'rich_text')?.props?.body;
-  return String(intro || '').replace(/\s+/g, ' ').slice(0, 160) || `Information from weareailabs about ${page?.page?.title || 'this topic'}.`;
+  return deriveMetaDescription({ pageTitle: page?.page?.title, sections });
+}
+
+async function redirectForMissingPage(slug) {
+  const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: (input, init = {}) => fetch(input, { ...init, cache: 'no-store' }) },
+  });
+  const { data } = await supabase.rpc('cms_public_resolve_page_redirect', { p_path: `/${slug.join('/')}` });
+  return typeof data === 'string' ? data : data?.destination || null;
 }
 
 export async function generateMetadata({ params }) {
@@ -46,7 +53,11 @@ export async function generateMetadata({ params }) {
 export default async function CmsPublicPage({ params }) {
   const { slug } = await params;
   const page = await getPage(slug);
-  if (!page) notFound();
+  if (!page) {
+    const destination = await redirectForMissingPage(slug);
+    if (destination) permanentRedirect(destination);
+    notFound();
+  }
   const sections = (page.revision?.document?.sections || []).filter(section => section.visible !== false);
   const structuredData = buildCmsStructuredData(page);
   return <main className="cmsPublicPage">

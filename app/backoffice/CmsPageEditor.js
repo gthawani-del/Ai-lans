@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Save, Send, Trash2, X } from 'lucide-react';
 import CmsPageSeoPanel from './CmsPageSeoPanel';
 import CmsPublicForm from './CmsPublicForm';
+import { deriveMetaDescription } from '../../lib/seo';
 
 const EDITABLE = ['hero', 'rich_text', 'image_text', 'cta', 'faq', 'form_embed'];
 const makeId = () => globalThis.crypto?.randomUUID?.() || ('section-' + Date.now() + '-' + Math.random().toString(36).slice(2));
@@ -55,12 +56,15 @@ function Field({ label, value, onChange, multiline = false, placeholder = '' }) 
     : <input value={value || ''} onChange={event => onChange(event.target.value)} placeholder={placeholder}/>}</label>;
 }
 
-export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onPublished }) {
+export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onPublished, onSlugChanged }) {
   const [pageTitle, setPageTitle] = useState(initial.page?.title || '');
+  const [slug, setSlug] = useState(initial.page?.slug || '');
   const [sections, setSections] = useState((initial.revision?.document?.sections || []).map(section => ({ ...section, props: { ...(section.props || {}) }, visible: section.visible !== false })));
+  const hasSavedMetaDescription = Boolean(initial.revision?.seo?.meta_description?.trim());
+  const [metaDescriptionTouched, setMetaDescriptionTouched] = useState(hasSavedMetaDescription);
   const [seo, setSeo] = useState(() => ({
     seo_title: initial.revision?.seo?.seo_title || initial.page?.title || '',
-    meta_description: initial.revision?.seo?.meta_description || '',
+    meta_description: initial.revision?.seo?.meta_description || deriveMetaDescription({ pageTitle: initial.page?.title || '', sections: initial.revision?.document?.sections || [] }),
     canonical_path: initial.revision?.seo?.canonical_path || `/${initial.page?.slug || ''}`,
     indexable: initial.revision?.seo?.indexable === true,
     follow_links: initial.revision?.seo?.follow_links !== false,
@@ -90,6 +94,11 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(Boolean(initial.page?.has_unpublished_changes));
   const [revisionNumber, setRevisionNumber] = useState(Number(initial.revision?.revision_number || 1));
   const supported = useMemo(() => (initial.template?.allowed_sections || []).filter(type => EDITABLE.includes(type)), [initial.template]);
+  useEffect(() => {
+    if (metaDescriptionTouched) return;
+    setSeo(current => ({ ...current, meta_description: deriveMetaDescription({ pageTitle, sections }) }));
+    setSeoDirty(true);
+  }, [pageTitle, sections, metaDescriptionTouched]);
   useEffect(() => {
     if (!supported.includes('form_embed')) return;
     let active = true;
@@ -155,6 +164,21 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
     } catch (cause) { setError(cause?.message || 'Could not publish this page.'); }
     finally { setBusy(false); }
   }
+  async function changeSlug() {
+    const nextSlug = slug.trim().replace(/^\/+|\/+$/g, '');
+    if (nextSlug === initial.page?.slug) return;
+    if (dirty || seoDirty) { setError('Save your content and SEO edits before changing the URL.'); return; }
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/.test(nextSlug)) { setError('Use lowercase letters, numbers and hyphens in the URL path.'); return; }
+    if (!window.confirm(`Change this page URL from /${initial.page.slug} to /${nextSlug}? The old published URL will permanently redirect.`)) return;
+    setBusy(true); setError(''); setNotice('');
+    try {
+      const { data, error: rpcError } = await supabase.rpc('cms_admin_change_page_slug', { p_page_id: initial.page.id, p_new_slug: nextSlug });
+      if (rpcError) throw rpcError;
+      setNotice(`URL changed to /${data.slug}. The previous URL permanently redirects.`);
+      onSlugChanged?.(data);
+    } catch (cause) { setError(cause?.message || 'Could not change this page URL.'); }
+    finally { setBusy(false); }
+  }
   function updateFaq(index, key, value) {
     const items = [...(selected?.props?.items || [])]; items[index] = { ...items[index], [key]: value }; patchProps(selected.id, 'items', items);
   }
@@ -170,6 +194,7 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
           <div className="cmsEditorSubtabs" role="tablist" aria-label="Page editor sections"><button role="tab" type="button" aria-selected={editPane==='content'} onClick={()=>setEditPane('content')}>Content</button><button role="tab" type="button" aria-selected={editPane==='seo'} onClick={()=>setEditPane('seo')}>SEO &amp; AEO</button></div>
           <div hidden={editPane !== 'content'}>
           <label className="cmsEditField"><span>Page title</span><input value={pageTitle} maxLength={160} onChange={event => {const value=event.target.value;setPageTitle(value);setDirty(true);if(!seoTitleTouched){setSeo(current=>({...current,seo_title:value}));setSeoDirty(true);}}} disabled={!canEdit}/></label>
+          <div className="cmsEditField"><span>Page URL</span><div className="cmsPageSlugEditor"><input aria-label="Page URL slug" value={slug} maxLength={180} onChange={event=>setSlug(event.target.value)} disabled={!canEdit||busy}/><button type="button" className="boCmsQuiet" onClick={changeSlug} disabled={!canEdit||busy||slug===initial.page.slug}>Change URL</button></div><small>Published pages keep a permanent redirect from their previous URL.</small></div>
           <div className="cmsSectionHeading"><div><b>Sections</b><small>Arrange and edit the visible content blocks.</small></div><span>{sections.length}</span></div>
           <div className="cmsSectionList">{sections.map((section, index) => <div className={'cmsSectionItem ' + (section.id === selectedId ? 'isSelected' : '')} key={section.id}>
             <button className="cmsSectionSelect" type="button" onClick={() => setSelectedId(section.id)}><b>{titleCase(section.type)}</b><small>{sectionText(section) ? 'Content added' : 'Needs content'} · {section.visible === false ? 'Hidden' : 'Visible'}</small></button>
@@ -187,7 +212,7 @@ export default function CmsPageEditor({ initial, supabase, onClose, onSaved, onP
           {!selected && <p className="cmsNoSection">Select a section to edit it, or add one above.</p>}
           </div>
           <div hidden={editPane !== 'seo'}>
-            <CmsPageSeoPanel supabase={supabase} seo={seo} onChange={next=>{updateSeo(next);if(next.seo_title!==seo.seo_title)setSeoTitleTouched(true);}} pageTitle={pageTitle} slug={initial.page.slug} templateId={initial.page.template_id} sections={sections}/>
+            <CmsPageSeoPanel supabase={supabase} seo={seo} onChange={next=>{updateSeo(next);if(next.seo_title!==seo.seo_title)setSeoTitleTouched(true);if(next.meta_description!==seo.meta_description)setMetaDescriptionTouched(true);}} pageTitle={pageTitle} slug={initial.page.slug} templateId={initial.page.template_id} sections={sections}/>
           </div>
         </div>
         <div className={'boCmsEditorPreview ' + (mobileTab === 'edit' ? 'cmsMobileHidden' : '')}>
